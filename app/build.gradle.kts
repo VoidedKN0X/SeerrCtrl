@@ -14,7 +14,7 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = "1.1.0"
+        versionName = "1.1.1"
     }
 
     // Release signing from env (GitHub secrets); falls back to the debug key so the APK is always installable.
@@ -32,7 +32,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: strips unused code (most of the icon set) and resources, and optimises the rest.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }

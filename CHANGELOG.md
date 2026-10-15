@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Much smaller app: release builds are now shrunk and optimised (R8 + resource shrinking)
+
 ## 1.1.0
 
 - **Notifications**: your requests approved, declined, failed or available; new requests to approve with Approve/Decline buttons right in the notification; new issues, and replies or fixes on issues you reported. Choose what you get and how often (15 min–1 h) in App settings, where you can also let the app run in the background so ColorOS doesn't delay checks
