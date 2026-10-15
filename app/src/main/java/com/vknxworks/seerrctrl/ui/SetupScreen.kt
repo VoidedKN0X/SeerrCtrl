@@ -91,7 +91,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
 
     suspend fun finish(user: Any?) {
         App.api.commitCandidate()
-        (user as? JSONObject)?.let { App.session.setMe(it) }
+        (user as? JSONObject)?.let { App.session.updateMe(it) }
         try { App.session.refresh() } catch (_: Exception) {}
         onDone()
     }

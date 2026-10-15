@@ -35,7 +35,7 @@ class Session(private val api: SeerrApi) {
         me = api.obj("/auth/me")
     }
 
-    fun setMe(user: JSONObject) { me = user }
+    fun updateMe(user: JSONObject) { me = user }
 
     fun clear() { me = null }
 
