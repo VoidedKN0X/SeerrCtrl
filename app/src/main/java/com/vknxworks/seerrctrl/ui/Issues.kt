@@ -2,6 +2,8 @@ package com.vknxworks.seerrctrl.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,9 +120,9 @@ fun IssuesTab() {
 
     Column(Modifier.fillMaxSize()) {
         Text("Issues", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 8.dp))
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("open" to "Open", "resolved" to "Resolved", "all" to "All").forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l) }) }
-            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed") })
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("open" to "Open", "resolved" to "Resolved", "all" to "All").forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
+            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
         }
         PullToRefreshBox(false, { reloadKey++ }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

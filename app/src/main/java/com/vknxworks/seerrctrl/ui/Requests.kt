@@ -136,13 +136,13 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            requestFilters.forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l) }) }
+            requestFilters.forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
         }
-        Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("all" to "Movies & series", "movie" to "Movies", "tv" to "Series").forEach { (k, l) ->
-                FilterChip(mediaType == k, { mediaType = k }, label = { Text(l) })
+                FilterChip(mediaType == k, { mediaType = k }, label = { Text(l, maxLines = 1) })
             }
-            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed") })
+            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

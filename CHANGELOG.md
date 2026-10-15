@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Fixed the "Recently changed" chip wrapping onto four lines on the Requests tab; filter rows on Requests, Issues and Search now scroll sideways
+
 ## 1.1.1
 
 - Much smaller app: release builds are now shrunk and optimised (R8 + resource shrinking)
