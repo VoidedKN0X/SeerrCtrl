@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Explore
@@ -49,6 +50,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.foundation.layout.navigationBarsPadding
+import com.vknxworks.seerrctrl.notify.Notifier
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -75,7 +80,7 @@ import com.vknxworks.seerrctrl.data.str
 import kotlinx.coroutines.delay
 import org.json.JSONObject
 
-/** Which bottom tab is showing; other screens can switch it (e.g. "See all requests"). */
+/** Which tab is showing; other screens can switch it (e.g. "See all requests"). */
 object MainTab {
     const val DISCOVER = 0
     const val SEARCH = 1
@@ -83,56 +88,82 @@ object MainTab {
     const val ISSUES = 3
     const val MORE = 4
     var selected by mutableIntStateOf(DISCOVER)
+    /** Wide window: tabs go in a side rail instead of the bottom bar. */
+    var rail by mutableStateOf(false)
 }
+
+private data class TabDef(val index: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val badge: Int = 0)
 
 @Composable
 fun MainScreen() {
     val s = App.session
     val showIssues = s.can(Perm.MANAGE_ISSUES, Perm.VIEW_ISSUES, Perm.CREATE_ISSUES, any = true)
-    val pending = rememberLoad(s.me) {
+    val pending = rememberLoad(s.me, Notifier.version) {
         if (s.can(Perm.MANAGE_REQUESTS)) App.api.obj("/request/count").int("pending") else 0
     }
-    val openIssues = rememberLoad(s.me, "issues") {
+    val openIssues = rememberLoad(s.me, "issues", Notifier.version) {
         if (s.can(Perm.MANAGE_ISSUES)) App.api.obj("/issue/count").int("open") else 0
+    }
+    val tabs = buildList {
+        add(TabDef(MainTab.DISCOVER, Icons.Outlined.Explore, "Discover"))
+        add(TabDef(MainTab.SEARCH, Icons.Outlined.Search, "Search"))
+        add(TabDef(MainTab.REQUESTS, Icons.Outlined.Theaters, "Requests", pending.value ?: 0))
+        if (showIssues) add(TabDef(MainTab.ISSUES, Icons.Outlined.ReportProblem, "Issues", openIssues.value ?: 0))
+        add(TabDef(MainTab.MORE, Icons.Outlined.MoreHoriz, "More"))
     }
 
     BackHandler(MainTab.selected != MainTab.DISCOVER) { MainTab.selected = MainTab.DISCOVER }
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                Tab(MainTab.DISCOVER, Icons.Outlined.Explore, "Discover")
-                Tab(MainTab.SEARCH, Icons.Outlined.Search, "Search")
-                Tab(MainTab.REQUESTS, Icons.Outlined.Theaters, "Requests", pending.value ?: 0)
-                if (showIssues) Tab(MainTab.ISSUES, Icons.Outlined.ReportProblem, "Issues", openIssues.value ?: 0)
-                Tab(MainTab.MORE, Icons.Outlined.MoreHoriz, "More")
+    val content: @Composable () -> Unit = {
+        AnimatedContent(MainTab.selected, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
+            when (t) {
+                MainTab.SEARCH -> SearchTab()
+                MainTab.REQUESTS -> RequestsTab(onChanged = { pending.reload(silent = true) })
+                MainTab.ISSUES -> IssuesTab()
+                MainTab.MORE -> MoreTab()
+                else -> DiscoverTab()
             }
-        },
-    ) { pad ->
-        Box(Modifier.padding(bottom = pad.calculateBottomPadding()).statusBarsPadding()) {
-            AnimatedContent(MainTab.selected, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
-                when (t) {
-                    MainTab.SEARCH -> SearchTab()
-                    MainTab.REQUESTS -> RequestsTab(onChanged = { pending.reload(silent = true) })
-                    MainTab.ISSUES -> IssuesTab()
-                    MainTab.MORE -> MoreTab()
-                    else -> DiscoverTab()
+        }
+    }
+
+    if (MainTab.rail) {
+        Row(Modifier.fillMaxSize()) {
+            NavigationRail(Modifier.statusBarsPadding()) {
+                Spacer(Modifier.height(8.dp))
+                tabs.forEach { t ->
+                    NavigationRailItem(
+                        selected = MainTab.selected == t.index,
+                        onClick = { MainTab.selected = t.index },
+                        icon = { TabIcon(t) },
+                        label = { Text(t.label) },
+                    )
                 }
             }
+            Box(Modifier.weight(1f).fillMaxSize().statusBarsPadding().navigationBarsPadding()) { content() }
+        }
+    } else {
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    tabs.forEach { t ->
+                        NavigationBarItem(
+                            selected = MainTab.selected == t.index,
+                            onClick = { MainTab.selected = t.index },
+                            icon = { TabIcon(t) },
+                            label = { Text(t.label) },
+                        )
+                    }
+                }
+            },
+        ) { pad ->
+            Box(Modifier.padding(bottom = pad.calculateBottomPadding()).statusBarsPadding()) { content() }
         }
     }
 }
 
 @Composable
-private fun androidx.compose.foundation.layout.RowScope.Tab(index: Int, icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, badge: Int = 0) {
-    NavigationBarItem(
-        selected = MainTab.selected == index,
-        onClick = { MainTab.selected = index },
-        icon = {
-            BadgedBox(badge = { if (badge > 0) Badge { Text(if (badge > 99) "99+" else "$badge") } }) { Icon(icon, null) }
-        },
-        label = { Text(label) },
-    )
+private fun TabIcon(t: TabDef) {
+    BadgedBox(badge = { if (t.badge > 0) Badge { Text(if (t.badge > 99) "99+" else "${t.badge}") } }) { Icon(t.icon, null) }
 }
 
 // ---------------- search ----------------
@@ -253,6 +284,8 @@ fun MoreTab() {
                 NavItem(Icons.Outlined.Person, "Profile", "Your requests, quota and stats") { nav.navigate("user/${s.userId}") }
                 ItemDivider()
                 NavItem(Icons.Outlined.BookmarkBorder, "Watchlist", null) { nav.navigate("watchlist/${s.userId}") }
+                ItemDivider()
+                NavItem(Icons.Outlined.CalendarMonth, "Upcoming", "Release dates and new episodes for your requests") { nav.navigate("calendar") }
                 ItemDivider()
                 NavItem(Icons.Outlined.ManageAccounts, "Account settings", "Name, region, notifications, password") {
                     nav.navigate("user/${s.userId}/settings")

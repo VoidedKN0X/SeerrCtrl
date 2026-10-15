@@ -1,5 +1,16 @@
 package com.vknxworks.seerrctrl.ui
 
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Refresh
+import com.vknxworks.seerrctrl.data.Perm
+import com.vknxworks.seerrctrl.notify.Notifier
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -93,6 +104,8 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                     s.useCustomTabs = it
                 }
             }
+
+            NotificationSection()
 
             SettingsSection("Security") {
                 ToggleItem(Icons.Outlined.Lock, "App lock", "Ask for a PIN when opening the app", lock.pinSet) { on ->
@@ -214,4 +227,68 @@ private fun PinField(label: String, value: String, onChange: (String) -> Unit) {
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+@Composable
+private fun NotificationSection() {
+    val ctx = LocalContext.current
+    val s = App.settings
+    val session = App.session
+    var canPost by remember { mutableStateOf(Notifier.canPost(ctx)) }
+    val pm = remember { ctx.getSystemService(PowerManager::class.java) }
+    var unrestricted by remember { mutableStateOf(pm.isIgnoringBatteryOptimizations(ctx.packageName)) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        canPost = ok
+        if (ok) { s.notifyEnabled = true; Notifier.schedule(ctx) }
+    }
+    val batteryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        unrestricted = pm.isIgnoringBatteryOptimizations(ctx.packageName)
+    }
+    fun resched() = Notifier.schedule(ctx)
+
+    SettingsSection("Notifications") {
+        ToggleItem(
+            Icons.Outlined.Notifications, "Notifications",
+            if (!canPost) "Android isn't allowing notifications for SeerrCtrl yet" else "Checks your server in the background",
+            s.notifyEnabled && canPost,
+        ) { on ->
+            if (on && !canPost) launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            else { s.notifyEnabled = on; resched() }
+        }
+        if (s.notifyEnabled && canPost) {
+            ItemDivider()
+            ToggleItem(null, "Your requests", "Approved, declined, failed, now available", s.notifyMine) { s.notifyMine = it; resched() }
+            if (session.can(Perm.MANAGE_REQUESTS)) {
+                ItemDivider()
+                ToggleItem(null, "Requests to approve", "New requests, with Approve and Decline buttons", s.notifyPending) { s.notifyPending = it; resched() }
+            }
+            ItemDivider()
+            ToggleItem(
+                null, "Issues",
+                if (session.can(Perm.MANAGE_ISSUES)) "New issues, and replies on issues you reported" else "Replies and fixes on issues you reported",
+                s.notifyIssues,
+            ) { s.notifyIssues = it; resched() }
+            ItemDivider()
+            val every = listOf(15, 30, 60)
+            ChoiceItem(Icons.Outlined.Timer, "Check every", listOf("15 min", "30 min", "1 hour"), every.indexOf(s.notifyEveryMinutes).coerceAtLeast(0)) {
+                s.notifyEveryMinutes = every[it]; resched()
+            }
+            ItemDivider()
+            NavItem(
+                Icons.Outlined.BatteryChargingFull, "Background activity",
+                if (unrestricted) "Unrestricted, so checks run on time"
+                else "Restricted. ColorOS and other phones may delay or skip checks; tap to allow",
+            ) {
+                if (!unrestricted) {
+                    batteryLauncher.launch(
+                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}"))
+                    )
+                } else {
+                    batteryLauncher.launch(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                }
+            }
+            ItemDivider()
+            NavItem(Icons.Outlined.Refresh, "Check now", "Run a check straight away") { Notifier.checkNow(ctx) }
+        }
+    }
 }

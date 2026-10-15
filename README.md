@@ -27,7 +27,7 @@ An unofficial Android app for [Seerr](https://github.com/seerr-team/seerr) (and 
 **Requests**
 - Everyone's requests for managers (pending first, with a badge on the tab), your own otherwise
 - Filter by status (pending, approved, processing, available, unavailable, failed, deleted, completed), movies or series, newest or recently changed
-- Approve, decline, retry failed, edit, cancel or delete
+- Approve, decline, retry failed, edit, cancel or delete; swipe a pending request right to approve or left to decline
 
 **Issues**
 - Open/resolved list with a badge for open issues
@@ -42,12 +42,23 @@ An unofficial Android app for [Seerr](https://github.com/seerr-team/seerr) (and 
 - Password
 - Notification agents and which events reach you on each (email, Discord, Pushbullet, Pushover, Telegram, web push)
 
+**Notifications**
+- Your requests approved, declined, failed or now available
+- New requests waiting for approval, with **Approve** and **Decline** buttons in the notification
+- New issues, and replies or fixes on issues you reported
+- Pick what you get and how often (every 15 min to 1 hour); tapping a notification opens the title or issue
+
+**Upcoming calendar**
+- Month view and list of cinema, digital and disc releases and new episodes for your requests, everyone's requests, or your watchlist
+- Add any date to your phone's calendar
+
 **Admin**
 - **Users**: search, sort, create local users, import from Jellyfin/Emby or Plex, edit permissions (one user or many), per-user quotas, delete
 - **Server settings**: general, user sign-in options and default permissions/quotas, network (proxy, DNS cache, CSRF), Jellyfin/Emby/Plex connection with library toggles, library sync and full scans, Radarr and Sonarr servers (add, test, edit, delete), metadata providers, Tautulli, override rules, every notification agent (with test), discover sliders (enable, reorder, add, reset), jobs (run, cancel, reschedule) and caches (flush), logs with level filter and search, and about
 - **Blocklist**: search and remove
 
 **App**
+- Tablet and foldable layouts: a side rail on wide screens, and tabs on the left with details on the right from 700 dp, split along the hinge on foldables
 - Material You colours, light/dark/system theme, pure black, poster size
 - Optional PIN app lock with fingerprint, auto-lock delay, and hiding the app from recents and screenshots (same as CraftyCtrl and FrigateCtrl)
 - Your session cookie is stored encrypted with an Android Keystore key
@@ -70,6 +81,10 @@ Updates install over the existing app as long as every build is signed with the 
 2. Tick **Allow self-signed certificate** only if your server uses one.
 3. Sign in with any method your server offers. What you can see and do in the app follows your Seerr permissions, exactly like the web UI.
 
+## Notifications on ColorOS and other battery-strict phones
+
+The app checks your server in the background at most every 15 minutes (Android's minimum). Phones that limit background apps can delay or skip those checks. In **More → App settings → Notifications**, tap **Background activity** to let SeerrCtrl run unrestricted. On ColorOS you may also want to allow **Auto launch** for SeerrCtrl in the phone's app settings.
+
 ## Building from source
 
 Open the project in Android Studio (Ladybug or newer) and run it, or build from a terminal:
@@ -78,7 +93,7 @@ Open the project in Android Studio (Ladybug or newer) and run it, or build from 
 ./gradlew assembleDebug
 ```
 
-Signed releases are built by GitHub Actions on every push to `main`. The workflow expects these repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD`. Without them the APK is signed with a debug key and a warning is shown on the run.
+Signed releases are built by GitHub Actions on every push to `main`. The workflow reads `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` from the repository's Actions secrets or variables (keep the keystore and passwords as secrets). Without them the APK is signed with a debug key and a warning is shown on the run.
 
 ## Disclaimer
 

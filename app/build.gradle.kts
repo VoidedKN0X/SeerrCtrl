@@ -14,7 +14,7 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = "1.0.0"
+        versionName = "1.1.0"
     }
 
     // Release signing from env (GitHub secrets); falls back to the debug key so the APK is always installable.
@@ -73,6 +73,8 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.8.6")
     implementation("androidx.browser:browser:1.8.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
+    implementation("androidx.window:window:1.3.0")
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
