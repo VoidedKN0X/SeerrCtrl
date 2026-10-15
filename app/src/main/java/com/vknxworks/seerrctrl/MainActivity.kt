@@ -1,10 +1,41 @@
 package com.vknxworks.seerrctrl
 
 import android.graphics.Color
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
+import androidx.navigation.NavGraphBuilder
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import com.vknxworks.seerrctrl.notify.Notifier
+import com.vknxworks.seerrctrl.ui.CalendarScreen
+import com.vknxworks.seerrctrl.ui.MainTab
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -63,9 +94,24 @@ import com.vknxworks.seerrctrl.ui.lock.LockScreen
 
 // FragmentActivity (a ComponentActivity) is required by the fingerprint prompt.
 class MainActivity : FragmentActivity() {
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        takeRoute(intent)
+    }
+
+    /** Notifications open a specific screen ("movie/123", "issue/4", "requests"). */
+    private fun takeRoute(intent: android.content.Intent?) {
+        val r = intent?.getStringExtra(EXTRA_ROUTE) ?: return
+        intent.removeExtra(EXTRA_ROUTE)
+        if (r == "requests") MainTab.selected = MainTab.REQUESTS else DeepLink.route = r
+    }
+
+    companion object { const val EXTRA_ROUTE = "route" }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App.init(this)
+        takeRoute(intent)
         enableEdgeToEdge()
         setContent {
             SeerrTheme {
@@ -88,15 +134,16 @@ class MainActivity : FragmentActivity() {
 
 private fun NavBackStackEntry.intArg(name: String) = arguments?.getString(name)?.toIntOrNull() ?: 0
 
+/** Where a notification asked to go; picked up by whichever layout is showing. */
+object DeepLink {
+    var route by mutableStateOf<String?>(null)
+}
+
 @Composable
 private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewModel()) {
-    val nav = rememberNavController()
     val snack = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    fun toSetup() {
-        nav.navigate("setup") { popUpTo(0) { inclusive = true } }
-    }
+    var signedIn by remember { mutableStateOf(App.prefs.isConfigured) }
 
     fun logout() {
         scope.launch {
@@ -105,7 +152,8 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             App.prefs.clearSession()
             App.session.clear()
             App.api.reload()
-            toSetup()
+            MainTab.selected = MainTab.DISCOVER
+            signedIn = false
         }
     }
 
@@ -128,16 +176,28 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
         if (App.api.sessionExpired) {
             App.prefs.clearSession()
             App.session.clear()
-            toSetup()
+            signedIn = false
             snack.showSnackbar("Your session ended. Please sign in again.")
         }
     }
 
-    // Load who we are on start.
-    LaunchedEffect(Unit) {
-        if (App.prefs.isConfigured && App.session.me == null) {
+    // Ask once for permission to post notifications (Android 13+).
+    val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) Notifier.schedule(activity)
+    }
+    LaunchedEffect(signedIn) {
+        if (signedIn && !App.settings.askedNotificationPermission && !Notifier.canPost(activity)) {
+            App.settings.askedNotificationPermission = true
+            permLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    // Load who we are on start, and keep background checks scheduled.
+    LaunchedEffect(signedIn) {
+        if (signedIn && App.session.me == null) {
             try { App.session.refresh() } catch (_: Exception) {}
         }
+        if (signedIn) Notifier.schedule(activity) else Notifier.cancel(activity)
     }
 
     if (lockVm.locked && App.prefs.isConfigured) {
@@ -152,39 +212,100 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
         return
     }
 
-    CompositionLocalProvider(LocalNav provides nav, LocalSnackbar provides snack) {
+    CompositionLocalProvider(LocalSnackbar provides snack) {
         Box(Modifier.fillMaxSize()) {
-            NavHost(
-                navController = nav,
-                startDestination = if (App.prefs.isConfigured) "main" else "setup",
-                enterTransition = { slideInHorizontally(tween(300)) { it / 5 } + fadeIn(tween(220)) },
-                exitTransition = { slideOutHorizontally(tween(300)) { -it / 8 } + fadeOut(tween(160)) },
-                popEnterTransition = { slideInHorizontally(tween(300)) { -it / 5 } + fadeIn(tween(220)) },
-                popExitTransition = { slideOutHorizontally(tween(300)) { it / 8 } + fadeOut(tween(160)) },
-            ) {
-                composable("setup") {
-                    SetupScreen(
-                        onDone = { nav.navigate("main") { popUpTo(0) { inclusive = true } } },
-                        onCancel = null,
-                    )
-                }
-                composable("main") { MainScreen() }
-                composable("movie/{id}") { MediaScreen("movie", it.intArg("id")) }
-                composable("tv/{id}") { MediaScreen("tv", it.intArg("id")) }
-                composable("person/{id}") { PersonScreen(it.intArg("id")) }
-                composable("collection/{id}") { CollectionScreen(it.intArg("id")) }
-                composable("browse/{key}") { BrowseScreen(it.arguments?.getString("key").orEmpty()) }
-                composable("issue/{id}") { IssueScreen(it.intArg("id")) }
-                composable("user/{id}") { ProfileScreen(it.intArg("id")) }
-                composable("user/{id}/settings") { UserSettingsScreen(it.intArg("id")) }
-                composable("users") { UsersScreen() }
-                composable("watchlist/{id}") { WatchlistScreen(it.intArg("id")) }
-                composable("blocklist") { BlocklistScreen() }
-                composable("admin") { AdminSettingsScreen() }
-                composable("admin/{section}") { AdminSectionScreen(it.arguments?.getString("section").orEmpty()) }
-                composable("appsettings") { AppSettingsScreen(onLogout = ::logout) }
+            if (!signedIn) {
+                SetupScreen(onDone = { signedIn = true }, onCancel = null)
+            } else {
+                AdaptiveShell(activity, ::logout)
             }
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp))
         }
+    }
+}
+
+/**
+ * Phones get one stack of screens with a bottom bar. Wide windows (tablets, unfolded foldables, landscape)
+ * get a navigation rail, and from 700 dp the tabs stay on the left while details open on the right —
+ * split along the hinge when the phone has one.
+ */
+@Composable
+private fun AdaptiveShell(activity: FragmentActivity, logout: () -> Unit) {
+    val layoutInfo by remember(activity) { WindowInfoTracker.getOrCreate(activity).windowLayoutInfo(activity) }
+        .collectAsState(initial = null)
+    val density = LocalDensity.current
+    val hinge = layoutInfo?.displayFeatures?.filterIsInstance<FoldingFeature>()
+        ?.firstOrNull { it.orientation == FoldingFeature.Orientation.VERTICAL && it.isSeparating }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val width = maxWidth
+        val twoPane = width >= 700.dp
+        MainTab.rail = width >= 600.dp
+        key(twoPane) {
+            val nav = rememberNavController()
+            LaunchedEffect(DeepLink.route) {
+                DeepLink.route?.let { r -> DeepLink.route = null; nav.navigate(r) }
+            }
+            CompositionLocalProvider(LocalNav provides nav) {
+                if (!twoPane) {
+                    NavHost(nav, startDestination = "main", enterTransition = enter, exitTransition = exit, popEnterTransition = popEnter, popExitTransition = popExit) {
+                        composable("main") { MainScreen() }
+                        detailRoutes(logout)
+                    }
+                } else {
+                    val hingeStart = hinge?.let { with(density) { it.bounds.left.toDp() } }
+                    val hingeEnd = hinge?.let { with(density) { it.bounds.right.toDp() } }
+                    val listWidth = if (hingeStart != null && hingeStart > 280.dp && hingeStart < width - 280.dp) hingeStart
+                    else (width * 0.42f).coerceIn(360.dp, 480.dp)
+                    val gap = if (hingeStart != null && hingeEnd != null && hingeStart == listWidth) hingeEnd - hingeStart else 0.dp
+                    Row(Modifier.fillMaxSize()) {
+                        Box(Modifier.width(listWidth).fillMaxHeight()) { MainScreen() }
+                        if (gap > 0.dp) Spacer(Modifier.width(gap)) else VerticalDivider()
+                        Box(Modifier.weight(1f).fillMaxHeight()) {
+                            NavHost(nav, startDestination = "empty", enterTransition = enter, exitTransition = exit, popEnterTransition = popEnter, popExitTransition = popExit) {
+                                composable("empty") { EmptyPane() }
+                                detailRoutes(logout)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val enter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+    { slideInHorizontally(tween(300)) { it / 5 } + fadeIn(tween(220)) }
+private val exit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+    { slideOutHorizontally(tween(300)) { -it / 8 } + fadeOut(tween(160)) }
+private val popEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
+    { slideInHorizontally(tween(300)) { -it / 5 } + fadeIn(tween(220)) }
+private val popExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
+    { slideOutHorizontally(tween(300)) { it / 8 } + fadeOut(tween(160)) }
+
+private fun NavGraphBuilder.detailRoutes(logout: () -> Unit) {
+    composable("movie/{id}") { MediaScreen("movie", it.intArg("id")) }
+    composable("tv/{id}") { MediaScreen("tv", it.intArg("id")) }
+    composable("person/{id}") { PersonScreen(it.intArg("id")) }
+    composable("collection/{id}") { CollectionScreen(it.intArg("id")) }
+    composable("browse/{key}") { BrowseScreen(it.arguments?.getString("key").orEmpty()) }
+    composable("issue/{id}") { IssueScreen(it.intArg("id")) }
+    composable("user/{id}") { ProfileScreen(it.intArg("id")) }
+    composable("user/{id}/settings") { UserSettingsScreen(it.intArg("id")) }
+    composable("users") { UsersScreen() }
+    composable("watchlist/{id}") { WatchlistScreen(it.intArg("id")) }
+    composable("blocklist") { BlocklistScreen() }
+    composable("calendar") { CalendarScreen() }
+    composable("admin") { AdminSettingsScreen() }
+    composable("admin/{section}") { AdminSectionScreen(it.arguments?.getString("section").orEmpty()) }
+    composable("appsettings") { AppSettingsScreen(onLogout = logout) }
+}
+
+@Composable
+private fun EmptyPane() {
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(Icons.Outlined.Movie, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.outline)
+        Spacer(Modifier.height(12.dp))
+        Text("Pick something on the left", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

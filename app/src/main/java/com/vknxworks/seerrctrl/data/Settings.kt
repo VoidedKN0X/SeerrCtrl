@@ -47,4 +47,38 @@ class Settings(context: Context) {
     var useCustomTabs: Boolean
         get() = _tabs.value
         set(v) { _tabs.value = v; sp.edit().putBoolean("custom_tabs", v).apply() }
+
+    // Notifications
+    private val _notify = bool("notify_enabled", true)
+    var notifyEnabled: Boolean
+        get() = _notify.value
+        set(v) { _notify.value = v; sp.edit().putBoolean("notify_enabled", v).apply() }
+
+    /** Your own requests: approved, declined, available, failed. */
+    private val _nMine = bool("notify_mine", true)
+    var notifyMine: Boolean
+        get() = _nMine.value
+        set(v) { _nMine.value = v; sp.edit().putBoolean("notify_mine", v).apply() }
+
+    /** New requests waiting for approval (managers). */
+    private val _nPending = bool("notify_pending", true)
+    var notifyPending: Boolean
+        get() = _nPending.value
+        set(v) { _nPending.value = v; sp.edit().putBoolean("notify_pending", v).apply() }
+
+    /** New issues (managers), and replies/resolution on issues you reported. */
+    private val _nIssues = bool("notify_issues", true)
+    var notifyIssues: Boolean
+        get() = _nIssues.value
+        set(v) { _nIssues.value = v; sp.edit().putBoolean("notify_issues", v).apply() }
+
+    /** Minutes between background checks (Android's minimum is 15). */
+    private val _nEvery = int("notify_every", 15)
+    var notifyEveryMinutes: Int
+        get() = _nEvery.intValue
+        set(v) { _nEvery.intValue = v; sp.edit().putInt("notify_every", v).apply() }
+
+    var askedNotificationPermission: Boolean
+        get() = sp.getBoolean("asked_notif_perm", false)
+        set(v) { sp.edit().putBoolean("asked_notif_perm", v).apply() }
 }

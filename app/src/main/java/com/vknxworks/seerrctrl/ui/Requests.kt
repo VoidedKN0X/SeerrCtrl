@@ -43,6 +43,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -98,6 +104,7 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     var error by remember { mutableStateOf<String?>(null) }
     val list = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val swipeActs = rememberActions()
 
     suspend fun more() {
         if (loading || (total >= 0 && items.size >= total)) return
@@ -139,7 +146,25 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(items, key = { it.int("id") }) { r -> RequestCard(r, onChanged = ::changed) }
+                if (App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
+                    item(key = "hint") {
+                        Text(
+                            "Swipe a pending request right to approve, left to decline",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                items(items, key = { it.int("id") }) { r ->
+                    SwipeToDecide(
+                        r, swipeActs,
+                        onDecided = { approved ->
+                            // Drop it straight away from the pending list; elsewhere refresh to show the new status.
+                            if (filter == "pending") { items.remove(r); total = (total - 1).coerceAtLeast(0); onChanged() }
+                            else changed()
+                        },
+                        onFailed = ::changed,
+                    ) { RequestCard(r, onChanged = ::changed) }
+                }
                 if (loading) item { Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) { CircularProgressIndicator() } }
                 if (!loading && items.isEmpty()) {
                     item {
@@ -353,3 +378,57 @@ fun RequestMiniCard(r: JSONObject) {
     }
 }
 
+
+/** Pending requests can be swiped: right approves, left declines. Other cards don't move. */
+@Composable
+fun SwipeToDecide(
+    r: JSONObject,
+    act: Actions,
+    onDecided: (Boolean) -> Unit,
+    onFailed: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val canSwipe = App.session.can(Perm.MANAGE_REQUESTS) && RequestStatus.of(r.int("status")) == RequestStatus.Pending
+    if (!canSwipe) { content(); return }
+    val haptics = LocalHapticFeedback.current
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = { v ->
+            val approve = when (v) {
+                SwipeToDismissBoxValue.StartToEnd -> true
+                SwipeToDismissBoxValue.EndToStart -> false
+                else -> return@rememberSwipeToDismissBoxState false
+            }
+            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+            act.run(if (approve) "Approved" else "Declined", onOk = { onDecided(approve) }) {
+                try { App.api.post("/request/${r.int("id")}/${if (approve) "approve" else "decline"}") }
+                catch (e: Exception) { onFailed(); throw e }
+            }
+            true
+        },
+        positionalThreshold = { it * 0.35f },
+    )
+    SwipeToDismissBox(
+        state = state,
+        backgroundContent = {
+            val dir = state.dismissDirection
+            val approve = dir == SwipeToDismissBoxValue.StartToEnd
+            val color = when (dir) {
+                SwipeToDismissBoxValue.StartToEnd -> Status.available
+                SwipeToDismissBoxValue.EndToStart -> Status.declined
+                else -> Color.Transparent
+            }
+            Box(
+                Modifier.fillMaxSize().clip(CardDefaults.shape).background(color).padding(horizontal = 24.dp),
+                contentAlignment = if (approve) Alignment.CenterStart else Alignment.CenterEnd,
+            ) {
+                if (dir != SwipeToDismissBoxValue.Settled) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (approve) "Approve" else "Decline", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        },
+    ) { content() }
+}
