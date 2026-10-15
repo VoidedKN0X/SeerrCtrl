@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- back poster -->
+    <path android:fillColor="#8F7CFF"
+        android:pathData="M44,30h22a4,4 0 0 1 4,4v32a4,4 0 0 1 -4,4h-22a4,4 0 0 1 -4,-4v-32a4,4 0 0 1 4,-4z" />
+    <!-- front poster -->
+    <path android:fillColor="#F2EFFF"
+        android:pathData="M36,38h22a4,4 0 0 1 4,4v32a4,4 0 0 1 -4,4h-22a4,4 0 0 1 -4,-4v-32a4,4 0 0 1 4,-4z" />
+    <!-- play triangle -->
+    <path android:fillColor="#3B2A8C"
+        android:pathData="M43,49l12,9l-12,9z" />
+    <!-- request plus badge -->
+    <path android:fillColor="#4ADE80"
+        android:pathData="M70,66m-9,0a9,9 0 1 1 18,0a9,9 0 1 1 -18,0" />
+    <path android:fillColor="#0B2A16"
+        android:pathData="M69,61h2v4h4v2h-4v4h-2v-4h-4v-2h4z" />
+</vector>
