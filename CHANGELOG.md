@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- New app icon: an eye with a looking glass for a pupil, in Seerr's indigo, with a matching themed (monochrome) icon and notification icon
+
 ## 1.1.2
 
 - Fixed the "Recently changed" chip wrapping onto four lines on the Requests tab; filter rows on Requests, Issues and Search now scroll sideways
