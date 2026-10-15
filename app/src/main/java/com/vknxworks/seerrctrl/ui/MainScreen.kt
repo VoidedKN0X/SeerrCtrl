@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -135,7 +137,7 @@ fun MainScreen() {
                         selected = MainTab.selected == t.index,
                         onClick = { MainTab.selected = t.index },
                         icon = { TabIcon(t) },
-                        label = { Text(t.label) },
+                        label = { Text(t.label, maxLines = 1) },
                     )
                 }
             }
@@ -150,7 +152,7 @@ fun MainScreen() {
                             selected = MainTab.selected == t.index,
                             onClick = { MainTab.selected = t.index },
                             icon = { TabIcon(t) },
-                            label = { Text(t.label) },
+                            label = { Text(t.label, maxLines = 1) },
                         )
                     }
                 }
@@ -191,8 +193,8 @@ fun SearchTab() {
             keyboardActions = KeyboardActions(onSearch = { debounced = query.trim() }),
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp),
         )
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SearchKind.entries.forEach { k -> FilterChip(kind == k, { kind = k }, label = { Text(k.label) }) }
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SearchKind.entries.forEach { k -> FilterChip(kind == k, { kind = k }, label = { Text(k.label, maxLines = 1) }) }
         }
         if (debounced.isEmpty()) {
             SearchShortcuts()
