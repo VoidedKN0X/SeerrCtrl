@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- New app icon in the Ctrl series keycap style (like JellyCtrl and NaviCtrl): a looking glass on the key face in Seerr violet, with matching themed and notification icons
+
 ## 1.3.1
 
 - Security hardening:
