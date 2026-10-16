@@ -23,9 +23,20 @@ class Prefs(context: Context) {
         get() = decrypt(sp.getString("session", null))
         set(v) = sp.edit().putString("session", encrypt(v)).apply()
 
+    /** "Self-signed certificate" option. Now only means "a certificate is (or should be) pinned". */
     var allowInsecureTls: Boolean
         get() = sp.getBoolean("insecure_tls", false)
         set(v) = sp.edit().putBoolean("insecure_tls", v).apply()
+
+    /** SHA-256 (hex) of the self-signed server certificate the user confirmed; "" when none is pinned. */
+    var pinnedCert: String
+        get() = sp.getString("pinned_cert", "") ?: ""
+        set(v) = sp.edit().putString("pinned_cert", v).apply()
+
+    /** The user confirmed that their http:// server address is unencrypted. */
+    var httpAcknowledged: Boolean
+        get() = sp.getBoolean("http_ack", false)
+        set(v) = sp.edit().putBoolean("http_ack", v).apply()
 
     /** Stable id this install uses towards plex.tv for the Plex sign-in. */
     val plexClientId: String

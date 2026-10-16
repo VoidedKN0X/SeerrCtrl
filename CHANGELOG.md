@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.1
+
+- Security hardening:
+  - Self-signed certificates are now trusted by fingerprint: you confirm the server's SHA-256 once and only that certificate is accepted, only for your server. If you had the option on, the app asks you to confirm the fingerprint
+  - Addresses without `https://` try https first; plain http is only used after a warning that it's unencrypted, and a "Not encrypted (HTTP)" note shows in App settings
+  - The session cookie is only sent to your exact server (scheme, host and port), also across redirects; plex.tv and image hosts must use https
+  - Approve/Decline from a notification needs the phone unlocked; titles, names and comments are hidden on the lock screen
+  - "Hide content in screenshots & recents" works without an app PIN and is on by default; server settings screens are always hidden
+  - Passwords, tokens and webhook URLs in server notification settings are masked
+  - Notification links can't be faked by other apps; nothing is included in backups or device transfers
+  - Fingerprint unlock uses strong biometrics only (biometric 1.2.0-alpha05)
+  - CI: releases are never debug-signed, actions pinned to commits, release published from a separate least-privilege job
+
 ## 1.3.0
 
 - Floating tab bar: on phones the bottom bar is now a frosted-glass island that blurs the content scrolling behind it, with a selection bubble that springs between tabs

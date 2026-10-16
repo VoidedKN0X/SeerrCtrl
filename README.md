@@ -60,7 +60,7 @@ An unofficial Android app for [Seerr](https://github.com/seerr-team/seerr) (and 
 **App**
 - Tablet and foldable layouts: a side rail on wide screens, and tabs on the left with details on the right from 700 dp, split along the hinge on foldables
 - Material You colours, light/dark/system theme, pure black, poster size
-- Optional PIN app lock with fingerprint, auto-lock delay, and hiding the app from recents and screenshots (same as CraftyCtrl and FrigateCtrl)
+- Optional PIN app lock with fingerprint, auto-lock delay, and hiding content in screenshots and recents (on by default, server settings always hidden)
 - Your session cookie is stored encrypted with an Android Keystore key
 
 ## Requirements
@@ -77,8 +77,8 @@ Updates install over the existing app as long as every build is signed with the 
 
 ## First run
 
-1. Enter your Seerr address. Bare hostnames and IPs get `http://`, domains get `https://`.
-2. Tick **Allow self-signed certificate** only if your server uses one.
+1. Enter your Seerr address. Without `http://` or `https://`, the app tries https first and only offers plain http after warning that your password would be sent unencrypted.
+2. Tick **Allow self-signed certificate** only if your server uses one. You'll be shown the certificate's SHA-256 fingerprint to confirm, and from then on only that exact certificate is accepted (only for your server; TMDB, Plex and others always use normal checks).
 3. Sign in with any method your server offers. What you can see and do in the app follows your Seerr permissions, exactly like the web UI.
 
 ## Notifications on ColorOS and other battery-strict phones
@@ -93,7 +93,7 @@ Open the project in Android Studio (Ladybug or newer) and run it, or build from 
 ./gradlew assembleDebug
 ```
 
-Signed releases are built by GitHub Actions on every push to `main`. The workflow reads `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` from the repository's Actions secrets or variables (keep the keystore and passwords as secrets). Without them the APK is signed with a debug key and a warning is shown on the run.
+Signed releases are built by GitHub Actions on every push to `main`. The workflow reads `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` from the repository's Actions secrets (`KEY_ALIAS` can be a repository variable). Without them the build fails rather than publishing a debug-signed release.
 
 ## Disclaimer
 

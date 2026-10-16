@@ -26,6 +26,8 @@ import androidx.work.WorkManager
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.MainActivity
 import com.vknxworks.seerrctrl.R
+import java.security.MessageDigest
+import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
 
 /** Schedules the background check and posts notifications. */
@@ -85,9 +87,21 @@ object Notifier {
     fun canPost(ctx: Context): Boolean =
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
+    /** Random per-install secret that notification taps carry, so other apps can't drive navigation. */
+    private fun routeToken(ctx: Context): String {
+        val sp = ctx.getSharedPreferences("notify_state_token", Context.MODE_PRIVATE)
+        return sp.getString("token", null) ?: ByteArray(32).also { SecureRandom().nextBytes(it) }
+            .joinToString("") { "%02x".format(it) }
+            .also { sp.edit().putString("token", it).apply() }
+    }
+
+    fun checkRouteToken(ctx: Context, token: String?): Boolean =
+        token != null && MessageDigest.isEqual(token.toByteArray(), routeToken(ctx).toByteArray())
+
     fun openIntent(ctx: Context, route: String, code: Int): PendingIntent {
         val i = Intent(ctx, MainActivity::class.java)
             .putExtra(MainActivity.EXTRA_ROUTE, route)
+            .putExtra(MainActivity.EXTRA_TOKEN, routeToken(ctx))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         return PendingIntent.getActivity(ctx, code, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
@@ -102,6 +116,7 @@ object Notifier {
         route: String,
         poster: Bitmap? = null,
         actions: List<NotificationCompat.Action> = emptyList(),
+        publicTitle: String = publicTitleFor(channel),
     ) {
         if (!canPost(ctx)) return
         val b = NotificationCompat.Builder(ctx, channel)
@@ -112,6 +127,9 @@ object Notifier {
             .setContentIntent(openIntent(ctx, route, id))
             .setAutoCancel(true)
             .setGroup(channel)
+            // Titles, usernames and comments stay off the lock screen; it only says what kind of news this is.
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(publicVersion(ctx, channel, publicTitle))
         poster?.let { b.setLargeIcon(it) }
         actions.forEach { b.addAction(it) }
         NotificationManagerCompat.from(ctx).notify(id, b.build())
@@ -126,6 +144,21 @@ object Notifier {
             .setContentText(text)
             .setAutoCancel(true)
             .setTimeoutAfter(8000)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(publicVersion(ctx, channel, publicTitleFor(channel)))
         NotificationManagerCompat.from(ctx).notify(id, b.build())
     }
+
+    fun publicTitleFor(channel: String): String = when (channel) {
+        CH_PENDING -> "New request"
+        CH_ISSUES -> "Issue update"
+        else -> "Request update"
+    }
+
+    private fun publicVersion(ctx: Context, channel: String, title: String) =
+        NotificationCompat.Builder(ctx, channel)
+            .setSmallIcon(R.drawable.ic_stat_seerr)
+            .setContentTitle(title)
+            .setContentText("Unlock to see details")
+            .build()
 }

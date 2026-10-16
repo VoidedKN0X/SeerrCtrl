@@ -5,7 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.Call
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,12 +17,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
+import java.io.IOException
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 class ApiException(val code: Int, message: String) : Exception(message)
 
@@ -31,37 +31,62 @@ class SeerrApi(private val prefs: Prefs) {
     @Volatile var baseUrl: String = prefs.baseUrl.trimEnd('/')
         private set
     @Volatile private var cookie: String = prefs.sessionCookie
-    @Volatile private var insecure: Boolean = prefs.allowInsecureTls
+    /** SHA-256 of the self-signed certificate the user trusted for this server ("" = normal validation only). */
+    @Volatile private var pin: String = prefs.pinnedCert
+    /** Plain http to the server is only used after the user confirmed it's unencrypted. */
+    @Volatile private var httpOk: Boolean = prefs.httpAcknowledged
     /** While setting up, the cookie is only kept in memory until sign-in succeeds. */
     @Volatile private var persistCookie: Boolean = true
 
     /** Flips to true when the server rejects our session, so the UI can send the user to sign in. */
     var sessionExpired by mutableStateOf(false)
 
-    @Volatile private var clientCache: Pair<Boolean, OkHttpClient>? = null
+    /** Set when the server's certificate no longer matches the one the user trusted, so the UI can offer to re-pin. */
+    var certChanged by mutableStateOf(false)
 
+    @Volatile private var clientCache: Pair<String, OkHttpClient>? = null
+
+    /** Client for the user's own Seerr server (session cookie, optional pinned certificate). */
     val client: OkHttpClient
         get() {
-            clientCache?.let { if (it.first == insecure) return it.second }
-            val c = buildClient(insecure)
-            clientCache = insecure to c
+            val key = "$baseUrl|$pin"
+            clientCache?.let { if (it.first == key) return it.second }
+            val c = buildClient(pin)
+            clientCache = key to c
             return c
         }
+
+    /** Images: the Seerr server's own URLs use [client]; anything else (TMDB, Plex, Gravatar) uses normal TLS checks and no cookie. */
+    val imageCallFactory: Call.Factory = object : Call.Factory {
+        override fun newCall(request: Request): Call = (if (sameServer(request.url)) client else otherClient).newCall(request)
+    }
+
+    /** Exact scheme + host + port match with the configured server. */
+    fun sameServer(url: HttpUrl): Boolean {
+        val base = baseUrl.toHttpUrlOrNull() ?: return false
+        return url.scheme == base.scheme && url.host.equals(base.host, ignoreCase = true) && url.port == base.port
+    }
+
+    val isHttp: Boolean get() = baseUrl.startsWith("http://")
+    val pinnedFingerprint: String get() = pin
 
     /** Loads the saved server and session (after sign-in, log out, or app start). */
     fun reload() {
         baseUrl = prefs.baseUrl.trimEnd('/')
         cookie = prefs.sessionCookie
-        insecure = prefs.allowInsecureTls
+        pin = prefs.pinnedCert
+        httpOk = prefs.httpAcknowledged
         persistCookie = true
         clientCache = null
         sessionExpired = false
+        certChanged = false
     }
 
     /** Points the client at a server that isn't saved yet (setup screen). */
-    fun useCandidate(base: String, allowInsecure: Boolean) {
+    fun useCandidate(base: String, pinned: String, allowHttp: Boolean) {
         baseUrl = base.trimEnd('/')
-        insecure = allowInsecure
+        pin = pinned
+        httpOk = allowHttp
         cookie = ""
         persistCookie = false
         clientCache = null
@@ -70,7 +95,9 @@ class SeerrApi(private val prefs: Prefs) {
     /** Saves the candidate server and the session it just got. */
     fun commitCandidate() {
         prefs.baseUrl = baseUrl
-        prefs.allowInsecureTls = insecure
+        prefs.pinnedCert = pin
+        prefs.allowInsecureTls = pin.isNotEmpty()
+        prefs.httpAcknowledged = httpOk
         prefs.sessionCookie = cookie
         persistCookie = true
         sessionExpired = false
@@ -110,9 +137,23 @@ class SeerrApi(private val prefs: Prefs) {
             }
         }
 
-    /** Raw GET against any URL (used for plex.tv during Plex sign-in). */
+    /** Trusts [fingerprint] for the saved server from now on (after the user confirmed it). */
+    fun pinSavedServer(fingerprint: String) {
+        prefs.pinnedCert = fingerprint
+        prefs.allowInsecureTls = true
+        reload()
+    }
+
+    /** The user confirmed the saved http server is unencrypted. */
+    fun acknowledgeHttp() {
+        prefs.httpAcknowledged = true
+        httpOk = true
+    }
+
+    /** Raw request to plex.tv during Plex sign-in. https only, also across redirects. */
     suspend fun external(verb: String, url: String, headers: Map<String, String>, body: String? = null): JSONObject =
         withContext(Dispatchers.IO) {
+            require(url.startsWith("https://")) { "Plex sign-in needs https" }
             val req = Request.Builder().url(url).apply {
                 headers.forEach { (k, v) -> header(k, v) }
                 header("Accept", "application/json")
@@ -126,7 +167,22 @@ class SeerrApi(private val prefs: Prefs) {
         }
 
     private val plainClient by lazy {
-        OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS).build()
+        OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS)
+            .addNetworkInterceptor { chain ->
+                if (!chain.request().url.isHttps) throw IOException("Refusing an unencrypted connection to ${chain.request().url.host}")
+                chain.proceed(chain.request())
+            }
+            .build()
+    }
+
+    /** Third-party hosts: default certificate checks, no session cookie, and no plain http. */
+    private val otherClient by lazy {
+        OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
+            .addNetworkInterceptor { chain ->
+                if (!chain.request().url.isHttps) throw IOException("Refusing an unencrypted connection to ${chain.request().url.host}")
+                chain.proceed(chain.request())
+            }
+            .build()
     }
 
     private fun parse(text: String): Any? {
@@ -162,36 +218,40 @@ class SeerrApi(private val prefs: Prefs) {
         }
     }
 
-    private fun buildClient(insecure: Boolean): OkHttpClient {
+    private fun buildClient(pin: String): OkHttpClient {
+        // A network interceptor runs for every hop, so redirects to another host never get the cookie,
+        // and plain http is only allowed to the configured server once the user has confirmed it.
+        val guard = Interceptor { chain ->
+            val req0 = chain.request()
+            val same = sameServer(req0.url)
+            if (!req0.url.isHttps && !(same && httpOk)) {
+                throw IOException("Refusing an unencrypted connection to ${req0.url.host}")
+            }
+            val req = if (same && cookie.isNotEmpty()) {
+                req0.newBuilder().header("Cookie", "$COOKIE=$cookie").build()
+            } else req0.newBuilder().removeHeader("Cookie").build()
+            val resp = chain.proceed(req)
+            if (same) {
+                resp.headers("Set-Cookie").firstOrNull { it.startsWith("$COOKIE=") }?.let { sc ->
+                    val v = sc.substringAfter("=").substringBefore(";")
+                    if (v.isNotEmpty() && v != cookie) {
+                        cookie = v
+                        if (persistCookie) prefs.sessionCookie = v
+                    }
+                }
+            }
+            resp
+        }
         val b = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
-            .addInterceptor { chain ->
-                val orig = chain.request()
-                val sameServer = baseUrl.isNotEmpty() && orig.url.toString().startsWith(baseUrl)
-                val req = if (sameServer && cookie.isNotEmpty()) {
-                    orig.newBuilder().header("Cookie", "$COOKIE=$cookie").build()
-                } else orig
-                val resp = chain.proceed(req)
-                if (sameServer) {
-                    resp.headers("Set-Cookie").firstOrNull { it.startsWith("$COOKIE=") }?.let { sc ->
-                        val v = sc.substringAfter("=").substringBefore(";")
-                        if (v.isNotEmpty() && v != cookie) {
-                            cookie = v
-                            if (persistCookie) prefs.sessionCookie = v
-                        }
-                    }
-                }
-                resp
-            }
-        if (insecure) {
-            val trustAll = object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-                override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-            }
-            val ctx = SSLContext.getInstance("TLS").apply { init(null, arrayOf<TrustManager>(trustAll), SecureRandom()) }
-            b.sslSocketFactory(ctx.socketFactory, trustAll).hostnameVerifier { _, _ -> true }
+            .addNetworkInterceptor(guard)
+        val host = baseUrl.toHttpUrlOrNull()?.takeIf { it.isHttps }?.host
+        if (pin.isNotEmpty() && host != null) {
+            // Only the user's own server ever reaches this client with a pin; third-party hosts use [otherClient].
+            val tm = Tls.PinnedTrustManager(pin) { certChanged = true }
+            b.sslSocketFactory(Tls.sslContext(tm).socketFactory, tm)
+                .hostnameVerifier(Tls.pinnedHostnameVerifier(host, pin))
         }
         return b.build()
     }
@@ -201,17 +261,22 @@ class SeerrApi(private val prefs: Prefs) {
         private val JSON = "application/json; charset=utf-8".toMediaType()
         private val FORM = "application/x-www-form-urlencoded".toMediaType()
 
-        /** Turns "seerr.home.lan:5055" into "http://seerr.home.lan:5055"; https is assumed for bare domains. */
+        fun hasScheme(input: String): Boolean {
+            val s = input.trim().lowercase()
+            return s.startsWith("http://") || s.startsWith("https://")
+        }
+
+        /**
+         * Adds https:// when no scheme was typed (also for LAN names and ports). Falling back to http is
+         * up to the caller, and only after the user confirms it.
+         */
         fun normalize(input: String): String {
             var s = input.trim().trimEnd('/')
             if (s.isEmpty()) return s
-            if (!s.startsWith("http://") && !s.startsWith("https://")) {
-                val host = s.substringBefore('/').substringBefore(':')
-                val local = host.matches(Regex("""\d+\.\d+\.\d+\.\d+""")) || !host.contains('.') ||
-                    host.endsWith(".lan") || host.endsWith(".local") || host.endsWith(".home") || s.contains(':')
-                s = (if (local) "http://" else "https://") + s
-            }
+            if (!hasScheme(s)) s = "https://$s"
             return s
         }
+
+        fun toHttp(base: String): String = "http://" + base.substringAfter("://")
     }
 }

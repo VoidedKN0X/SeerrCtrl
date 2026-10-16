@@ -14,10 +14,10 @@ class SeerrApplication : Application(), SingletonImageLoader.Factory {
     }
 
     // Images go through the app's HTTP client, so Seerr's image cache and avatars get the session cookie
-    // and the "allow self-signed certificate" option applies to them too.
+    // while TMDB, Plex and Gravatar images get normal certificate checks and no cookie.
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(context)
-            .components { add(OkHttpNetworkFetcherFactory(callFactory = { App.api.client })) }
+            .components { add(OkHttpNetworkFetcherFactory(callFactory = { App.api.imageCallFactory })) }
             .crossfade(true)
             .build()
 }

@@ -107,12 +107,14 @@ import com.vknxworks.seerrctrl.ui.Status
 import com.vknxworks.seerrctrl.ui.rememberActions
 import com.vknxworks.seerrctrl.ui.rememberLoad
 import kotlinx.coroutines.delay
+import com.vknxworks.seerrctrl.SecureWindow
 import org.json.JSONArray
 import org.json.JSONObject
 
 /** Every server settings page from the web UI, as one list. */
 @Composable
 fun AdminSettingsScreen() {
+    SecureWindow()
     val nav = LocalNav.current
     val ms = App.session.mediaServer
     Scaffold(topBar = { BackBar("Server settings", { nav.popBackStack() }, subtitle = App.session.appTitle) }) { pad ->
@@ -160,6 +162,7 @@ fun AdminSettingsScreen() {
 
 @Composable
 fun AdminSectionScreen(section: String) {
+    SecureWindow()
     when {
         section == "general" -> SettingsForm("General", "/settings/main", generalSpec, hideKeys = usersKeys + setOf("defaultPermissions", "defaultQuotas"), regen = true)
         section == "users" -> UsersSettings()

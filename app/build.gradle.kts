@@ -14,11 +14,13 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = "1.3.0"
+        versionName = "1.3.1"
     }
 
-    // Release signing from env (GitHub secrets); falls back to the debug key so the APK is always installable.
+    // Release signing from env (GitHub secrets). Local builds fall back to the debug key; CI never does,
+    // so a published release is always signed with the real key.
     val ksPath = System.getenv("SIGNING_KEYSTORE_PATH")
+    val onCi = System.getenv("CI") == "true" || System.getenv("GITHUB_ACTIONS") == "true"
     signingConfigs {
         if (!ksPath.isNullOrBlank() && file(ksPath).exists()) {
             create("release") {
@@ -36,7 +38,11 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            val release = signingConfigs.findByName("release")
+            if (release == null && onCi) {
+                throw GradleException("Release signing values are missing on CI; refusing to sign the release with the debug key")
+            }
+            signingConfig = release ?: signingConfigs.getByName("debug")
         }
     }
 
@@ -73,7 +79,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
 
-    implementation("androidx.biometric:biometric:1.1.0")
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
     implementation("androidx.fragment:fragment-ktx:1.8.6")
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
