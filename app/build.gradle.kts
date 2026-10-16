@@ -14,7 +14,7 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
-        versionName = "1.3.1"
+        versionName = "1.4.0"
     }
 
     // Release signing from env (GitHub secrets). Local builds fall back to the debug key; CI never does,
