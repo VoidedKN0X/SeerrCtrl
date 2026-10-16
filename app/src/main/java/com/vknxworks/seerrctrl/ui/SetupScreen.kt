@@ -88,6 +88,9 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
     var server by remember { mutableStateOf<JSONObject?>(null) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    // Trust prompts: a certificate to pin, or an http address to confirm.
+    var certPrompt by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var httpPrompt by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     suspend fun finish(user: Any?) {
         App.api.commitCandidate()
@@ -96,27 +99,79 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
         onDone()
     }
 
-    fun connect() {
-        val base = SeerrApi.normalize(url)
-        if (base.isEmpty()) { error = "Enter your Seerr address"; return }
-        url = base
+    fun host(base: String) = base.substringAfter("://").substringBefore('/')
+
+    /** Talks to [base] with the given trust settings. Returns the failure so the caller can offer a fix. */
+    suspend fun probe(base: String, pin: String, allowHttp: Boolean): Exception? {
+        App.api.useCandidate(base, pin, allowHttp)
+        return try {
+            val pub = App.api.obj("/settings/public")
+            if (!pub.has("applicationTitle") && !pub.has("initialized")) {
+                error = "That doesn't look like a Seerr, Jellyseerr or Overseerr server"
+            } else if (!pub.bool("initialized", true)) {
+                error = "This server hasn't been set up yet. Finish Seerr's setup in a browser first."
+            } else server = pub
+            null
+        } catch (e: Exception) { e }
+    }
+
+    fun connectWith(base: String, pin: String, allowHttp: Boolean) {
         scope.launch {
             busy = true; error = null
-            try {
-                App.api.useCandidate(base, insecure)
-                val pub = App.api.obj("/settings/public")
-                if (!pub.has("applicationTitle") && !pub.has("initialized")) {
-                    error = "That doesn't look like a Seerr, Jellyseerr or Overseerr server"
-                } else if (!pub.bool("initialized", true)) {
-                    error = "This server hasn't been set up yet. Finish Seerr's setup in a browser first."
-                } else server = pub
-            } catch (e: javax.net.ssl.SSLException) {
-                error = "Secure connection failed (${e.message}). If the server uses a self-signed certificate, turn on the option below."
-            } catch (e: Exception) {
+            val e = probe(base, pin, allowHttp)
+            if (e != null) {
                 error = "Couldn't reach the server: ${e.message ?: e.javaClass.simpleName}"
             }
             busy = false
         }
+    }
+
+    fun connect() {
+        val explicit = SeerrApi.hasScheme(url)
+        val base = SeerrApi.normalize(url)
+        if (base.isEmpty()) { error = "Enter your Seerr address"; return }
+        url = base
+        if (base.startsWith("http://")) {
+            // The user typed http:// themselves: still say what that means before anything is sent.
+            httpPrompt = base to false
+            return
+        }
+        // Keep the certificate already trusted for this exact server (signing in again).
+        val savedPin = if (base == App.prefs.baseUrl.trimEnd('/')) App.prefs.pinnedCert else ""
+        scope.launch {
+            busy = true; error = null
+            val e = probe(base, savedPin, false)
+            when {
+                e == null -> Unit
+                isCertError(e) && insecure -> {
+                    try {
+                        val fp = com.vknxworks.seerrctrl.data.Tls.sha256(com.vknxworks.seerrctrl.data.Tls.fetchLeaf(base))
+                        certPrompt = base to fp
+                    } catch (x: Exception) {
+                        error = "Couldn't read the server's certificate: ${x.message ?: x.javaClass.simpleName}"
+                    }
+                }
+                isCertError(e) -> error = "Secure connection failed (${e.message}). If the server uses a self-signed certificate, turn on the option below."
+                !explicit && isNoHttps(e) -> httpPrompt = SeerrApi.toHttp(base) to true
+                else -> error = "Couldn't reach the server: ${e.message ?: e.javaClass.simpleName}"
+            }
+            busy = false
+        }
+    }
+
+    certPrompt?.let { (base, fp) ->
+        CertDialog(
+            host(base), fp, changed = false,
+            onTrust = { certPrompt = null; connectWith(base, fp, false) },
+            onCancel = { certPrompt = null; error = "Certificate not trusted" },
+        )
+    }
+    httpPrompt?.let { (base, fallback) ->
+        HttpWarningDialog(
+            host(base), fallback,
+            onContinue = { httpPrompt = null; url = base; connectWith(base, "", true) },
+            onCancel = { httpPrompt = null },
+        )
     }
 
     Box(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
@@ -154,7 +209,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(insecure, { insecure = it })
-                            Text("Allow self-signed certificate", style = MaterialTheme.typography.bodyMedium)
+                            Text("Allow self-signed certificate (you'll confirm its fingerprint)", style = MaterialTheme.typography.bodyMedium)
                         }
                         ErrorText(error)
                         Button(::connect, enabled = !busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {

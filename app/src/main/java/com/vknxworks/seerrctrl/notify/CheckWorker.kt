@@ -163,7 +163,10 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             applicationContext, nid * 2 + if (verb == ActionReceiver.APPROVE) 0 else 1, i,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        return NotificationCompat.Action.Builder(if (verb == ActionReceiver.APPROVE) R.drawable.ic_stat_check else R.drawable.ic_stat_close, label, pi).build()
+        // Changing a request needs the phone unlocked first (the device lock, not SeerrCtrl's own PIN).
+        return NotificationCompat.Action.Builder(if (verb == ActionReceiver.APPROVE) R.drawable.ic_stat_check else R.drawable.ic_stat_close, label, pi)
+            .setAuthenticationRequired(true)
+            .build()
     }
 
     // ---------- issues ----------

@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.data.ThemeMode
+import com.vknxworks.seerrctrl.data.Tls
 import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.ui.lock.PIN_MAX
 import com.vknxworks.seerrctrl.ui.lock.PIN_MIN
@@ -79,6 +80,9 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
         try { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName } catch (_: Exception) { null } ?: "?"
     }
     val server = rememberLoad("status") { App.api.obj("/status") }
+    val scope = rememberCoroutineScope()
+    var repin by remember { mutableStateOf<String?>(null) }
+    var repinError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(topBar = { BackBar("App settings", { nav.popBackStack() }) }) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
@@ -129,21 +133,36 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                         afters.indexOf(lock.lockAfterSeconds).coerceAtLeast(0),
                     ) { lock.lockAfterSeconds = afters[it] }
                     ItemDivider()
-                    ToggleItem(
-                        Icons.Outlined.VisibilityOff, "Hide from recents & screenshots",
-                        "Blank preview in the app switcher; blocks screenshots and screen recording", lock.hideContent,
-                    ) { lock.hideContent = it }
-                    ItemDivider()
                     NavItem(Icons.Outlined.Password, "Change PIN") { pinDialog = PinMode.Change }
                 }
+                ItemDivider()
+                ToggleItem(
+                    Icons.Outlined.VisibilityOff, "Hide content in screenshots & recents",
+                    "Blocks screenshots and screen recording. Server settings are always hidden", lock.hideContent,
+                ) { lock.hideContent = it }
             }
 
             SettingsSection("Server") {
                 NavItem(
                     Icons.Outlined.Dns, App.session.appTitle,
-                    App.api.baseUrl + (server.value?.str("version")?.let { " · v$it" } ?: ""),
+                    App.api.baseUrl + (server.value?.str("version")?.let { " · v$it" } ?: "") +
+                        (if (App.api.isHttp) "\nNot encrypted (HTTP)" else ""),
                 ) {}
                 ItemDivider()
+                if (App.api.pinnedFingerprint.isNotEmpty() || (App.prefs.allowInsecureTls && !App.api.isHttp)) {
+                    NavItem(
+                        Icons.Outlined.Lock, "Trusted certificate",
+                        if (App.api.pinnedFingerprint.isEmpty()) "None yet. Tap to check and trust the server's certificate"
+                        else "SHA-256 ${Tls.pretty(App.api.pinnedFingerprint).take(23)}…  Tap to check the server again",
+                    ) {
+                        scope.launch {
+                            repin = try { Tls.sha256(Tls.fetchLeaf(App.api.baseUrl)) } catch (e: Exception) {
+                                repinError = e.message ?: e.javaClass.simpleName; null
+                            }
+                        }
+                    }
+                    ItemDivider()
+                }
                 NavItem(Icons.AutoMirrored.Outlined.Logout, "Log out", "Sign out and forget this server") { confirmLogout = true }
             }
 
@@ -154,6 +173,22 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
     }
 
     pinDialog?.let { mode -> PinSetupDialog(mode) { pinDialog = null } }
+    repin?.let { fp ->
+        val same = App.api.pinnedFingerprint.isEmpty() || fp.equals(App.api.pinnedFingerprint, ignoreCase = true)
+        CertDialog(
+            App.api.baseUrl.substringAfter("://").substringBefore('/'), fp, changed = !same,
+            onTrust = { App.api.pinSavedServer(fp); repin = null },
+            onCancel = { repin = null },
+        )
+    }
+    repinError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { repinError = null },
+            title = { Text("Couldn't check the certificate") },
+            text = { Text(msg) },
+            confirmButton = { TextButton({ repinError = null }) { Text("OK") } },
+        )
+    }
     if (confirmLogout) {
         AlertDialog(
             onDismissRequest = { confirmLogout = false },

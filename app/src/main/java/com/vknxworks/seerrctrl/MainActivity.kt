@@ -21,6 +21,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
@@ -82,6 +83,7 @@ import com.vknxworks.seerrctrl.ui.MediaScreen
 import com.vknxworks.seerrctrl.ui.PersonScreen
 import com.vknxworks.seerrctrl.ui.ProfileScreen
 import com.vknxworks.seerrctrl.ui.SeerrTheme
+import com.vknxworks.seerrctrl.ui.ServerTrustPrompts
 import com.vknxworks.seerrctrl.ui.SetupScreen
 import com.vknxworks.seerrctrl.ui.UserSettingsScreen
 import com.vknxworks.seerrctrl.ui.UsersScreen
@@ -99,18 +101,30 @@ class MainActivity : FragmentActivity() {
         takeRoute(intent)
     }
 
-    /** Notifications open a specific screen ("movie/123", "issue/4", "requests"). */
+    /**
+     * Notifications open a specific screen ("movie/123", "issue/4", "requests"). This activity is exported (it's
+     * the launcher), so only routes carrying this install's secret token are taken, and only a few route shapes.
+     */
     private fun takeRoute(intent: android.content.Intent?) {
         val r = intent?.getStringExtra(EXTRA_ROUTE) ?: return
+        val token = intent.getStringExtra(EXTRA_TOKEN)
         intent.removeExtra(EXTRA_ROUTE)
+        intent.removeExtra(EXTRA_TOKEN)
+        if (!ALLOWED_ROUTE.matches(r) || !Notifier.checkRouteToken(this, token)) return
         if (r == "requests") MainTab.selected = MainTab.REQUESTS else DeepLink.route = r
     }
 
-    companion object { const val EXTRA_ROUTE = "route" }
+    companion object {
+        const val EXTRA_ROUTE = "route"
+        const val EXTRA_TOKEN = "route_token"
+        private val ALLOWED_ROUTE = Regex("""^(movie|tv|issue)/\d+$|^requests$""")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App.init(this)
+        // Never keep a snapshot of the app for the recents screen.
+        setRecentsScreenshotEnabled(false)
         takeRoute(intent)
         enableEdgeToEdge()
         setContent {
@@ -121,7 +135,8 @@ class MainActivity : FragmentActivity() {
                     else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
                     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 }
-                val secure = App.lock.pinSet && App.lock.hideContent
+                // Independent of the PIN; admin settings screens (API keys, passwords) are always protected.
+                val secure = App.lock.hideContent || SecureScreen.active > 0
                 LaunchedEffect(secure) {
                     if (secure) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -133,6 +148,20 @@ class MainActivity : FragmentActivity() {
 }
 
 private fun NavBackStackEntry.intArg(name: String) = arguments?.getString(name)?.toIntOrNull() ?: 0
+
+/** Screens that must never be captured (admin settings) bump [active] while shown. */
+object SecureScreen {
+    var active by mutableIntStateOf(0)
+}
+
+/** Keeps FLAG_SECURE on while the calling screen is showing, whatever the user's setting. */
+@Composable
+fun SecureWindow() {
+    DisposableEffect(Unit) {
+        SecureScreen.active++
+        onDispose { SecureScreen.active-- }
+    }
+}
 
 /** Where a notification asked to go; picked up by whichever layout is showing. */
 object DeepLink {
@@ -218,6 +247,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
                 SetupScreen(onDone = { signedIn = true }, onCancel = null)
             } else {
                 AdaptiveShell(activity, ::logout)
+                ServerTrustPrompts(onLogout = ::logout)
             }
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }

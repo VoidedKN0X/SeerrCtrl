@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Seerr on a LAN is often plain http (port 5055) or uses a private CA. -->
+    <!--
+      Seerr on a LAN is often plain http (port 5055) or uses a private CA, and the server address is typed in by
+      the user, so cleartext can't be limited to known hosts here. The app enforces it instead: plain http is only
+      used for the configured Seerr server after the user confirmed the "Not encrypted" warning; every other host
+      (plex.tv, TMDB, Gravatar) must use https.
+    -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
         </trust-anchors>
     </base-config>
+    <!-- Third-party hosts: https only, system CAs only. -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">plex.tv</domain>
+        <domain includeSubdomains="true">themoviedb.org</domain>
+        <domain includeSubdomains="true">tmdb.org</domain>
+        <domain includeSubdomains="true">gravatar.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
 </network-security-config>

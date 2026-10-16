@@ -24,8 +24,8 @@ class ActionReceiver : BroadcastReceiver() {
                 App.api.post("/request/$requestId/${if (approve) "approve" else "decline"}")
                 Notifier.replace(context, nid, Notifier.CH_PENDING, title, if (approve) "Approved" else "Declined")
                 Notifier.bump()
-            } catch (e: Exception) {
-                Notifier.replace(context, nid, Notifier.CH_PENDING, title, "Couldn't ${if (approve) "approve" else "decline"}: ${e.message}")
+            } catch (_: Exception) {
+                Notifier.replace(context, nid, Notifier.CH_PENDING, title, "Couldn't ${if (approve) "approve" else "decline"} — open the app")
             } finally {
                 pending.finish()
             }

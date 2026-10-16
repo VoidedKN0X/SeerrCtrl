@@ -78,7 +78,11 @@ class FormState(initial: JSONObject) {
     fun saved() { dirty = false }
 }
 
-private val SECRET = Regex("(?i)(password|apikey|api_key|token|secret|key$|accesstoken|webhookurl|authheader)")
+/**
+ * Keys whose values are credentials: passwords (SMTP authPass), API keys, tokens (Telegram botAPI), and
+ * webhook URLs that embed a token (Discord/Slack webhookUrl). Masked until "show" is tapped.
+ */
+private val SECRET = Regex("(?i)(pass|password|secret|token|apikey|api_key|botapi|key$|webhook_?url|authheader|authuser|privatekey)")
 
 /** Renders every field of [state] (or of the nested object at [prefix]) as inputs. */
 @Composable
@@ -163,7 +167,7 @@ private fun JsonField(state: FormState, spec: FormSpec, path: String, key: Strin
             TextInput(
                 label, help, value?.toString() ?: "", ro,
                 multiline = path in spec.multiline || key in spec.multiline,
-                secret = SECRET.containsMatchIn(key) && !key.contains("Enabled") && !key.contains("Id"),
+                secret = SECRET.containsMatchIn(key) && !key.contains("Enabled") && !key.endsWith("Id"),
                 number = false,
             ) { state.set(path, it) }
         }
@@ -189,7 +193,14 @@ private fun TextInput(
             trailingIcon = if (secret) ({
                 IconButton({ show = !show }) { Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, "Show") }
             }) else null,
-            keyboardOptions = KeyboardOptions(keyboardType = if (number) KeyboardType.Number else KeyboardType.Text),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = when {
+                    number -> KeyboardType.Number
+                    secret -> KeyboardType.Password
+                    else -> KeyboardType.Text
+                },
+                autoCorrectEnabled = !secret,
+            ),
             modifier = Modifier.fillMaxWidth(),
         )
         help?.let { HelpText(it) }
