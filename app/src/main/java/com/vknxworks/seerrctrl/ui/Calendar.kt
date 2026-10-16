@@ -188,7 +188,7 @@ fun CalendarScreen() {
                     null -> events.filter { YearMonth.from(it.date) == month && (month != YearMonth.now() || !it.date.isBefore(today)) }
                     else -> byDay[sel].orEmpty()
                 }
-                LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+                LazyColumn(contentPadding = PaddingValues(bottom = 128.dp)) {
                     item {
                         MonthGrid(month, byDay, selected, onMonth = { month = it; selected = null }, onDay = { selected = if (selected == it) null else it })
                     }

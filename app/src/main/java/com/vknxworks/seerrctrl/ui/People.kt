@@ -91,7 +91,7 @@ fun PersonScreen(id: Int) {
             val shown = if (crewMode && crew.isNotEmpty() || cast.isEmpty()) crew else cast
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(posterWidth()),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 64.dp, bottom = 96.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 64.dp, bottom = 128.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.statusBarsPadding(),
@@ -151,7 +151,7 @@ fun CollectionScreen(id: Int) {
             val missing4k = tiles.filter { it.status4k == MediaStatus.Unknown || it.status4k == MediaStatus.Deleted }
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(posterWidth()),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 128.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
