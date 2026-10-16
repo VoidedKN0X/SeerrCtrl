@@ -32,22 +32,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
-      # Says only *where* each signing value comes from (secret or variable), never the value.
-      - name: Check signing value sources
-        env:
-          S_KS: ${{ secrets.KEYSTORE_BASE64 != '' }}
-          V_KS: ${{ vars.KEYSTORE_BASE64 != '' }}
-          S_SP: ${{ secrets.KEYSTORE_PASSWORD != '' }}
-          V_SP: ${{ vars.KEYSTORE_PASSWORD != '' }}
-          S_KP: ${{ secrets.KEY_PASSWORD != '' }}
-          V_KP: ${{ vars.KEY_PASSWORD != '' }}
-        run: |
-          src() { if [ "$1" = true ]; then echo secret; elif [ "$2" = true ]; then echo variable; else echo missing; fi; }
-          echo "::notice title=Signing sources::KEYSTORE_BASE64=$(src "$S_KS" "$V_KS") KEYSTORE_PASSWORD=$(src "$S_SP" "$V_SP") KEY_PASSWORD=$(src "$S_KP" "$V_KP")"
-
       - name: Decode signing key
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 || vars.KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             umask 077
@@ -61,10 +48,10 @@ jobs:
 
       - name: Build release APK
         env:
-          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || vars.KEYSTORE_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           # The alias isn't secret; it's kept as a repository variable.
           SIGNING_KEY_ALIAS: ${{ vars.KEY_ALIAS || secrets.KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || vars.KEY_PASSWORD }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           VERSION_CODE: ${{ github.run_number }}
         run: |
           chmod +x gradlew
