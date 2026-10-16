@@ -219,7 +219,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             } else {
                 AdaptiveShell(activity, ::logout)
             }
-            SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp))
+            SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }
     }
 }

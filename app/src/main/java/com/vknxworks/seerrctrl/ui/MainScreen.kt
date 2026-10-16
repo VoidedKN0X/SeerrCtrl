@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -144,21 +146,17 @@ fun MainScreen() {
             Box(Modifier.weight(1f).fillMaxSize().statusBarsPadding().navigationBarsPadding()) { content() }
         }
     } else {
-        Scaffold(
-            bottomBar = {
-                NavigationBar {
-                    tabs.forEach { t ->
-                        NavigationBarItem(
-                            selected = MainTab.selected == t.index,
-                            onClick = { MainTab.selected = t.index },
-                            icon = { TabIcon(t) },
-                            label = { Text(t.label, maxLines = 1) },
-                        )
-                    }
-                }
-            },
-        ) { pad ->
-            Box(Modifier.padding(bottom = pad.calculateBottomPadding()).statusBarsPadding()) { content() }
+        // Content runs edge to edge under the floating island, which blurs it.
+        val haze = remember { HazeState() }
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().hazeSource(haze).statusBarsPadding()) { content() }
+            TabIsland(
+                tabs = tabs.map { IslandTab(it.index, it.icon, it.label, it.badge) },
+                selected = MainTab.selected,
+                hazeState = haze,
+                onSelect = { MainTab.selected = it },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
         }
     }
 }

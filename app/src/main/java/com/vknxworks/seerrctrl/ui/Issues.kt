@@ -125,7 +125,7 @@ fun IssuesTab() {
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
         }
         PullToRefreshBox(false, { reloadKey++ }, Modifier.fillMaxSize()) {
-            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(items, key = { it.int("id") }) { i -> IssueCard(i) }
                 if (loading) item { Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) { CircularProgressIndicator() } }
                 if (!loading && items.isEmpty()) {

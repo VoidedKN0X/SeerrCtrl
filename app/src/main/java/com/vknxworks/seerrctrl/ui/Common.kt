@@ -486,7 +486,7 @@ fun openUrl(context: Context, url: String) {
 }
 
 /** Bottom padding that keeps the last list item clear of the gesture bar. */
-val ListBottom = PaddingValues(bottom = 96.dp)
+val ListBottom = PaddingValues(bottom = 128.dp)
 
 @Composable
 fun rememberIntState(initial: Int = 0) = remember { mutableIntStateOf(initial) }

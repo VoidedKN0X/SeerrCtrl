@@ -354,7 +354,7 @@ fun PagedTileGrid(path: String, params: Map<String, Any?>, modifier: Modifier = 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(posterWidth()),
         state = state,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier.fillMaxSize(),

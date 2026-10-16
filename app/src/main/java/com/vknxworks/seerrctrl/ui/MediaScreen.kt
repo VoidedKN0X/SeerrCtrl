@@ -146,7 +146,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                 val status4k = MediaStatus.of(info.intOrNull("status4k"))
                 val requests = info.objs("requests")
 
-                LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+                LazyColumn(contentPadding = PaddingValues(bottom = 128.dp)) {
                     item {
                         Box {
                             Backdrop(d.str("backdropPath"), 300.dp)

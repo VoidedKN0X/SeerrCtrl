@@ -145,7 +145,7 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
-            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
                     item(key = "hint") {
                         Text(

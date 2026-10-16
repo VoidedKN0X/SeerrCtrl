@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+- Floating tab bar: on phones the bottom bar is now a frosted-glass island that blurs the content scrolling behind it, with a selection bubble that springs between tabs
+
 ## 1.2.0
 
 - New app icon: an eye with a looking glass for a pupil, in Seerr's indigo, with a matching themed (monochrome) icon and notification icon
