@@ -63,7 +63,7 @@ import kotlinx.coroutines.coroutineScope
 private fun FloatingBack() {
     val nav = LocalNav.current
     FilledIconButton(
-        onClick = { nav.popBackStack() },
+        onClick = { nav.back() },
         colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
         modifier = Modifier.statusBarsPadding().padding(8.dp),
     ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }

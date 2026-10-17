@@ -163,6 +163,18 @@ fun SecureWindow() {
     }
 }
 
+/**
+ * Signed out or the session ended: background checks, posted notifications, cached title details and cached
+ * images (posters, avatars) of this account are removed from the phone.
+ */
+private fun forgetAccountData(ctx: android.content.Context) {
+    Notifier.signOut(ctx)
+    com.vknxworks.seerrctrl.ui.MediaCache.clear()
+    val images = coil3.SingletonImageLoader.get(ctx)
+    images.memoryCache?.clear()
+    Thread { runCatching { images.diskCache?.clear() } }.start()
+}
+
 /** Where a notification asked to go; picked up by whichever layout is showing. */
 object DeepLink {
     var route by mutableStateOf<String?>(null)
@@ -181,6 +193,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             App.prefs.clearSession()
             App.session.clear()
             App.api.reload()
+            forgetAccountData(activity)
             MainTab.selected = MainTab.DISCOVER
             signedIn = false
         }
@@ -205,6 +218,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
         if (App.api.sessionExpired) {
             App.prefs.clearSession()
             App.session.clear()
+            forgetAccountData(activity)
             signedIn = false
             snack.showSnackbar("Your session ended. Please sign in again.")
         }

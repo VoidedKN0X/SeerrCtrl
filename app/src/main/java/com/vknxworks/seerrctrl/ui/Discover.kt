@@ -90,6 +90,9 @@ object MediaCache {
     fun peek(type: String, tmdbId: Int): JSONObject? = cache.get("$type/$tmdbId")
     fun invalidate(type: String, tmdbId: Int) { cache.remove("$type/$tmdbId") }
 
+    /** On sign-out, so the next account never sees this one's request and availability details. */
+    fun clear() = cache.evictAll()
+
     suspend fun tile(type: String, tmdbId: Int): Tile? = try {
         get(type, tmdbId).also { if (!it.has("mediaType")) it.put("mediaType", type) }.toTile()
     } catch (_: Exception) { null }
@@ -295,7 +298,12 @@ private fun RequestRow(requests: List<JSONObject>) {
 fun BrowseScreen(key: String) {
     val nav = LocalNav.current
     val spec = remember(key) { Browse.get(key) }
-    if (spec == null) { nav.popBackStack(); return }
+    if (spec == null) {
+        // The list behind this screen is gone (the app was restarted): just close it.
+        val closeScreen = rememberCloseScreen()
+        LaunchedEffect(Unit) { closeScreen() }
+        return
+    }
     var mediaFilter by remember { mutableStateOf(spec.params) }
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val canSort = spec.path == "/discover/movies" || spec.path == "/discover/tv"
@@ -303,7 +311,7 @@ fun BrowseScreen(key: String) {
 
     Scaffold(
         topBar = {
-            BackBar(spec.title, { nav.popBackStack() }, scroll = scroll) {
+            BackBar(spec.title, { nav.back() }, scroll = scroll) {
                 if (canSort) IconButton({ showFilters = true }) { Icon(Icons.Outlined.Tune, "Filters") }
             }
         },

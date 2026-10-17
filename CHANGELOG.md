@@ -2,6 +2,25 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.2
+
+### Security
+
+- Fingerprint unlock is now tied to a key in the phone's secure hardware that only a real fingerprint match can use, so a faked "success" can't open the app. Adding a new fingerprint to the phone turns fingerprint unlock off until you confirm it again. If you used fingerprint unlock before, the app asks for your PIN once; turn "Unlock with fingerprint" back on in App settings
+- The wait after too many wrong PINs can no longer be skipped by changing the phone's date or time, and it carries on after a restart
+- Wrong PINs typed when changing or turning off the PIN now count towards the same wait as on the lock screen
+- Logging out (or your session ending) now removes SeerrCtrl's notifications, so their Approve/Decline buttons can't act on a later sign-in, stops all background checks, and clears cached posters, avatars and title details from the phone
+- Approve/Decline from a notification does nothing if you've signed out since it arrived
+- Account settings (passwords, Pushbullet and Pushover tokens) are always hidden from screenshots and the recent-apps screen, like server settings
+- Password fields in account settings and "Create local user" use a password keyboard, so the keyboard doesn't learn or suggest what you type
+- Links from the server (play, trailer, ratings, Radarr/Sonarr pages, "Forgot password?") only open if they're normal web addresses (http or https); anything else is ignored
+
+### Fixed
+
+- Tapping Back (or a list item) quickly several times in a row could close one screen too many and leave a black screen. Repeated taps while a screen is still opening or closing are now ignored, and the first screen is never closed
+- Saving or deleting a Radarr/Sonarr server, an issue or a user no longer closes an extra screen if you had already gone back
+- Plex sign-in no longer stalls when plex.tv hands out a very large sign-in number
+
 ## 1.4.1
 
 - Version numbers are now plain, with no build number on the end, and a new version only comes out when something in the app actually changes. Nothing else in the app has changed.

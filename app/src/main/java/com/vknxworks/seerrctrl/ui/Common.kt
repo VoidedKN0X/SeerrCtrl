@@ -102,17 +102,53 @@ object Browse {
     fun get(key: String): BrowseSpec? = specs[key]
 }
 
+/**
+ * Back from a screen the user is looking at. Repeat taps while a screen change is still animating are ignored,
+ * and the first screen of the stack is never popped (that emptied the stack and left a black screen).
+ */
+fun NavHostController.back() {
+    val current = currentBackStackEntry ?: return
+    if (previousBackStackEntry == null) return
+    if (!current.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) return
+    popBackStack()
+}
+
+/**
+ * Closes the screen [owner] belongs to when it finishes on its own (saved, deleted), but only if it's still the
+ * one on top: if the user already went back meanwhile, nothing else gets popped.
+ */
+fun NavHostController.close(owner: androidx.lifecycle.LifecycleOwner) {
+    val current = currentBackStackEntry ?: return
+    if (previousBackStackEntry == null) return
+    if (owner is androidx.navigation.NavBackStackEntry && owner.id != current.id) return
+    popBackStack()
+}
+
+/** Opens a screen from a tap, ignoring taps on a screen that's already on its way out or not shown yet. */
+fun NavHostController.go(route: String) {
+    if (currentBackStackEntry?.lifecycle?.currentState?.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) == false) return
+    navigate(route)
+}
+
+/** [close] for the screen this is called from. */
+@Composable
+fun rememberCloseScreen(): () -> Unit {
+    val nav = LocalNav.current
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    return remember(nav, owner) { { nav.close(owner) } }
+}
+
 fun NavHostController.openTile(t: Tile) = when (t.type) {
-    "person" -> navigate("person/${t.id}")
-    "collection" -> navigate("collection/${t.id}")
-    "tv" -> navigate("tv/${t.id}")
-    else -> navigate("movie/${t.id}")
+    "person" -> go("person/${t.id}")
+    "collection" -> go("collection/${t.id}")
+    "tv" -> go("tv/${t.id}")
+    else -> go("movie/${t.id}")
 }
 
 fun NavHostController.openMedia(type: String?, tmdbId: Int) =
-    navigate(if (type == "tv") "tv/$tmdbId" else "movie/$tmdbId")
+    go(if (type == "tv") "tv/$tmdbId" else "movie/$tmdbId")
 
-fun NavHostController.browse(spec: BrowseSpec) = navigate("browse/${Browse.put(spec)}")
+fun NavHostController.browse(spec: BrowseSpec) = go("browse/${Browse.put(spec)}")
 
 // ---------------- loading ----------------
 
@@ -471,16 +507,23 @@ fun ChoiceItem(icon: ImageVector?, title: String, options: List<String>, selecte
 
 // ---------------- misc ----------------
 
+/**
+ * Opens a web link. Links come from the server (play links, trailers, ratings, Radarr/Sonarr pages), so only
+ * http and https are opened; anything else (content:, file:, intent:, other apps' schemes) is ignored.
+ */
 fun openUrl(context: Context, url: String) {
+    val uri = Uri.parse(url.trim())
+    val scheme = uri.scheme?.lowercase()
+    if ((scheme != "http" && scheme != "https") || uri.host.isNullOrEmpty()) return
     try {
-        if (App.settings.useCustomTabs && (url.startsWith("http://") || url.startsWith("https://"))) {
-            CustomTabsIntent.Builder().setShowTitle(true).build().launchUrl(context, Uri.parse(url))
+        if (App.settings.useCustomTabs) {
+            CustomTabsIntent.Builder().setShowTitle(true).build().launchUrl(context, uri)
         } else {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     } catch (_: Exception) {
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } catch (_: Exception) {}
     }
 }

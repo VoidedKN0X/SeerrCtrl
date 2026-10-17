@@ -17,9 +17,14 @@ class ActionReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "Request"
         val approve = intent.action == APPROVE
         if (requestId == 0) return
+        App.init(context.applicationContext)
+        // Signed out since the notification was posted: never act with whatever account is signed in later.
+        if (!App.prefs.isConfigured) {
+            androidx.core.app.NotificationManagerCompat.from(context).cancel(nid)
+            return
+        }
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            App.init(context.applicationContext)
             try {
                 App.api.post("/request/$requestId/${if (approve) "approve" else "decline"}")
                 Notifier.replace(context, nid, Notifier.CH_PENDING, title, if (approve) "Approved" else "Declined")

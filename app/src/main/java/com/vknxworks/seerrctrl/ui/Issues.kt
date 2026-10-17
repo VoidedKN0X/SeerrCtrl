@@ -148,7 +148,7 @@ private fun IssueCard(i: JSONObject) {
     val by = i.obj("createdBy")
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.fillMaxWidth().clickable { nav.navigate("issue/${i.int("id")}") },
+        modifier = Modifier.fillMaxWidth().clickable { nav.go("issue/${i.int("id")}") },
     ) {
         Row(Modifier.padding(12.dp)) {
             Box(Modifier.width(64.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
@@ -179,6 +179,7 @@ private fun IssueCard(i: JSONObject) {
 @Composable
 fun IssueScreen(id: Int) {
     val nav = LocalNav.current
+    val closeScreen = rememberCloseScreen()
     val s = App.session
     val act = rememberActions()
     val load = rememberLoad(id) { App.api.obj("/issue/$id") }
@@ -188,7 +189,7 @@ fun IssueScreen(id: Int) {
 
     Scaffold(
         topBar = {
-            BackBar("Issue #$id", { nav.popBackStack() }) {
+            BackBar("Issue #$id", { nav.back() }) {
                 val i = load.value
                 if (i != null && (s.can(Perm.MANAGE_ISSUES) || i.obj("createdBy").int("id") == s.userId)) {
                     IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete issue") }
@@ -271,7 +272,7 @@ fun IssueScreen(id: Int) {
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("Issue deleted", onOk = { nav.popBackStack() }) { App.api.delete("/issue/$id") }
+                    act.run("Issue deleted", onOk = { closeScreen() }) { App.api.delete("/issue/$id") }
                 }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },

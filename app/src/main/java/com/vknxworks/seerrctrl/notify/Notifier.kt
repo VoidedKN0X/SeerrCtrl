@@ -84,6 +84,18 @@ object Notifier {
         WorkManager.getInstance(ctx).cancelUniqueWork(WORK)
     }
 
+    /**
+     * Signed out (or the session ended): stop all checks, take down posted notifications so their Approve/Decline
+     * buttons can't act on a later sign-in, and forget which requests and issues were already seen.
+     */
+    fun signOut(ctx: Context) {
+        val wm = WorkManager.getInstance(ctx)
+        wm.cancelUniqueWork(WORK)
+        wm.cancelUniqueWork("$WORK-now")
+        NotificationManagerCompat.from(ctx).cancelAll()
+        ctx.getSharedPreferences("notify_state", Context.MODE_PRIVATE).edit().clear().apply()
+    }
+
     fun canPost(ctx: Context): Boolean =
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
