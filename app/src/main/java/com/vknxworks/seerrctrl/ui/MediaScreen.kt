@@ -333,7 +333,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                 if (issueDialog) {
                     ReportIssueDialog(d, tv, onDismiss = { issueDialog = false }) { id ->
                         issueDialog = false
-                        nav.navigate("issue/$id")
+                        nav.go("issue/$id")
                     }
                 }
                 if (manage) {
@@ -342,7 +342,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
             }
         }
         FilledIconButton(
-            onClick = { nav.popBackStack() },
+            onClick = { nav.back() },
             colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
             modifier = Modifier.statusBarsPadding().padding(8.dp),
         ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
@@ -559,7 +559,7 @@ private fun CollectionCard(c: JSONObject) {
     SectionHeader("Part of a collection")
     Box(
         Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(110.dp).clip(MaterialTheme.shapes.large)
-            .clickable { nav.navigate("collection/${c.int("id")}") }
+            .clickable { nav.go("collection/${c.int("id")}") }
     ) {
         App.session.tmdb(c.str("backdropPath"), "w780")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)))
@@ -577,6 +577,6 @@ private fun IssueMini(iss: JSONObject) {
         leadingContent = { Icon(Icons.Outlined.ReportProblem, null, tint = if (iss.int("status") == 1) Status.pending else Status.available) },
         headlineContent = { Text(com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType")) + " issue") },
         supportingContent = { Text(if (iss.int("status") == 1) "Open" else "Resolved") },
-        modifier = Modifier.clickable { nav.navigate("issue/${iss.int("id")}") },
+        modifier = Modifier.clickable { nav.go("issue/${iss.int("id")}") },
     )
 }

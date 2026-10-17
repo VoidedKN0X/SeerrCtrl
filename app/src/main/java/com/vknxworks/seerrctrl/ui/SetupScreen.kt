@@ -66,6 +66,7 @@ import com.vknxworks.seerrctrl.data.bool
 import com.vknxworks.seerrctrl.data.int
 import com.vknxworks.seerrctrl.data.intOrNull
 import com.vknxworks.seerrctrl.data.jsonOf
+import com.vknxworks.seerrctrl.data.long
 import com.vknxworks.seerrctrl.data.str
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -431,8 +432,9 @@ private fun PlexSignIn(onSignedIn: (Any?) -> Unit, openUrl: (String) -> Unit) {
             busy = true; error = null
             try {
                 val pin = App.api.external("POST", "https://plex.tv/api/v2/pins?strong=true", headers)
-                val id = pin.int("id")
-                val code = pin.str("code") ?: error("Plex didn't return a code")
+                // Plex PIN ids can be larger than an Int.
+                val id = pin.long("id").takeIf { it > 0 } ?: error("Plex didn't return a sign-in code")
+                val code = pin.str("code")?.takeIf { c -> c.all { it.isLetterOrDigit() } } ?: error("Plex didn't return a code")
                 fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
                 val authUrl = "https://app.plex.tv/auth/#!?clientID=${enc(App.prefs.plexClientId)}&code=${enc(code)}" +
                     "&context%5Bdevice%5D%5Bproduct%5D=SeerrCtrl&context%5Bdevice%5D%5Bplatform%5D=Android"

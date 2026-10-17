@@ -281,14 +281,14 @@ fun MoreTab() {
         }
         item {
             SettingsSection("You") {
-                NavItem(Icons.Outlined.Person, "Profile", "Your requests, quota and stats") { nav.navigate("user/${s.userId}") }
+                NavItem(Icons.Outlined.Person, "Profile", "Your requests, quota and stats") { nav.go("user/${s.userId}") }
                 ItemDivider()
-                NavItem(Icons.Outlined.BookmarkBorder, "Watchlist", null) { nav.navigate("watchlist/${s.userId}") }
+                NavItem(Icons.Outlined.BookmarkBorder, "Watchlist", null) { nav.go("watchlist/${s.userId}") }
                 ItemDivider()
-                NavItem(Icons.Outlined.CalendarMonth, "Upcoming", "Release dates and new episodes for your requests") { nav.navigate("calendar") }
+                NavItem(Icons.Outlined.CalendarMonth, "Upcoming", "Release dates and new episodes for your requests") { nav.go("calendar") }
                 ItemDivider()
                 NavItem(Icons.Outlined.ManageAccounts, "Account settings", "Name, region, notifications, password") {
-                    nav.navigate("user/${s.userId}/settings")
+                    nav.go("user/${s.userId}/settings")
                 }
             }
         }
@@ -297,18 +297,18 @@ fun MoreTab() {
                 SettingsSection("Manage") {
                     var first = true
                     if (s.can(Perm.MANAGE_USERS)) {
-                        NavItem(Icons.Outlined.Group, "Users", "Accounts, permissions and quotas") { nav.navigate("users") }
+                        NavItem(Icons.Outlined.Group, "Users", "Accounts, permissions and quotas") { nav.go("users") }
                         first = false
                     }
                     if (s.can(Perm.MANAGE_BLOCKLIST, Perm.VIEW_BLOCKLIST, any = true)) {
                         if (!first) ItemDivider()
-                        NavItem(Icons.Outlined.Block, "Blocklist", "Titles hidden from discovery") { nav.navigate("blocklist") }
+                        NavItem(Icons.Outlined.Block, "Blocklist", "Titles hidden from discovery") { nav.go("blocklist") }
                         first = false
                     }
                     if (s.can(Perm.MANAGE_SETTINGS)) {
                         if (!first) ItemDivider()
                         NavItem(Icons.Outlined.AdminPanelSettings, "Server settings", "Media server, services, notifications, jobs, logs") {
-                            nav.navigate("admin")
+                            nav.go("admin")
                         }
                     }
                 }
@@ -316,7 +316,7 @@ fun MoreTab() {
         }
         item {
             SettingsSection("App") {
-                NavItem(Icons.Outlined.Settings, "App settings", "Theme, app lock, server, log out") { nav.navigate("appsettings") }
+                NavItem(Icons.Outlined.Settings, "App settings", "Theme, app lock, server, log out") { nav.go("appsettings") }
             }
         }
     }

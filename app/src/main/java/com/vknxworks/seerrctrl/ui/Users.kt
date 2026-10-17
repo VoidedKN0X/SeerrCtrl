@@ -92,6 +92,7 @@ import org.json.JSONObject
 @Composable
 fun ProfileScreen(id: Int) {
     val nav = LocalNav.current
+    val closeScreen = rememberCloseScreen()
     val s = App.session
     val act = rememberActions()
     val self = id == s.userId
@@ -105,9 +106,9 @@ fun ProfileScreen(id: Int) {
 
     Scaffold(
         topBar = {
-            BackBar(if (self) "Your profile" else load.value?.first?.str("displayName") ?: "User", { nav.popBackStack() }) {
-                IconButton({ nav.navigate("watchlist/$id") }) { Icon(Icons.Outlined.Bookmark, "Watchlist") }
-                if (self || s.can(Perm.MANAGE_USERS)) IconButton({ nav.navigate("user/$id/settings") }) { Icon(Icons.Outlined.Settings, "Settings") }
+            BackBar(if (self) "Your profile" else load.value?.first?.str("displayName") ?: "User", { nav.back() }) {
+                IconButton({ nav.go("watchlist/$id") }) { Icon(Icons.Outlined.Bookmark, "Watchlist") }
+                if (self || s.can(Perm.MANAGE_USERS)) IconButton({ nav.go("user/$id/settings") }) { Icon(Icons.Outlined.Settings, "Settings") }
                 if (canManage && id != 1) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete user") }
             }
         },
@@ -150,7 +151,7 @@ fun ProfileScreen(id: Int) {
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("User deleted", onOk = { nav.popBackStack() }) { App.api.delete("/user/$id") }
+                    act.run("User deleted", onOk = { closeScreen() }) { App.api.delete("/user/$id") }
                 }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },
@@ -181,7 +182,7 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier, sub: S
 fun WatchlistScreen(userId: Int) {
     val nav = LocalNav.current
     val self = userId == App.session.userId
-    Scaffold(topBar = { BackBar(if (self) "Your watchlist" else "Watchlist", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar(if (self) "Your watchlist" else "Watchlist", { nav.back() }) }) { pad ->
         PagedTileGrid(if (self) "/discover/watchlist" else "/user/$userId/watchlist", emptyMap(), Modifier.padding(pad))
     }
 }
@@ -196,7 +197,7 @@ fun BlocklistScreen() {
         delay(if (search.isEmpty()) 0 else 350)
         App.api.obj("/blocklist", mapOf("take" to 100, "search" to search.ifBlank { null })).objs("results")
     }
-    Scaffold(topBar = { BackBar("Blocklist", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("Blocklist", { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad)) {
             OutlinedTextField(
                 search, { search = it }, placeholder = { Text("Search blocklist") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
@@ -273,7 +274,7 @@ fun UsersScreen() {
                     TextButton({ dialog = "perms" }) { Text("Edit permissions") }
                 }
             } else {
-                BackBar("Users", { nav.popBackStack() }, subtitle = if (total >= 0) "$total users" else null) {
+                BackBar("Users", { nav.back() }, subtitle = if (total >= 0) "$total users" else null) {
                     Box {
                         TextButton({ sortMenu = true }) { Text("Sort") }
                         DropdownMenu(sortMenu, { sortMenu = false }) {
@@ -323,7 +324,7 @@ fun UsersScreen() {
                         modifier = Modifier.combinedClickable(
                             onClick = {
                                 if (selected.isNotEmpty()) { if (sel) selected.remove(id) else selected.add(id) }
-                                else nav.navigate("user/$id")
+                                else nav.go("user/$id")
                             },
                             onLongClick = { if (id != 1 && id != App.session.userId) selected.add(id) },
                         ),
@@ -376,7 +377,7 @@ private fun CreateUserDialog(onDismiss: () -> Unit, onDone: () -> Unit) {
                 OutlinedTextField(email, { email = it }, label = { Text("Email") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
                 OutlinedTextField(
                     password, { password = it }, label = { Text(if (emailOn) "Password (blank = email them one)" else "Password") },
-                    singleLine = true, visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard,
                 )
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
@@ -475,6 +476,8 @@ private fun PermRow(name: String, desc: String, checked: Boolean, enabled: Boole
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserSettingsScreen(id: Int) {
+    // Notification tokens (Pushbullet, Pushover) and passwords are shown here: never in screenshots or recents.
+    com.vknxworks.seerrctrl.SecureWindow()
     val nav = LocalNav.current
     val s = App.session
     val self = id == s.userId
@@ -483,7 +486,7 @@ fun UserSettingsScreen(id: Int) {
         if (!self && s.can(Perm.MANAGE_USERS) && id != 1 || self) add("Permissions")
     }
     var tab by remember { mutableIntStateOf(0) }
-    Scaffold(topBar = { BackBar(if (self) "Account settings" else "User settings", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar(if (self) "Account settings" else "User settings", { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             PrimaryTabRow(tab) { tabs.forEachIndexed { i, t -> Tab(i == tab, { tab = i }, text = { Text(t, maxLines = 1) }) } }
             when (tabs[tab]) {
@@ -578,9 +581,9 @@ private fun PasswordSettings(id: Int, self: Boolean) {
                 if (has) "Change the password used for signing in with email." else "This account has no Seerr password yet. Set one to allow email sign-in.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (has && self) OutlinedTextField(current, { current = it }, label = { Text("Current password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(new1, { new1 = it }, label = { Text("New password (8+ characters)") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(new2, { new2 = it }, label = { Text("Repeat new password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth(),
+            if (has && self) OutlinedTextField(current, { current = it }, label = { Text("Current password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(new1, { new1 = it }, label = { Text("New password (8+ characters)") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(new2, { new2 = it }, label = { Text("Repeat new password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth(),
                 isError = new2.isNotEmpty() && new1 != new2)
             androidx.compose.material3.Button(
                 enabled = new1.length >= 8 && new1 == new2 && !act.busy,
@@ -593,6 +596,9 @@ private fun PasswordSettings(id: Int, self: Boolean) {
         }
     }
 }
+
+/** Password keyboard: no suggestions or learning of what's typed. */
+private val PasswordKeyboard = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false)
 
 val NotificationTypeList = listOf(
     2L to "Request pending approval", 128L to "Request automatically approved", 4L to "Request approved",

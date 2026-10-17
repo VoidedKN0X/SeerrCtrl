@@ -61,6 +61,7 @@ import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.ui.lock.PIN_MAX
 import com.vknxworks.seerrctrl.ui.lock.PIN_MIN
 import com.vknxworks.seerrctrl.ui.lock.biometricAvailable
+import com.vknxworks.seerrctrl.ui.lock.clearBiometricKey
 import com.vknxworks.seerrctrl.ui.lock.showBiometricPrompt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,10 +82,11 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
     }
     val server = rememberLoad("status") { App.api.obj("/status") }
     val scope = rememberCoroutineScope()
+    val snack = LocalSnackbar.current
     var repin by remember { mutableStateOf<String?>(null) }
     var repinError by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(topBar = { BackBar("App settings", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("App settings", { nav.back() }) }) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
             SettingsSection("Appearance") {
                 ChoiceItem(
@@ -123,8 +125,14 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                         lock.biometricEnabled, enabled = bioAvailable,
                     ) { on ->
                         val act = ctx as? FragmentActivity
-                        if (on && act != null) showBiometricPrompt(act, "Confirm to turn on") { lock.biometricEnabled = true }
-                        else lock.biometricEnabled = false
+                        if (on && act != null) showBiometricPrompt(
+                            act, "Confirm to turn on", enrol = true,
+                            onUnavailable = { scope.launch { snack.showSnackbar("Fingerprint unlock isn't available on this phone") } },
+                        ) { lock.biometricEnabled = true }
+                        else {
+                            lock.biometricEnabled = false
+                            clearBiometricKey()
+                        }
                     }
                     ItemDivider()
                     val afters = listOf(0, 30, 60, 300)
@@ -234,8 +242,12 @@ private fun PinSetupDialog(mode: PinMode, onDismiss: () -> Unit) {
             TextButton(enabled = !working, onClick = {
                 scope.launch {
                     working = true
-                    val currentOk = !needsCurrent || withContext(Dispatchers.Default) { lock.checkPin(current) }
+                    // Wrong PINs here count towards the same lockout as on the lock screen.
+                    val lockedOut = needsCurrent && lock.lockoutRemaining() > 0
+                    val currentOk = !needsCurrent || (!lockedOut && withContext(Dispatchers.Default) { lock.checkPin(current) })
+                    if (needsCurrent && !lockedOut) { if (currentOk) lock.failedAttempts = 0 else lock.recordFailure() }
                     error = when {
+                        lockedOut -> "Too many wrong PINs. Try again in ${(lock.lockoutRemaining() + 999) / 1000} s"
                         !currentOk -> "Current PIN is wrong"
                         needsNew && first.length < PIN_MIN -> "Use at least $PIN_MIN digits"
                         needsNew && first != second -> "The PINs don't match"

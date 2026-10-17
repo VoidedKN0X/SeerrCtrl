@@ -174,7 +174,7 @@ fun CalendarScreen() {
         }
     }
 
-    Scaffold(topBar = { BackBar("Upcoming", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("Upcoming", { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Source.entries.filter { it != Source.All || canAll }.forEach { src ->

@@ -104,7 +104,10 @@ import com.vknxworks.seerrctrl.ui.Pill
 import com.vknxworks.seerrctrl.ui.SettingsSection
 import com.vknxworks.seerrctrl.ui.SheetHeader
 import com.vknxworks.seerrctrl.ui.Status
+import com.vknxworks.seerrctrl.ui.back
+import com.vknxworks.seerrctrl.ui.go
 import com.vknxworks.seerrctrl.ui.rememberActions
+import com.vknxworks.seerrctrl.ui.rememberCloseScreen
 import com.vknxworks.seerrctrl.ui.rememberLoad
 import kotlinx.coroutines.delay
 import com.vknxworks.seerrctrl.SecureWindow
@@ -117,43 +120,43 @@ fun AdminSettingsScreen() {
     SecureWindow()
     val nav = LocalNav.current
     val ms = App.session.mediaServer
-    Scaffold(topBar = { BackBar("Server settings", { nav.popBackStack() }, subtitle = App.session.appTitle) }) { pad ->
+    Scaffold(topBar = { BackBar("Server settings", { nav.back() }, subtitle = App.session.appTitle) }) { pad ->
         LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
             item {
                 SettingsSection("Server") {
-                    NavItem(Icons.Outlined.Settings, "General", "Title, URL, image cache, discover region, display options") { nav.navigate("admin/general") }
+                    NavItem(Icons.Outlined.Settings, "General", "Title, URL, image cache, discover region, display options") { nav.go("admin/general") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Group, "Users", "Sign-in methods, default permissions and quotas") { nav.navigate("admin/users") }
+                    NavItem(Icons.Outlined.Group, "Users", "Sign-in methods, default permissions and quotas") { nav.go("admin/users") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Lan, "Network", "Proxy, CSRF, DNS cache, timeouts") { nav.navigate("admin/network") }
+                    NavItem(Icons.Outlined.Lan, "Network", "Proxy, CSRF, DNS cache, timeouts") { nav.go("admin/network") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Info, "About", "Version, totals, paths") { nav.navigate("admin/about") }
+                    NavItem(Icons.Outlined.Info, "About", "Version, totals, paths") { nav.go("admin/about") }
                 }
             }
             item {
                 SettingsSection("Media") {
-                    NavItem(Icons.Outlined.Movie, ms.label.takeIf { ms != MediaServer.None } ?: "Media server", "Connection, libraries and scans") { nav.navigate("admin/mediaserver") }
+                    NavItem(Icons.Outlined.Movie, ms.label.takeIf { ms != MediaServer.None } ?: "Media server", "Connection, libraries and scans") { nav.go("admin/mediaserver") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Dns, "Services", "Radarr and Sonarr servers") { nav.navigate("admin/services") }
+                    NavItem(Icons.Outlined.Dns, "Services", "Radarr and Sonarr servers") { nav.go("admin/services") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Tune, "Metadata", "Metadata providers for movies, series and anime") { nav.navigate("admin/metadata") }
+                    NavItem(Icons.Outlined.Tune, "Metadata", "Metadata providers for movies, series and anime") { nav.go("admin/metadata") }
                     if (ms == MediaServer.Plex) {
                         ItemDivider()
-                        NavItem(Icons.Outlined.Storage, "Tautulli", "Watch history from Tautulli") { nav.navigate("admin/tautulli") }
+                        NavItem(Icons.Outlined.Storage, "Tautulli", "Watch history from Tautulli") { nav.go("admin/tautulli") }
                     }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Rule, "Override rules", "Route requests to specific servers and profiles") { nav.navigate("admin/overrides") }
+                    NavItem(Icons.Outlined.Rule, "Override rules", "Route requests to specific servers and profiles") { nav.go("admin/overrides") }
                 }
             }
             item {
                 SettingsSection("Behaviour") {
-                    NavItem(Icons.Outlined.Notifications, "Notifications", "Email, Discord, Telegram, webhooks and more") { nav.navigate("admin/notifications") }
+                    NavItem(Icons.Outlined.Notifications, "Notifications", "Email, Discord, Telegram, webhooks and more") { nav.go("admin/notifications") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Explore, "Discover", "Choose and order the discover sliders") { nav.navigate("admin/discover") }
+                    NavItem(Icons.Outlined.Explore, "Discover", "Choose and order the discover sliders") { nav.go("admin/discover") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Schedule, "Jobs & cache", "Run scans now, change schedules, flush caches") { nav.navigate("admin/jobs") }
+                    NavItem(Icons.Outlined.Schedule, "Jobs & cache", "Run scans now, change schedules, flush caches") { nav.go("admin/jobs") }
                     ItemDivider()
-                    NavItem(Icons.AutoMirrored.Outlined.Article, "Logs", "Server log, filterable by level") { nav.navigate("admin/logs") }
+                    NavItem(Icons.AutoMirrored.Outlined.Article, "Logs", "Server log, filterable by level") { nav.go("admin/logs") }
                 }
             }
         }
@@ -230,7 +233,7 @@ private fun SettingsForm(
     val nav = LocalNav.current
     val act = rememberActions()
     val load = rememberLoad(path) { App.api.obj(path) }
-    Scaffold(topBar = { BackBar(title, { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar(title, { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { data ->
             val state = remember(data) { FormState(data) }
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
@@ -265,7 +268,7 @@ private fun UsersSettings() {
     val nav = LocalNav.current
     val act = rememberActions()
     val load = rememberLoad("main-users") { App.api.obj("/settings/main") }
-    Scaffold(topBar = { BackBar("User settings", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("User settings", { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { main ->
             val subset = remember(main) {
                 val q = main.obj("defaultQuotas") ?: JSONObject()
@@ -337,7 +340,7 @@ private fun MediaServerSettings() {
         }
     }
 
-    Scaffold(topBar = { BackBar(ms.label, { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar(ms.label, { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { data ->
             val state = remember(data) { FormState(data) }
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
@@ -407,7 +410,7 @@ private fun MediaServerSettings() {
 private fun ServicesScreen() {
     val nav = LocalNav.current
     val load = rememberLoad("services") { App.api.arr("/settings/radarr").objects() to App.api.arr("/settings/sonarr").objects() }
-    Scaffold(topBar = { BackBar("Services", { nav.popBackStack() }) { IconButton({ load.reload(silent = true) }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar("Services", { nav.back() }) { IconButton({ load.reload(silent = true) }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (radarr, sonarr) ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 for ((kind, list) in listOf("radarr" to radarr, "sonarr" to sonarr)) {
@@ -422,10 +425,10 @@ private fun ServicesScreen() {
                                         if (srv.bool("is4k")) "4K" else null,
                                         if (srv.bool("isDefault")) "Default" else null,
                                     ).joinToString(" · "),
-                                ) { nav.navigate("admin/service:$kind:${srv.int("id")}") }
+                                ) { nav.go("admin/service:$kind:${srv.int("id")}") }
                             }
                             if (list.isNotEmpty()) ItemDivider()
-                            NavItem(Icons.Outlined.Add, "Add ${if (kind == "radarr") "Radarr" else "Sonarr"} server") { nav.navigate("admin/service:$kind:new") }
+                            NavItem(Icons.Outlined.Add, "Add ${if (kind == "radarr") "Radarr" else "Sonarr"} server") { nav.go("admin/service:$kind:new") }
                         }
                     }
                 }
@@ -450,6 +453,7 @@ private fun newService(kind: String) = JSONObject().apply {
 @Composable
 private fun ServiceEditor(kind: String, id: Int?) {
     val nav = LocalNav.current
+    val closeScreen = rememberCloseScreen()
     val act = rememberActions()
     val label = if (kind == "radarr") "Radarr" else "Sonarr"
     val load = rememberLoad(kind, id) {
@@ -459,7 +463,7 @@ private fun ServiceEditor(kind: String, id: Int?) {
     var confirmDelete by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
-        BackBar(if (id == null) "Add $label server" else "Edit $label server", { nav.popBackStack() }) {
+        BackBar(if (id == null) "Add $label server" else "Edit $label server", { nav.back() }) {
             if (id != null) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete") }
         }
     }) { pad ->
@@ -520,7 +524,7 @@ private fun ServiceEditor(kind: String, id: Int?) {
                         }
                     }) { Text("Test") }
                     Button(enabled = !act.busy && (state.dirty || id == null), onClick = {
-                        act.run("Saved", onOk = { nav.popBackStack() }) {
+                        act.run("Saved", onOk = { closeScreen() }) {
                             if (id == null) App.api.post("/settings/$kind", state.obj) else App.api.put("/settings/$kind/$id", state.obj)
                         }
                     }) { Text("Save") }
@@ -536,7 +540,7 @@ private fun ServiceEditor(kind: String, id: Int?) {
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("Deleted", onOk = { nav.popBackStack() }) { App.api.delete("/settings/$kind/$id") }
+                    act.run("Deleted", onOk = { closeScreen() }) { App.api.delete("/settings/$kind/$id") }
                 }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },
@@ -557,7 +561,7 @@ private fun NotificationAgentsScreen() {
     val load = rememberLoad("agents") {
         agents.map { (k, l) -> Triple(k, l, try { App.api.obj("/settings/notifications/$k").bool("enabled") } catch (_: Exception) { false }) }
     }
-    Scaffold(topBar = { BackBar("Notifications", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("Notifications", { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { list ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 item {
@@ -566,7 +570,7 @@ private fun NotificationAgentsScreen() {
                             if (i > 0) ItemDivider()
                             NavItem(Icons.Outlined.Notifications, l, if (on) "On" else "Off", trailing = {
                                 if (on) Pill("On", Status.available)
-                            }) { nav.navigate("admin/notif:$k") }
+                            }) { nav.go("admin/notif:$k") }
                         }
                     }
                 }
@@ -582,7 +586,7 @@ private fun NotificationAgentScreen(agent: String) {
     val name = agents.firstOrNull { it.first == agent }?.second ?: agent
     val path = "/settings/notifications/$agent"
     val load = rememberLoad(path) { App.api.obj(path) }
-    Scaffold(topBar = { BackBar(name, { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar(name, { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { data ->
             val state = remember(data) { FormState(data) }
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
@@ -646,7 +650,7 @@ private fun DiscoverSlidersScreen() {
     }
     Scaffold(
         topBar = {
-            BackBar("Discover sliders", { nav.popBackStack() }) {
+            BackBar("Discover sliders", { nav.back() }) {
                 TextButton({ act.run("Sliders reset", onOk = { reload++ }) { App.api.get("/settings/discover/reset") } }) { Text("Reset") }
             }
         },
@@ -731,7 +735,7 @@ private fun JobsScreen() {
     LaunchedEffect(load.value) {
         if (load.value?.first?.any { it.bool("running") } == true) { delay(3000); load.reload(silent = true) }
     }
-    Scaffold(topBar = { BackBar("Jobs & cache", { nav.popBackStack() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar("Jobs & cache", { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (jobs, cache) ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 item { SheetHeader("Jobs") }
@@ -825,7 +829,7 @@ private fun LogsScreen() {
         if (search.isNotEmpty()) delay(350)
         App.api.arr("/settings/logs", mapOf("take" to take, "skip" to 0, "filter" to level, "search" to search.ifBlank { null })).objects()
     }
-    Scaffold(topBar = { BackBar("Logs", { nav.popBackStack() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar("Logs", { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
         Column(Modifier.padding(pad)) {
             OutlinedTextField(
                 search, { search = it }, placeholder = { Text("Search logs") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
@@ -871,7 +875,7 @@ private fun LogsScreen() {
 private fun AboutScreen() {
     val nav = LocalNav.current
     val load = rememberLoad("about") { App.api.obj("/settings/about") to (try { App.api.obj("/status") } catch (_: Exception) { JSONObject() }) }
-    Scaffold(topBar = { BackBar("About", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("About", { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (about, status) ->
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
                 SettingsSection("Server") {
@@ -909,7 +913,7 @@ private fun OverrideRulesScreen() {
     var reload by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf<JSONObject?>(null) }
     val load = rememberLoad(reload) { App.api.arr("/overrideRule").objects() }
-    Scaffold(topBar = { BackBar("Override rules", { nav.popBackStack() }) }) { pad ->
+    Scaffold(topBar = { BackBar("Override rules", { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { rules ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 item {

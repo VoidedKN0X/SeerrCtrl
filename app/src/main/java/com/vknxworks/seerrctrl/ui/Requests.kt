@@ -244,7 +244,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                     Text(
                         "${by.str("displayName") ?: "Someone"} · ${timeAgo(r.str("createdAt")) ?: ""}",
                         style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.clickable { nav.navigate("user/${by.int("id")}") },
+                        modifier = Modifier.clickable { nav.go("user/${by.int("id")}") },
                     )
                 }
                 r.obj("modifiedBy")?.let { m ->
