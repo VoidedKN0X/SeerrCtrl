@@ -1,100 +1,94 @@
 # SeerrCtrl
 
-An unofficial Android app for [Seerr](https://github.com/seerr-team/seerr) (and the older Jellyseerr and Overseerr), so you and the people you share with can discover, request and manage movies and series on your self-hosted server from a phone. Built with Kotlin and Jetpack Compose on Seerr's own `/api/v1`.
+**Request movies and shows on your Seerr server from your phone.**
+
+[![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/SeerrCtrl?label=download)](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest) ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
+
+SeerrCtrl is an Android app for [Seerr](https://github.com/seerr-team/seerr) (and the older Jellyseerr and Overseerr). Discover, request and manage movies and series on your self-hosted server, with everything the web UI can do.
+
+Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
+
+<a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/SeerrCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="48"></a>
 
 ## Features
 
-**Sign in**
-- First start asks for your server address, then offers whichever sign-in methods the server has turned on
-- Jellyfin and Emby accounts, including Jellyfin **Quick Connect** (no password typed on the phone)
-- **Plex** sign-in through plex.tv in a browser tab
-- Seerr's own email-and-password accounts, with "Forgot password?" when email is set up
-- Works over plain HTTP on your LAN, through a reverse proxy, or with a self-signed certificate
-
-**Discover**
-- The same sliders as the web home page, in the order your admin set: recently added, recent requests, watchlist, trending, popular, upcoming, genres, studios, networks, and custom keyword/genre/studio/network/search/streaming-service sliders
-- "See all" opens an endless grid with the web UI's filters: sort, genres, release years, original language, runtime, TMDB rating, vote count and streaming services
-- Search for movies, series and people, or by keyword and studio
-
-**Movies and series**
-- Backdrop, poster, availability (and 4K availability), runtime or seasons, genres, overview and tagline
-- **Request** and **Request 4K**, with season picking for series, request quotas, and the advanced options: server, quality profile, root folder, language profile, tags and "request as" another user
-- **Play** on your media server when it's available, trailer, watchlist, and **report an issue** (by season and episode)
-- Live download progress from Radarr/Sonarr, ratings from TMDB, Rotten Tomatoes and IMDb, where to stream in your region
-- Seasons with every episode, cast and crew, collections (request the whole collection at once), keywords, recommendations and similar titles
-- Managers get approve/decline/edit on the title's requests, and a **Manage** sheet: open in Radarr/Sonarr, mark available or partially available, remove from Radarr/Sonarr, clear data, blocklist
-
-**Requests**
-- Everyone's requests for managers (pending first, with a badge on the tab), your own otherwise
-- Filter by status (pending, approved, processing, available, unavailable, failed, deleted, completed), movies or series, newest or recently changed
-- Approve, decline, retry failed, edit, cancel or delete; swipe a pending request right to approve or left to decline
-
-**Issues**
-- Open/resolved list with a badge for open issues
-- Comment thread, edit or delete comments, resolve, reopen, delete
-
-**People and profiles**
-- Person pages with biography and every appearance or crew credit
-- Profiles with request count, quotas and the user's requests; watchlists
-
-**Your account**
-- Display name, email, Discord ID, discover and streaming region, discover language
-- Password
-- Notification agents and which events reach you on each (email, Discord, Pushbullet, Pushover, Telegram, web push)
-
-**Notifications**
-- Your requests approved, declined, failed or now available
-- New requests waiting for approval, with **Approve** and **Decline** buttons in the notification
-- New issues, and replies or fixes on issues you reported
-- Pick what you get and how often (every 15 min to 1 hour); tapping a notification opens the title or issue
-
-**Upcoming calendar**
-- Month view and list of cinema, digital and disc releases and new episodes for your requests, everyone's requests, or your watchlist
-- Add any date to your phone's calendar
-
-**Admin**
-- **Users**: search, sort, create local users, import from Jellyfin/Emby or Plex, edit permissions (one user or many), per-user quotas, delete
-- **Server settings**: general, user sign-in options and default permissions/quotas, network (proxy, DNS cache, CSRF), Jellyfin/Emby/Plex connection with library toggles, library sync and full scans, Radarr and Sonarr servers (add, test, edit, delete), metadata providers, Tautulli, override rules, every notification agent (with test), discover sliders (enable, reorder, add, reset), jobs (run, cancel, reschedule) and caches (flush), logs with level filter and search, and about
-- **Blocklist**: search and remove
-
-**App**
-- Tablet and foldable layouts: a side rail on wide screens, and tabs on the left with details on the right from 700 dp, split along the hinge on foldables
-- Material You colours, light/dark/system theme, pure black, poster size
-- Optional PIN app lock with fingerprint, auto-lock delay, and hiding content in screenshots and recents (on by default, server settings always hidden)
-- Your session cookie is stored encrypted with an Android Keystore key
+- **Sign in** with Jellyfin/Emby (including Quick Connect), Plex, or a Seerr account
+- **Discover** with the same sliders and filters as the web UI
+- **Request** movies and series, in 4K too, with season picking and advanced options
+- **Requests list**: swipe right to approve, left to decline
+- **Notifications** when requests are approved or available, with Approve/Decline buttons for managers
+- **Upcoming calendar** for your requests and watchlist
+- **Issues**: report, comment and resolve
+- **Full admin**: users, permissions, Radarr/Sonarr, notification agents, jobs and every server setting
+- **App lock** with PIN and fingerprint; tablet and foldable layout
 
 ## Requirements
 
-- Seerr, or Jellyseerr / Overseerr (the API is shared; a few newer features such as override rules and the blocklist need Seerr or a recent Jellyseerr)
-- Android **13** or newer
-- Your server address can be `http://192.168.x.x:5055`, a local hostname, or a reverse-proxy URL like `https://requests.example.com`
+- Android 13 or newer
+- Seerr, Jellyseerr or Overseerr
 
 ## Install
 
-Download the latest `SeerrCtrl-vX.Y.Z-build.N.apk` from the [Releases](../../releases) page and open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
+1. Download the latest `.apk` file from the [Releases page](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest).
+2. Open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
+3. Updates install over the old version. Your settings and login are kept.
 
-Updates install over the existing app as long as every build is signed with the same release key.
+**Automatic updates with Obtainium:** install [Obtainium](https://github.com/ImranR98/Obtainium), then tap the button below on your phone. Obtainium adds SeerrCtrl and installs every new release for you.
 
-## First run
+<a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/SeerrCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="48"></a>
 
-1. Enter your Seerr address. Without `http://` or `https://`, the app tries https first and only offers plain http after warning that your password would be sent unencrypted.
-2. Tick **Allow self-signed certificate** only if your server uses one. You'll be shown the certificate's SHA-256 fingerprint to confirm, and from then on only that exact certificate is accepted (only for your server; TMDB, Plex and others always use normal checks).
-3. Sign in with any method your server offers. What you can see and do in the app follows your Seerr permissions, exactly like the web UI.
+If the button doesn't open Obtainium, add `https://github.com/VoidedKN0X/SeerrCtrl` in Obtainium by hand.
 
-## Notifications on ColorOS and other battery-strict phones
+## Getting started
 
-The app checks your server in the background at most every 15 minutes (Android's minimum). Phones that limit background apps can delay or skip those checks. In **More → App settings → Notifications**, tap **Background activity** to let SeerrCtrl run unrestricted. On ColorOS you may also want to allow **Auto launch** for SeerrCtrl in the phone's app settings.
+1. Enter your server address, e.g. `http://192.168.1.10:5055` or `https://requests.example.com`.
+2. If your server uses a self-signed certificate, turn on **Allow self-signed certificate** and confirm its fingerprint.
+3. Sign in with any method your server offers. What you can do follows your Seerr permissions.
 
-## Building from source
+## Tips and troubleshooting
 
-Open the project in Android Studio (Ladybug or newer) and run it, or build from a terminal:
+- **Late notifications on ColorOS and similar phones:** in the app go to *More → App settings → Notifications → Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
 
-```bash
-./gradlew assembleDebug
-```
+## Build from source
 
-Signed releases are built by GitHub Actions on every push to `main`. The workflow reads `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD` from the repository's Actions secrets (`KEY_ALIAS` can be a repository variable). Without them the build fails rather than publishing a debug-signed release.
+You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.
 
-## Disclaimer
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/VoidedKN0X/SeerrCtrl.git
+   cd SeerrCtrl
+   ```
+2. Build the app:
+   ```bash
+   ./gradlew assembleDebug
+   ```
+   On Windows, use `gradlew.bat assembleDebug`.
+3. The APK is in `app/build/outputs/apk/debug/`. Copy it to your phone and install it.
 
-SeerrCtrl is not affiliated with the Seerr, Jellyseerr or Overseerr projects. Movie and series data comes from TMDB through your server.
+Or open the folder in Android Studio and press **Run** with your phone connected.
+
+## Support the project
+
+SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too.
+
+## The Ctrl series
+
+Native Android apps for self-hosted services and everyday tools, all with the same Material You design.
+
+| App | What it's for |
+| --- | --- |
+| [BeamCtrl](https://github.com/VoidedKN0X/BeamCtrl) | TV remote for phones with an IR blaster |
+| [CraftyCtrl](https://github.com/VoidedKN0X/CraftyCtrl) | Manage Minecraft servers on Crafty Controller |
+| [ElementCtrl](https://github.com/VoidedKN0X/ElementCtrl) | Matrix chat client for matrix.org and self-hosted Synapse |
+| [FilesCtrl](https://github.com/VoidedKN0X/FilesCtrl) | File manager with NFS, SMB, SFTP, FTP and WebDAV |
+| [FrigateCtrl](https://github.com/VoidedKN0X/FrigateCtrl) | Watch and review your Frigate NVR cameras |
+| [ImmichCtrl](https://github.com/VoidedKN0X/ImmichCtrl) | Photos and backup for your Immich server |
+| [JellyCtrl](https://github.com/VoidedKN0X/JellyCtrl) | Movies, shows, music and Live TV from Jellyfin |
+| [NaviCtrl](https://github.com/VoidedKN0X/NaviCtrl) | Music player for Navidrome servers |
+| **SeerrCtrl** (this app) | Request movies and shows on Seerr / Jellyseerr |
+
+## License
+
+SeerrCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
+
+SeerrCtrl is an unofficial app and is not affiliated with the Seerr, Jellyseerr or Overseerr projects. Movie and series data comes from TMDB through your server.
