@@ -19,7 +19,26 @@ permissions:
   contents: read
 
 jobs:
+  # A release is published only when versionName (and versionCode) in
+  # app/build.gradle.kts are bumped. Other pushes just build to check the code.
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+      release: ${{ steps.v.outputs.release }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0   # tags, to see whether this version is already released
+
+      - name: Check for a version bump
+        id: v
+        run: bash .github/scripts/check-version.sh
+
   build:
+    needs: version
     runs-on: ubuntu-latest
     outputs:
       signed: ${{ steps.sig.outputs.signed }}
@@ -59,7 +78,6 @@ jobs:
           # The alias isn't secret; it's kept as a repository variable.
           SIGNING_KEY_ALIAS: ${{ vars.KEY_ALIAS || secrets.KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          VERSION_CODE: ${{ github.run_number }}
         run: |
           chmod +x gradlew
           set -o pipefail
@@ -80,10 +98,9 @@ jobs:
       - name: Name APK and check signature
         id: sig
         env:
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
           VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
-          TAG="v${VERSION}-build.${RUN_NUMBER}"
+          TAG="v${VERSION}"
           APK="SeerrCtrl-${TAG}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK"
           echo "APK=$APK" >> "$GITHUB_ENV"
@@ -115,8 +132,8 @@ jobs:
   # Publishes the release in its own job: no signing secrets here, only the finished APK,
   # and only this job can write to the repository. Runs only for a release-signed APK.
   release:
-    needs: build
-    if: needs.build.outputs.signed == '1' && github.ref == 'refs/heads/main'
+    needs: [version, build]
+    if: needs.version.outputs.release == 'true' && needs.build.outputs.signed == '1' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -144,10 +161,9 @@ jobs:
           TAG: ${{ needs.build.outputs.tag }}
           VERSION: ${{ needs.build.outputs.version }}
           APK: ${{ needs.build.outputs.apk }}
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
           gh release create "$TAG" "$APK" \
             --target "$GITHUB_SHA" \
-            --title "SeerrCtrl ${VERSION} (build ${RUN_NUMBER})" \
+            --title "SeerrCtrl ${VERSION}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --latest
