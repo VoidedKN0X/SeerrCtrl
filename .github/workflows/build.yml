@@ -97,7 +97,6 @@ jobs:
 
       - name: Name APK and check signature
         id: sig
-        env:
         run: |
           VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
           TAG="v${VERSION}"
