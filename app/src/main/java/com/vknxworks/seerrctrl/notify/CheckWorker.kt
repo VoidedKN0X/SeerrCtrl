@@ -159,6 +159,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             .putExtra(ActionReceiver.EXTRA_REQUEST, requestId)
             .putExtra(ActionReceiver.EXTRA_NOTIFICATION, nid)
             .putExtra(ActionReceiver.EXTRA_TITLE, title)
+            .putExtra(ActionReceiver.EXTRA_TOKEN, Notifier.actionToken(applicationContext))
         val pi = PendingIntent.getBroadcast(
             applicationContext, nid * 2 + if (verb == ActionReceiver.APPROVE) 0 else 1, i,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,

@@ -187,6 +187,9 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
     var signedIn by remember { mutableStateOf(App.prefs.isConfigured) }
 
     fun logout() {
+        // Leave the account's screens straight away: after "Forgot PIN? Log out" nothing may show while the
+        // server is being told (up to 4 s).
+        signedIn = false
         scope.launch {
             // Best effort: end the session on the server too, then forget it here.
             try { withTimeout(4000) { App.api.post("/auth/logout") } } catch (_: Exception) {}

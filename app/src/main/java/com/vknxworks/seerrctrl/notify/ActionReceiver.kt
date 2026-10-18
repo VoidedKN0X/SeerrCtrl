@@ -19,7 +19,8 @@ class ActionReceiver : BroadcastReceiver() {
         if (requestId == 0) return
         App.init(context.applicationContext)
         // Signed out since the notification was posted: never act with whatever account is signed in later.
-        if (!App.prefs.isConfigured) {
+        // The token is only valid for the sign-in that posted the notification (it's replaced on sign-out).
+        if (!App.prefs.isConfigured || !Notifier.checkActionToken(context, intent.getStringExtra(EXTRA_TOKEN))) {
             androidx.core.app.NotificationManagerCompat.from(context).cancel(nid)
             return
         }
@@ -43,5 +44,6 @@ class ActionReceiver : BroadcastReceiver() {
         const val EXTRA_REQUEST = "request"
         const val EXTRA_NOTIFICATION = "nid"
         const val EXTRA_TITLE = "title"
+        const val EXTRA_TOKEN = "action_token"
     }
 }
