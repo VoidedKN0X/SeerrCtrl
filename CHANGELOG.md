@@ -2,6 +2,13 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.3
+
+### Security
+
+- Approve/Decline buttons on a "new request" notification now only work for the sign-in that posted them. Signing out cancels them for good, even if another app (for example one allowed to read your notifications) kept a copy of the button, so it can never approve or decline with an account you sign in to later
+- "Forgot PIN? Log out" on the lock screen now leaves your account's screens immediately, instead of showing them for a few seconds while SeerrCtrl tells the server you've signed out
+
 ## 1.4.2
 
 ### Security

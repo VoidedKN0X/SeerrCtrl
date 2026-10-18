@@ -94,6 +94,28 @@ object Notifier {
         wm.cancelUniqueWork("$WORK-now")
         NotificationManagerCompat.from(ctx).cancelAll()
         ctx.getSharedPreferences("notify_state", Context.MODE_PRIVATE).edit().clear().apply()
+        // Approve/Decline buttons handed out for this sign-in stop working, even if another app kept a copy.
+        ctx.getSharedPreferences("notify_state_token", Context.MODE_PRIVATE).edit().remove(KEY_ACTION).commit()
+    }
+
+    private const val KEY_ACTION = "action"
+
+    /**
+     * Random secret for the current sign-in, carried by Approve/Decline buttons. It is replaced on sign-out,
+     * so a button from an earlier sign-in can't act with whichever account is signed in later.
+     */
+    @Synchronized
+    fun actionToken(ctx: Context): String {
+        val sp = ctx.getSharedPreferences("notify_state_token", Context.MODE_PRIVATE)
+        return sp.getString(KEY_ACTION, null) ?: ByteArray(32).also { SecureRandom().nextBytes(it) }
+            .joinToString("") { "%02x".format(it) }
+            .also { sp.edit().putString(KEY_ACTION, it).commit() }
+    }
+
+    /** True only for the current sign-in's token; never creates one. */
+    fun checkActionToken(ctx: Context, token: String?): Boolean {
+        val current = ctx.getSharedPreferences("notify_state_token", Context.MODE_PRIVATE).getString(KEY_ACTION, null)
+        return token != null && current != null && MessageDigest.isEqual(token.toByteArray(), current.toByteArray())
     }
 
     fun canPost(ctx: Context): Boolean =
