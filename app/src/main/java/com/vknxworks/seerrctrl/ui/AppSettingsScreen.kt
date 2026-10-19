@@ -22,14 +22,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
@@ -55,10 +58,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.BuildConfig
 import com.vknxworks.seerrctrl.R
 import com.vknxworks.seerrctrl.data.ThemeMode
 import com.vknxworks.seerrctrl.data.Tls
@@ -73,6 +78,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val SPONSOR_URL = "https://github.com/sponsors/VoidedKN0X"
+private const val REPO_URL = "https://github.com/VoidedKN0X/SeerrCtrl"
+private const val ISSUES_URL = "https://github.com/VoidedKN0X/SeerrCtrl/issues"
+private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,9 +92,6 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
     var pinDialog by remember { mutableStateOf<PinMode?>(null) }
     var confirmLogout by remember { mutableStateOf(false) }
     val bioAvailable = remember { biometricAvailable(ctx) }
-    val appVersion = remember {
-        try { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName } catch (_: Exception) { null } ?: "?"
-    }
     val server = rememberLoad("status") { App.api.obj("/status") }
     val scope = rememberCoroutineScope()
     val snack = LocalSnackbar.current
@@ -201,13 +206,30 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                 )
             }
 
-            SettingsSection("About") {
-                NavItem(Icons.Outlined.Favorite, stringResource(R.string.support_title), stringResource(R.string.support_subtitle)) {
+            SettingsSection(stringResource(R.string.group_about)) {
+                AboutRow(Icons.Filled.Favorite, stringResource(R.string.support_title), stringResource(R.string.support_subtitle)) {
                     openUrl(ctx, SPONSOR_URL)
                 }
                 ItemDivider()
-                NavItem(Icons.Outlined.Info, "SeerrCtrl $appVersion", "VKNXWorks · unofficial app for Seerr, Jellyseerr and Overseerr") {}
+                AboutRow(Icons.Filled.BugReport, stringResource(R.string.bugs_title), stringResource(R.string.bugs_subtitle)) {
+                    openUrl(ctx, ISSUES_URL)
+                }
+                ItemDivider()
+                AboutRow(Icons.Filled.Code, stringResource(R.string.source_title), stringResource(R.string.source_subtitle)) {
+                    openUrl(ctx, REPO_URL)
+                }
+                ItemDivider()
+                AboutRow(Icons.Filled.Gavel, stringResource(R.string.licence_title), stringResource(R.string.licence_subtitle)) {
+                    openUrl(ctx, LICENCE_URL)
+                }
             }
+            Text(
+                stringResource(R.string.about_footer, BuildConfig.VERSION_NAME),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 
@@ -238,6 +260,12 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
             dismissButton = { TextButton({ confirmLogout = false }) { Text("Cancel") } },
         )
     }
+}
+
+/** A row in the About section: tappable, with a chevron, like the other Ctrl apps. */
+@Composable
+private fun AboutRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+    NavItem(icon, title, subtitle, trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) }, onClick = onClick)
 }
 
 enum class PinMode { New, Change, Disable }

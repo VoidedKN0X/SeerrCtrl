@@ -94,7 +94,7 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** in **More > App settings**. Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too.
+SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** in **More > App settings**. Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
 
 ## The Ctrl series
 
