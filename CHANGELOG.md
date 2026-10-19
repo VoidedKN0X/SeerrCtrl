@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.7
+
+### New
+
+- **Open in SeerrCtrl from ArrCtrl.** The "Open in SeerrCtrl" button on a movie or series in [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) now opens that movie or series straight away in SeerrCtrl, ready to request or check, instead of just starting the app. Other apps can do the same with a `seerrctrl://movie/<TMDB id>` or `seerrctrl://tv/<TMDB id>` link. Such links can only open a movie or series page; web pages can't use them
+
 ## 1.4.6
 
 SeerrCtrl is now completely Google-free. Nothing changes in how you use it.

@@ -27,6 +27,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- seerrctrl://movie/{tmdbId} and seerrctrl://tv/{tmdbId} from other apps (ArrCtrl's "Open in SeerrCtrl").
+                 Not BROWSABLE, so web pages can't open it. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="seerrctrl" android:host="movie" />
+                <data android:scheme="seerrctrl" android:host="tv" />
+            </intent-filter>
         </activity>
 
         <receiver
