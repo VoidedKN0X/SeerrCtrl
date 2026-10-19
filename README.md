@@ -62,6 +62,15 @@ SeerrCtrl can share anonymous usage stats, **only if you say yes**. It asks once
 
 Builds from source don't include the stats key, so they can't send anything and the setting is hidden. The code is in [`Telemetry.kt`](app/src/main/java/com/vknxworks/seerrctrl/data/Telemetry.kt).
 
+### Other servers the app talks to
+
+Apart from your own Seerr server (and the opt-in stats above), SeerrCtrl only contacts:
+
+- **TMDB's image server** (`image.tmdb.org`) for posters, backdrops, photos and studio logos, unless your Seerr admin turned on **Cache images locally** (Settings > General in Seerr). Then every image comes through your Seerr server instead, and TMDB never sees your phone. TMDB sees your IP address and which titles' pictures are loaded.
+- **plex.tv**, only while you sign in with Plex.
+- **Gravatar and Plex** for other people's profile pictures, only if you turn on **More > App settings > Profile pictures from Gravatar and Plex**. It's off by default, and people's initials show instead.
+- Trailers and links to sites like IMDb only open when you tap them.
+
 ## Build from source
 
 You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.

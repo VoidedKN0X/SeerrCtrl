@@ -2,13 +2,22 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## 1.4.5
 
-Not in a release yet; this goes out with the next version.
+Fourth security and privacy review, focused on what the app sends to sites other than your own Seerr server.
+
+### Security
+
+- **Studio and network logos respect Seerr's image cache.** When your Seerr admin turned on **Cache images locally**, every poster and backdrop already came through your Seerr server, but the studio and network logos on Discover were still loaded straight from TMDB. They now go through your server too
+- **Notification posters respect Seerr's image cache.** When notifications were checked in the background with the app closed, the poster in a notification was always loaded straight from TMDB, even with image caching on. The background check now reads that setting from your server first
+- **Profile pictures from Gravatar and Plex are off by default.** Other people's (and your own) profile pictures can be hosted by Gravatar or Plex; loading them told those sites your IP address and whose profiles you were looking at, for example on the Users and Requests screens. They now show the person's initial instead, unless you turn on **More > App settings > Profile pictures from Gravatar and Plex**. Pictures stored on your Seerr server (such as Jellyfin and Emby users' pictures) still load as before
+- **Switching usage stats off takes effect straight away.** Turning off **App settings > Usage stats** now also throws away any stats still waiting to be sent and stops one being sent at that moment, and switching them on again starts a new random session
 
 ### Changed
 
-- **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx), [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) (manage your Proxmox VE server) and [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) (monitor and manage your TrueNAS server). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates. No change to the app itself.
+- **Usage stats share less.** A request no longer says whether the advanced options were used or whether it came from a title or a collection, so the stats match exactly what the README promises: movie or series, and 4K or not
+- **The README lists the other servers the app talks to:** TMDB's image server (unless your Seerr admin turned on image caching), plex.tv while signing in with Plex, and Gravatar and Plex for profile pictures if you turn them on
+- - **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx), [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) (manage your Proxmox VE server) and [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) (monitor and manage your TrueNAS server). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates.
 
 ## 1.4.4
 

@@ -195,7 +195,7 @@ fun CollectionScreen(id: Int) {
                                 }
                                 if (failed < list.size) {
                                     // Usage stats: a collection request of movies, never which collection or titles.
-                                    App.telemetry.track("request_made", mapOf("media" to "movie", "is4k" to fourK.toString(), "source" to "collection"))
+                                    App.telemetry.track("request_made", mapOf("media" to "movie", "is4k" to fourK.toString()))
                                 }
                                 if (failed > 0) error("$failed of ${list.size} requests failed")
                             }

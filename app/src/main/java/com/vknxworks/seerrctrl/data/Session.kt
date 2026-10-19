@@ -3,6 +3,8 @@ package com.vknxworks.seerrctrl.data
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.vknxworks.seerrctrl.App
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONObject
 
 /** The signed-in user and the server's public settings, observable from Compose. */
@@ -49,9 +51,15 @@ class Session(private val api: SeerrApi) {
         else "https://image.tmdb.org/t/p/$size$path"
     }
 
-    /** User avatars can be absolute (Plex, Gravatar) or a path on the Seerr server. */
+    /**
+     * User avatars can be a path on the Seerr server or a full address (Plex, Gravatar). Pictures from other
+     * sites only load if the user turned that on: fetching them tells Gravatar or Plex the phone's IP address
+     * and whose profiles are being looked at. Otherwise the avatar shows the person's initial.
+     */
     fun avatar(raw: String?): String? {
         if (raw.isNullOrBlank()) return null
-        return if (raw.startsWith("http")) raw else api.abs(raw)
+        if (!raw.startsWith("http")) return api.abs(raw)
+        val onServer = raw.toHttpUrlOrNull()?.let { api.sameServer(it) } == true
+        return raw.takeIf { onServer || App.settings.externalAvatars }
     }
 }

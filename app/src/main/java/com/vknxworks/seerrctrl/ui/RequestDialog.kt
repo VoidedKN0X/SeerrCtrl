@@ -179,7 +179,7 @@ fun RequestDialog(
                     // Usage stats: only movie or series, 4K or not, never which title.
                     App.telemetry.track(
                         "request_made",
-                        mapOf("media" to if (tv) "tv" else "movie", "is4k" to is4k.toString(), "advanced" to (advanced && serverId != null).toString(), "source" to "title"),
+                        mapOf("media" to if (tv) "tv" else "movie", "is4k" to is4k.toString()),
                     )
                     snack.showSnackbar("Requested $title" + if (is4k) " in 4K" else "")
                 }

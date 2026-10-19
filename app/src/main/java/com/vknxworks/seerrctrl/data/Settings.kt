@@ -48,6 +48,15 @@ class Settings(context: Context) {
         get() = _tabs.value
         set(v) { _tabs.value = v; sp.edit().putBoolean("custom_tabs", v).apply() }
 
+    /**
+     * Load profile pictures from Gravatar and Plex. Off by default: those sites would see the phone's IP address
+     * and whose profiles are being looked at. Pictures stored on the Seerr server always load.
+     */
+    private val _extAvatars = bool("external_avatars", false)
+    var externalAvatars: Boolean
+        get() = _extAvatars.value
+        set(v) { _extAvatars.value = v; sp.edit().putBoolean("external_avatars", v).apply() }
+
     // Notifications
     private val _notify = bool("notify_enabled", true)
     var notifyEnabled: Boolean
