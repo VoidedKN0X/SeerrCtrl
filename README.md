@@ -13,14 +13,16 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Features
 
 - **Sign in** with Jellyfin/Emby (including Quick Connect), Plex, or a Seerr account
-- **Discover** with the same sliders and filters as the web UI
+- **Discover** with the same sliders and filters as the web UI, and search for titles, people, keywords and studios
+- **Title pages** with ratings, cast and crew, collections, recommendations and similar titles, and a Play button for your media server
 - **Request** movies and series, in 4K too, with season picking and advanced options
 - **Requests list**: swipe right to approve, left to decline
-- **Notifications** when requests are approved or available, with Approve/Decline buttons for managers
-- **Upcoming calendar** for your requests and watchlist
+- **Notifications** when your requests are approved, declined, failed or available and when issues get replies; managers also get new requests with Approve/Decline buttons, and new issues
+- **Upcoming calendar** for your requests and watchlist, plus your **Watchlist** and **Profile** (your requests, quota and stats)
 - **Issues**: report, comment and resolve
-- **Full admin**: users, permissions, Radarr/Sonarr, notification agents, jobs and every server setting
+- **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
 - **App lock** with PIN and fingerprint; tablet and foldable layout
+- **Private by default:** the app is hidden from screenshots and the recent-apps screen (you can turn this off), titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on
 
 ## Requirements
 

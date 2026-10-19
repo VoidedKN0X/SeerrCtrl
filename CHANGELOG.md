@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Changed
+
+- **README brought up to date with 1.4.5.** The feature list now also covers search for titles, people, keywords and studios; title pages with ratings, cast and crew, collections, recommendations and a Play button for your media server; your Watchlist and Profile; every kind of notification (your requests approved, declined, failed or available, issue replies, and new requests and issues for managers); quotas, the blocklist and logs in the admin screens; and a new "Private by default" line: the app is hidden from screenshots and recent apps unless you turn that off, lock-screen notifications hide titles and names, Approve/Decline from a notification needs the phone unlocked, and Gravatar and Plex profile pictures are off unless you turn them on. No change to the app itself.
+
 ## 1.4.5
 
 Fourth security and privacy review, focused on what the app sends to sites other than your own Seerr server.
