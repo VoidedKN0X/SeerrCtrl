@@ -2,6 +2,15 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.9
+
+### Changed
+
+- **One About section in every Ctrl app**: Support, Report a bug, Source code and Licence (GPL-3.0), with the version underneath, at the bottom of More > App settings
+- New **Report a bug** row opens SeerrCtrl's GitHub issues, where you can report a problem or suggest an idea
+- New **Source code** row opens SeerrCtrl's GitHub repository, and **Licence** opens the GNU General Public License v3.0 that SeerrCtrl is released under
+- The version row in About is replaced by a small "SeerrCtrl <version> · VKNXWorks" line under the section, and every About row now shows an arrow to show it opens a page
+
 ## 1.4.8
 
 ### New
