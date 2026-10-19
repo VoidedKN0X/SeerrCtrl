@@ -7,6 +7,7 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 ### Changed
 
 - **README brought up to date with 1.4.5.** The feature list now also covers search for titles, people, keywords and studios; title pages with ratings, cast and crew, collections, recommendations and a Play button for your media server; your Watchlist and Profile; every kind of notification (your requests approved, declined, failed or available, issue replies, and new requests and issues for managers); quotas, the blocklist and logs in the admin screens; and a new "Private by default" line: the app is hidden from screenshots and recent apps unless you turn that off, lock-screen notifications hide titles and names, Approve/Decline from a notification needs the phone unlocked, and Gravatar and Plex profile pictures are off unless you turn them on. No change to the app itself.
+- Tidied the changelog: removed a doubled bullet marker in the 1.4.5 notes.
 
 ## 1.4.5
 
@@ -23,7 +24,7 @@ Fourth security and privacy review, focused on what the app sends to sites other
 
 - **Usage stats share less.** A request no longer says whether the advanced options were used or whether it came from a title or a collection, so the stats match exactly what the README promises: movie or series, and 4K or not
 - **The README lists the other servers the app talks to:** TMDB's image server (unless your Seerr admin turned on image caching), plex.tv while signing in with Plex, and Gravatar and Plex for profile pictures if you turn them on
-- - **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx), [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) (manage your Proxmox VE server) and [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) (monitor and manage your TrueNAS server). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates.
+- **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx), [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) (manage your Proxmox VE server) and [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) (monitor and manage your TrueNAS server). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates.
 
 ## 1.4.4
 
