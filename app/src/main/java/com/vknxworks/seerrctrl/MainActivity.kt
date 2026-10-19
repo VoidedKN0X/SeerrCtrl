@@ -109,6 +109,17 @@ class MainActivity : FragmentActivity() {
      * the launcher), so only routes carrying this install's secret token are taken, and only a few route shapes.
      */
     private fun takeRoute(intent: android.content.Intent?) {
+        // seerrctrl://movie/{tmdbId} and seerrctrl://tv/{tmdbId}, from the other Ctrl apps (e.g. ArrCtrl's
+        // "Open in SeerrCtrl"). They only open a movie or series page, so they need no token, but only those
+        // two shapes with a plain number are accepted.
+        val link = intent?.data
+        if (intent != null && link != null && intent.action == android.content.Intent.ACTION_VIEW && link.scheme == "seerrctrl") {
+            val kind = link.host
+            val id = link.pathSegments.singleOrNull()?.toLongOrNull()
+            intent.data = null
+            if ((kind == "movie" || kind == "tv") && id != null && id > 0) DeepLink.route = "$kind/$id"
+            return
+        }
         val r = intent?.getStringExtra(EXTRA_ROUTE) ?: return
         val token = intent.getStringExtra(EXTRA_TOKEN)
         intent.removeExtra(EXTRA_ROUTE)
