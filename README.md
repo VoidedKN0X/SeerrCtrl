@@ -24,6 +24,10 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **App lock** with PIN and fingerprint; tablet and foldable layout
 - **Private by default:** the app is hidden from screenshots and the recent-apps screen (you can turn this off), titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on
 
+## Screenshots
+
+Coming soon.
+
 ## Requirements
 
 - Android 13 or newer
