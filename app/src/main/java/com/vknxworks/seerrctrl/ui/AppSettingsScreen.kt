@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.GridView
@@ -52,11 +53,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
 import com.vknxworks.seerrctrl.data.ThemeMode
 import com.vknxworks.seerrctrl.data.Tls
 import com.vknxworks.seerrctrl.data.str
@@ -68,6 +71,8 @@ import com.vknxworks.seerrctrl.ui.lock.showBiometricPrompt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val SPONSOR_URL = "https://github.com/sponsors/VoidedKN0X"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,6 +202,10 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
             }
 
             SettingsSection("About") {
+                NavItem(Icons.Outlined.Favorite, stringResource(R.string.support_title), stringResource(R.string.support_subtitle)) {
+                    openUrl(ctx, SPONSOR_URL)
+                }
+                ItemDivider()
                 NavItem(Icons.Outlined.Info, "SeerrCtrl $appVersion", "VKNXWorks · unofficial app for Seerr, Jellyseerr and Overseerr") {}
             }
         }
