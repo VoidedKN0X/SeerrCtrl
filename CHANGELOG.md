@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.8
+
+### New
+
+- **Support SeerrCtrl** is now the first row under **About** in **More > App settings**. Tapping it opens VKNXWorks' GitHub Sponsors page (in the in-app browser tab if you've turned on **Open links in the app**, otherwise in your browser). SeerrCtrl is free and open source, and sponsoring helps keep it that way
+
 ## 1.4.7
 
 ### New
