@@ -30,6 +30,7 @@ class ActionReceiver : BroadcastReceiver() {
                 App.api.post("/request/$requestId/${if (approve) "approve" else "decline"}")
                 Notifier.replace(context, nid, Notifier.CH_PENDING, title, if (approve) "Approved" else "Declined")
                 Notifier.bump()
+                com.vknxworks.seerrctrl.ui.trackDecision(approve, "notification")
             } catch (_: Exception) {
                 Notifier.replace(context, nid, Notifier.CH_PENDING, title, "Couldn't ${if (approve) "approve" else "decline"} — open the app")
             } finally {

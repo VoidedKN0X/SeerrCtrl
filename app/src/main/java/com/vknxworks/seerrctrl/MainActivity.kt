@@ -70,7 +70,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.vknxworks.seerrctrl.data.Telemetry
 import com.vknxworks.seerrctrl.ui.AppSettingsScreen
 import com.vknxworks.seerrctrl.ui.BlocklistScreen
 import com.vknxworks.seerrctrl.ui.BrowseScreen
@@ -86,6 +88,7 @@ import com.vknxworks.seerrctrl.ui.SeerrTheme
 import com.vknxworks.seerrctrl.ui.ServerTrustPrompts
 import com.vknxworks.seerrctrl.ui.SetupScreen
 import com.vknxworks.seerrctrl.ui.UserSettingsScreen
+import com.vknxworks.seerrctrl.ui.UsageStatsPrompt
 import com.vknxworks.seerrctrl.ui.UsersScreen
 import com.vknxworks.seerrctrl.ui.WatchlistScreen
 import com.vknxworks.seerrctrl.ui.admin.AdminSettingsScreen
@@ -126,6 +129,7 @@ class MainActivity : FragmentActivity() {
         // Never keep a snapshot of the app for the recents screen.
         setRecentsScreenshotEnabled(false)
         takeRoute(intent)
+        if (savedInstanceState == null) App.telemetry.appOpened()
         enableEdgeToEdge()
         setContent {
             SeerrTheme {
@@ -265,6 +269,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             } else {
                 AdaptiveShell(activity, ::logout)
                 ServerTrustPrompts(onLogout = ::logout)
+                UsageStatsPrompt()
             }
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }
@@ -292,6 +297,14 @@ private fun AdaptiveShell(activity: FragmentActivity, logout: () -> Unit) {
             val nav = rememberNavController()
             LaunchedEffect(DeepLink.route) {
                 DeepLink.route?.let { r -> DeepLink.route = null; nav.navigate(r) }
+            }
+            // Usage stats (only if the user opted in): the kind of screen, never the title, person or user it shows.
+            val entry by nav.currentBackStackEntryAsState()
+            val route = entry?.destination?.route
+            LaunchedEffect(entry?.id) {
+                if (route != null && route != "main" && route != "empty") {
+                    App.telemetry.track("screen_viewed", mapOf("screen" to Telemetry.screenName(route)))
+                }
             }
             CompositionLocalProvider(LocalNav provides nav) {
                 if (!twoPane) {

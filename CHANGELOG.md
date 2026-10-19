@@ -2,13 +2,19 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## 1.4.4
 
-README only; the app itself hasn't changed, so this doesn't make a new release.
+### New
+
+- **Optional anonymous usage stats.** After you sign in, SeerrCtrl asks once whether you'd like to share anonymous usage stats. Nothing is sent unless you tap **Share stats**, and you can switch it on or off any time in **More > App settings > Usage stats**
+- **What's shared:** which screens and tabs you open (for example "Discover", "movie" or "Requests", never which movie, series, person or user), whether you request a movie or a series and whether in 4K, whether you approve or decline requests and how (button, swipe or notification), that you searched and which kind of search (all, keywords or studios), the app version, Android version, phone model, language, phone or tablet, and your theme setting
+- **What's never shared:** your server address, username, passwords, which titles you request, approve or search for, what you type, TMDB or request IDs, or any ID that follows you between sessions. Each session gets a new random ID, and stats from before and after you switch them off and on again aren't linked
+- **Where it goes:** to VKNXWorks' own self-hosted server (Aptabase, at telemetry.vkhub.org over HTTPS only), not to Google or any analytics company. Failed sends are dropped, never saved for later. Builds you make from source can't send stats at all, and the setting doesn't appear in them
 
 ### Changed
 
 - **PrintCtrl in the Ctrl series list.** The README's table of Ctrl apps now includes [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl), the app for Bambu Lab printers through a self-hosted Bambuddy server, and Spoolman spools.
+- The README has a new **Usage stats** section listing exactly what's collected
 
 ## 1.4.3
 
