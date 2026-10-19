@@ -266,10 +266,10 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
             ) {
                 if (manage && status == RequestStatus.Pending) {
                     FilledTonalButton(enabled = !act.busy, onClick = {
-                        act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") }
+                        act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve"); trackDecision(true, "button") }
                     }) { Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Approve") }
                     OutlinedButton(enabled = !act.busy, onClick = {
-                        act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") }
+                        act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline"); trackDecision(false, "button") }
                     }) { Icon(Icons.Outlined.Close, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Decline") }
                 }
                 if (manage && status == RequestStatus.Failed) {
@@ -338,8 +338,8 @@ fun RequestInline(r: JSONObject, onChanged: () -> Unit, onEdit: () -> Unit) {
             if (status == RequestStatus.Pending && (manage || mine) || manage && status == RequestStatus.Failed) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (manage && status == RequestStatus.Pending) {
-                        FilledTonalButton({ act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") } }) { Text("Approve") }
-                        OutlinedButton({ act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") } }) { Text("Decline") }
+                        FilledTonalButton({ act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve"); trackDecision(true, "button") } }) { Text("Approve") }
+                        OutlinedButton({ act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline"); trackDecision(false, "button") } }) { Text("Decline") }
                     }
                     if (manage && status == RequestStatus.Failed) {
                         FilledTonalButton({ act.run("Retrying", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/retry") } }) { Text("Retry") }
@@ -379,6 +379,10 @@ fun RequestMiniCard(r: JSONObject) {
 }
 
 
+/** Usage stats (only if the user opted in): approved or declined and how, never which request or title. */
+fun trackDecision(approved: Boolean, via: String) =
+    App.telemetry.track("request_decided", mapOf("decision" to if (approved) "approved" else "declined", "via" to via))
+
 /** Pending requests can be swiped: right approves, left declines. Other cards don't move. */
 @Composable
 fun SwipeToDecide(
@@ -402,6 +406,7 @@ fun SwipeToDecide(
             act.run(if (approve) "Approved" else "Declined", onOk = { onDecided(approve) }) {
                 try { App.api.post("/request/${r.int("id")}/${if (approve) "approve" else "decline"}") }
                 catch (e: Exception) { onFailed(); throw e }
+                trackDecision(approve, "swipe")
             }
             true
         },

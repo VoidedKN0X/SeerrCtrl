@@ -52,6 +52,16 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 - **Late notifications on ColorOS and similar phones:** in the app go to *More → App settings → Notifications → Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
 
+## Usage stats
+
+SeerrCtrl can share anonymous usage stats, **only if you say yes**. It asks once after you sign in, and you can change it any time in **More > App settings > Usage stats**.
+
+- **Shared:** which screens you open (the kind of screen, never which movie, series, person or user), whether you request a movie or a series (and in 4K or not), whether requests are approved or declined and from where (button, swipe or notification), that you searched and which search type, the app version, Android version, phone model, language, phone or tablet, and your theme setting.
+- **Never shared:** your server address, username or passwords, which titles you request, approve or search for, TMDB or request IDs, what you type, or any ID that stays the same between sessions.
+- **Where:** VKNXWorks' own self-hosted [Aptabase](https://aptabase.com) server. Nothing goes to Google or analytics companies. Like any website, the server sees your IP address; Aptabase uses it only to work out the country and doesn't store it.
+
+Builds from source don't include the stats key, so they can't send anything and the setting is hidden. The code is in [`Telemetry.kt`](app/src/main/java/com/vknxworks/seerrctrl/data/Telemetry.kt).
+
 ## Build from source
 
 You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.
