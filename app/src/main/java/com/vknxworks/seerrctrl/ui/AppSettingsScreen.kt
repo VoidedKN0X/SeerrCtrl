@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Dns
@@ -110,6 +111,12 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                 ToggleItem(Icons.AutoMirrored.Outlined.OpenInNew, "Open links in the app", "Trailers and external pages open in an in-app browser tab", s.useCustomTabs) {
                     s.useCustomTabs = it
                 }
+                ItemDivider()
+                ToggleItem(
+                    Icons.Outlined.AccountCircle, "Profile pictures from Gravatar and Plex",
+                    "Gravatar and Plex see your IP address and whose profiles you look at. Off shows initials instead",
+                    s.externalAvatars,
+                ) { s.externalAvatars = it }
             }
 
             NotificationSection()

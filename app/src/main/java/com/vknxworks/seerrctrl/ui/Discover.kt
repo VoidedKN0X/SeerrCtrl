@@ -105,7 +105,8 @@ suspend fun tilesFor(items: List<Pair<String, Int>>): List<Tile> = coroutineScop
 
 private data class Studio(val id: Int, val name: String, val logo: String)
 
-private const val LOGO = "/t/p/w780_filter(duotone,ffffff,bababa)"
+/** TMDB image size for studio and network logos (white duotone), as Seerr's own web app uses. */
+private const val LOGO_SIZE = "w780_filter(duotone,ffffff,bababa)"
 private val studios = listOf(
     Studio(2, "Disney", "/wdrCwmRnLFJhEoH8GSfymY85KHT.png"), Studio(127928, "20th Century Studios", "/h0rjX5vjW5r8yEnUBStFarjcLT4.png"),
     Studio(34, "Sony Pictures", "/GagSvqWlyPdkFHMfQ3pNq6ix9P.png"), Studio(174, "Warner Bros. Pictures", "/ky0xOc5OrhzkZ1N6KyUxacfQsCk.png"),
@@ -276,7 +277,8 @@ private fun LogoRow(row: SliderRow.Logos) {
                     .padding(14.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                AsyncImage("https://image.tmdb.org$LOGO${s.logo}", s.name, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                // Through Seerr's image cache when it's on, like every other TMDB image.
+                App.session.tmdb(s.logo, LOGO_SIZE)?.let { AsyncImage(it, s.name, Modifier.fillMaxSize(), contentScale = ContentScale.Fit) }
             }
         }
     }

@@ -43,6 +43,10 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             return if (e.code == 401 || e.code == 403) Result.success() else Result.retry()
         } catch (_: Exception) { return Result.retry() }
 
+        // The server's public settings (whether TMDB images go through Seerr's cache), when the app itself
+        // hasn't loaded them in this process: otherwise notification posters would always come straight from TMDB.
+        if (App.session.public.length() == 0) runCatching { App.session.loadPublic() }
+
         val myId = me.int("id")
         val perms = me.long("permissions")
         // A different account (or server) than last time: start fresh.
@@ -73,7 +77,8 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
         val d = try { MediaCache.get(type, tmdbId) } catch (_: Exception) { null }
         val title = d.str("title") ?: d.str("name") ?: if (type == "tv") "A series" else "A movie"
         val poster = try {
-            val url = App.session.tmdb(d.str("posterPath"), "w185") ?: d.str("posterPath")?.let { "https://image.tmdb.org/t/p/w185$it" }
+            // Through Seerr's image cache when it's on, like the posters in the app.
+            val url = App.session.tmdb(d.str("posterPath"), "w185")
             if (url == null) null else {
                 val res = SingletonImageLoader.get(applicationContext).execute(ImageRequest.Builder(applicationContext).data(url).build())
                 (res as? SuccessResult)?.image?.toBitmap()
