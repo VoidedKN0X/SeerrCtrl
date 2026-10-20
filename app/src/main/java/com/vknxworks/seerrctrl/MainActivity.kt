@@ -93,6 +93,8 @@ import com.vknxworks.seerrctrl.ui.admin.AdminSectionScreen
 import com.vknxworks.seerrctrl.ui.isAppInDarkTheme
 import com.vknxworks.seerrctrl.ui.lock.AppLockViewModel
 import com.vknxworks.seerrctrl.ui.lock.LockScreen
+import com.vknxworks.seerrctrl.ui.lock.expectReturn
+import androidx.compose.ui.semantics.clearAndSetSemantics
 
 // FragmentActivity (a ComponentActivity) is required by the fingerprint prompt.
 class MainActivity : FragmentActivity() {
@@ -245,32 +247,30 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
     LaunchedEffect(signedIn) {
         if (signedIn && !App.settings.askedNotificationPermission && !Notifier.canPost(activity)) {
             App.settings.askedNotificationPermission = true
+            expectReturn()
             permLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
-    // Load who we are on start, and keep background checks scheduled.
-    LaunchedEffect(signedIn) {
-        if (signedIn && App.session.me == null) {
+    // Load who we are on start (once unlocked: the sign-in may be sealed by the app lock), and keep
+    // background checks scheduled.
+    LaunchedEffect(signedIn, lockVm.locked) {
+        if (signedIn && !lockVm.locked && App.session.me == null) {
             try { App.session.refresh() } catch (_: Exception) {}
         }
         if (signedIn) Notifier.schedule(activity) else Notifier.cancel(activity)
     }
 
-    if (lockVm.locked && App.prefs.isConfigured) {
-        LockScreen(
-            vm = lockVm,
-            onForgot = {
-                App.lock.clearPin()
-                lockVm.unlock()
-                logout()
-            },
-        )
+    val showLock = lockVm.locked && App.prefs.isConfigured
+    // Before the first unlock nothing of the account is shown. After that, the screens stay open underneath
+    // the lock (hidden and unreachable), so a half-written request or issue is still there after unlocking.
+    if (showLock && !lockVm.everUnlocked) {
+        LockScreen(vm = lockVm, onForgot = { forgetPin(lockVm, ::logout) })
         return
     }
 
     CompositionLocalProvider(LocalSnackbar provides snack) {
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().then(if (showLock) Modifier.clearAndSetSemantics { } else Modifier)) {
             if (!signedIn) {
                 SetupScreen(onDone = { signedIn = true }, onCancel = null)
             } else {
@@ -280,6 +280,14 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }
     }
+    if (showLock) LockScreen(vm = lockVm, onForgot = { forgetPin(lockVm, ::logout) })
+}
+
+/** "Forgot PIN?": the sign-in can't be decrypted without it, so turn the lock off and log out. */
+private fun forgetPin(lockVm: AppLockViewModel, logout: () -> Unit) {
+    App.lock.disable()
+    lockVm.reset()
+    logout()
 }
 
 /**

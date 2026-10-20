@@ -82,6 +82,13 @@ class SeerrApi(private val prefs: Prefs) {
         certChanged = false
     }
 
+    /** The app locked: forget the session cookie if the lock sealed it, until [reload] after unlocking. */
+    fun lockDown() {
+        if (!prefs.cookieSealed) return
+        cookie = ""
+        clientCache = null
+    }
+
     /** Points the client at a server that isn't saved yet (setup screen). */
     fun useCandidate(base: String, pinned: String, allowHttp: Boolean) {
         baseUrl = base.trimEnd('/')

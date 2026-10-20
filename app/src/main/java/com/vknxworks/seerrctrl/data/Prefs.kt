@@ -18,10 +18,34 @@ class Prefs(context: Context) {
         get() = sp.getString("base_url", "") ?: ""
         set(v) = sp.edit().putString("base_url", v).apply()
 
-    /** Seerr's session cookie (connect.sid), encrypted at rest. */
+    /** The app lock's vault, and whether the session cookie should be sealed with it (set by [com.vknxworks.seerrctrl.App]). */
+    var vault: LockVault? = null
+    var sealWanted: () -> Boolean = { false }
+
+    /**
+     * Seerr's session cookie (connect.sid), encrypted at rest with the Keystore. With the app lock on (and
+     * background notifications off) it's also encrypted with the lock's key, so it reads as "" while locked.
+     */
     var sessionCookie: String
-        get() = decrypt(sp.getString("session", null))
-        set(v) = sp.edit().putString("session", encrypt(v)).apply()
+        get() {
+            val plain = decrypt(sp.getString("session", null))
+            return if (LockVault.isSealed(plain)) vault?.open(plain) ?: "" else plain
+        }
+        set(v) {
+            if (v.isEmpty()) { sp.edit().remove("session").apply(); return }
+            // Locked and it must be sealed: keep what's saved rather than store it unprotected.
+            val inner = if (sealWanted()) vault?.seal(v) ?: return else v
+            sp.edit().putString("session", encrypt(inner)).apply()
+        }
+
+    /** The saved cookie is sealed by the app lock (unreadable until the app is unlocked). */
+    val cookieSealed: Boolean get() = LockVault.isSealed(decrypt(sp.getString("session", null)))
+
+    /** Seals or unseals the saved cookie to match [sealWanted]. Needs the app unlocked if it's sealed now. */
+    fun resealCookie() {
+        val c = sessionCookie
+        if (c.isNotEmpty()) sessionCookie = c
+    }
 
     /** "Self-signed certificate" option. Now only means "a certificate is (or should be) pinned". */
     var allowInsecureTls: Boolean
@@ -45,7 +69,7 @@ class Prefs(context: Context) {
         }
 
     /** True once a sign-in has worked; cleared on log out. */
-    val isConfigured: Boolean get() = baseUrl.isNotBlank() && sessionCookie.isNotBlank()
+    val isConfigured: Boolean get() = baseUrl.isNotBlank() && (cookieSealed || sessionCookie.isNotBlank())
 
     fun clearSession() = sp.edit().remove("session").apply()
     fun clear() = sp.edit().clear().apply()

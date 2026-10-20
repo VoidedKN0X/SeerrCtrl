@@ -2,6 +2,30 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.5.0
+
+The app lock now works the same way in every Ctrl app, with the strongest protection of the options we compared.
+
+### Changed
+
+- **PINs now need at least 6 digits** (up to 12), and very obvious ones such as 111111 or 123456 are refused. If your PIN has 4 or 5 digits, it still unlocks SeerrCtrl once after updating, and then you choose a new one before going on.
+- **Fingerprint unlock has to be turned on again** after updating (**More > App settings > Unlock with fingerprint**), because it now unlocks a different, stronger key. The PIN is also needed instead of the fingerprint after the phone restarts and at least every 72 hours, the same as Android does for your screen lock.
+- **"Lock again" has more choices**: as soon as you leave the app, after 1, 5 or 15 minutes away, after 1 hour away, or only when the app restarts. "Instantly" stays as "As soon as you leave the app"; "30 s" becomes "As soon as you leave the app", so nothing waits longer than before. New setups start with "As soon as you leave the app".
+- **Opening a link, a trailer, a calendar app or Android's settings from SeerrCtrl no longer counts as leaving the app.** Coming straight back doesn't ask for the PIN again; going to the home screen or another app yourself still does.
+- **What you were doing is still there after unlocking**: a half-written request or issue report stays open underneath the lock instead of being closed.
+- **"Forgot PIN? Log out"** now asks first, explains that the PIN can't be recovered, and turns the app lock off along with logging out.
+
+### Security
+
+- **Your sign-in is encrypted with your PIN while SeerrCtrl is locked.** The key that decrypts it only exists in memory while the app is unlocked and is wiped the moment it locks, so a locked app, or a copy of its files, can't use your Seerr session. **Exception:** while notifications are on, background checks need the session when the app isn't open, so it stays encrypted only with the phone's Keystore, as before. Turn notifications off for the full protection; the App lock setting says which applies.
+- **The PIN can't be guessed off the phone.** It's never stored. It's stretched with 600,000 rounds of PBKDF2 (was 120,000) and mixed with a secret held in the phone's secure hardware (StrongBox where available), so copying SeerrCtrl's files to a computer isn't enough to try PINs there.
+- **Fingerprint unlock can't be faked**: the fingerprint unlocks the key that opens your sign-in, inside the phone's secure hardware, so a tampered "success" on a rooted phone opens nothing. Adding a new fingerprint turns fingerprint unlock off until you turn it on again.
+- **Wrong PINs still lock the screen** (30 seconds after 5 tries, doubling up to 15 minutes). Restarting the app or the phone, or changing the clock, doesn't reset the wait, and a wait running when you update carries over.
+
+### Changed (README)
+
+- **README**: the App lock line describes the new PIN, fingerprint and encrypted sign-in
+
 ## 1.4.12
 
 ### Changed

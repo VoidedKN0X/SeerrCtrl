@@ -67,10 +67,12 @@ import com.vknxworks.seerrctrl.R
 import com.vknxworks.seerrctrl.data.ThemeMode
 import com.vknxworks.seerrctrl.data.Tls
 import com.vknxworks.seerrctrl.data.str
+import com.vknxworks.seerrctrl.data.LockAgain
+import com.vknxworks.seerrctrl.data.LockSettings
 import com.vknxworks.seerrctrl.ui.lock.PIN_MAX
 import com.vknxworks.seerrctrl.ui.lock.PIN_MIN
 import com.vknxworks.seerrctrl.ui.lock.biometricAvailable
-import com.vknxworks.seerrctrl.ui.lock.clearBiometricKey
+import com.vknxworks.seerrctrl.ui.lock.expectReturn
 import com.vknxworks.seerrctrl.ui.lock.showBiometricPrompt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,32 +133,38 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
             NotificationSection()
 
             SettingsSection("Security") {
-                ToggleItem(Icons.Outlined.Lock, "App lock", "Ask for a PIN when opening the app", lock.pinSet) { on ->
+                ToggleItem(
+                    Icons.Outlined.Lock, "App lock",
+                    "Ask for an app PIN when opening the app. While locked, your sign-in is encrypted with the PIN" +
+                        (if (s.notifyEnabled) ", except what notifications need to check your server in the background" else ""),
+                    lock.pinSet,
+                ) { on ->
                     pinDialog = if (on) PinMode.New else PinMode.Disable
                 }
                 if (lock.pinSet) {
                     ItemDivider()
                     ToggleItem(
                         Icons.Outlined.Fingerprint, "Unlock with fingerprint",
-                        if (bioAvailable) "Your PIN still works as a backup" else "No secure fingerprint unlock is set up on this phone",
-                        lock.biometricEnabled, enabled = bioAvailable,
+                        if (bioAvailable) "Strong biometrics only. The PIN is still needed after a restart and every 72 hours"
+                        else "No secure fingerprint unlock is set up on this phone",
+                        lock.biometricEnabled, enabled = bioAvailable || lock.biometricEnabled,
                     ) { on ->
                         val act = ctx as? FragmentActivity
-                        if (on && act != null) showBiometricPrompt(
-                            act, "Confirm to turn on", enrol = true,
-                            onUnavailable = { scope.launch { snack.showSnackbar("Fingerprint unlock isn't available on this phone") } },
-                        ) { lock.biometricEnabled = true }
-                        else {
-                            lock.biometricEnabled = false
-                            clearBiometricKey()
+                        if (on && act != null) {
+                            val cipher = lock.vault.biometricEnrolCipher()
+                            if (cipher == null) scope.launch { snack.showSnackbar("Fingerprint unlock isn't available on this phone") }
+                            else showBiometricPrompt(act, "Confirm to turn on", cipher) { c ->
+                                if (!lock.vault.finishBiometricEnrol(c)) scope.launch { snack.showSnackbar("Couldn't turn on fingerprint unlock") }
+                            }
+                        } else {
+                            lock.vault.disableBiometric()
                         }
                     }
                     ItemDivider()
-                    val afters = listOf(0, 30, 60, 300)
                     ChoiceItem(
-                        Icons.Outlined.Timer, "Lock again after leaving the app", listOf("Instantly", "30 s", "1 min", "5 min"),
-                        afters.indexOf(lock.lockAfterSeconds).coerceAtLeast(0),
-                    ) { lock.lockAfterSeconds = afters[it] }
+                        Icons.Outlined.Timer, "Lock again", LockAgain.entries.map { it.label },
+                        lock.lockAgain.ordinal,
+                    ) { lock.lockAgain = LockAgain.entries[it] }
                     ItemDivider()
                     NavItem(Icons.Outlined.Password, "Change PIN") { pinDialog = PinMode.Change }
                 }
@@ -274,6 +282,12 @@ private fun PinSetupDialog(mode: PinMode, onDismiss: () -> Unit) {
         title = { Text(when (mode) { PinMode.New -> "Set a PIN"; PinMode.Change -> "Change PIN"; PinMode.Disable -> "Turn off app lock" }) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (mode == PinMode.New) {
+                    Text(
+                        "Use a PIN that's different from your phone's. If you forget it, the only way back in is to log out and sign in again.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 if (needsCurrent) PinField("Current PIN", current) { current = digits(it) }
                 if (needsNew) {
                     PinField("New PIN ($PIN_MIN–$PIN_MAX digits)", first) { first = digits(it) }
@@ -286,20 +300,30 @@ private fun PinSetupDialog(mode: PinMode, onDismiss: () -> Unit) {
             TextButton(enabled = !working, onClick = {
                 scope.launch {
                     working = true
-                    // Wrong PINs here count towards the same lockout as on the lock screen.
-                    val lockedOut = needsCurrent && lock.lockoutRemaining() > 0
-                    val currentOk = !needsCurrent || (!lockedOut && withContext(Dispatchers.Default) { lock.checkPin(current) })
-                    if (needsCurrent && !lockedOut) { if (currentOk) lock.failedAttempts = 0 else lock.recordFailure() }
                     error = when {
-                        lockedOut -> "Too many wrong PINs. Try again in ${(lock.lockoutRemaining() + 999) / 1000} s"
-                        !currentOk -> "Current PIN is wrong"
                         needsNew && first.length < PIN_MIN -> "Use at least $PIN_MIN digits"
                         needsNew && first != second -> "The PINs don't match"
-                        needsNew && first.toSet().size == 1 -> "Pick a PIN that isn't one repeated digit"
+                        needsNew && LockSettings.isObvious(first) -> "Too easy to guess. Pick a less obvious PIN"
                         else -> null
                     }
+                    if (error == null && needsCurrent) {
+                        // Wrong PINs here count towards the same lockout as on the lock screen.
+                        val result = withContext(Dispatchers.Default) { lock.unlockWithPin(current) }
+                        error = when (result) {
+                            LockSettings.Unlock.Ok, LockSettings.Unlock.NeedsNewPin -> null
+                            LockSettings.Unlock.LockedOut -> "Too many wrong PINs. Try again in ${(lock.lockoutRemaining() + 999) / 1000} s"
+                            LockSettings.Unlock.Wrong -> "Current PIN is wrong"
+                        }
+                    }
                     if (error == null) {
-                        withContext(Dispatchers.Default) { if (needsNew) lock.setPin(first) else lock.clearPin() }
+                        withContext(Dispatchers.Default) {
+                            when (mode) {
+                                PinMode.New -> App.enableLock(first)
+                                // Same key, new PIN: fingerprint unlock keeps working.
+                                PinMode.Change -> if (lock.vault.isOpen) lock.vault.changePin(first) else App.enableLock(first)
+                                PinMode.Disable -> App.disableLock()
+                            }
+                        }
                         onDismiss()
                     }
                     working = false
@@ -330,7 +354,7 @@ private fun NotificationSection() {
     var unrestricted by remember { mutableStateOf(pm.isIgnoringBatteryOptimizations(ctx.packageName)) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         canPost = ok
-        if (ok) { s.notifyEnabled = true; Notifier.schedule(ctx) }
+        if (ok) { s.notifyEnabled = true; App.prefs.resealCookie(); Notifier.schedule(ctx) }
     }
     val batteryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         unrestricted = pm.isIgnoringBatteryOptimizations(ctx.packageName)
@@ -343,8 +367,8 @@ private fun NotificationSection() {
             if (!canPost) "Android isn't allowing notifications for SeerrCtrl yet" else "Checks your server in the background",
             s.notifyEnabled && canPost,
         ) { on ->
-            if (on && !canPost) launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-            else { s.notifyEnabled = on; resched() }
+            if (on && !canPost) { expectReturn(); launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
+            else { s.notifyEnabled = on; App.prefs.resealCookie(); resched() }
         }
         if (s.notifyEnabled && canPost) {
             ItemDivider()
@@ -370,6 +394,7 @@ private fun NotificationSection() {
                 if (unrestricted) "Unrestricted, so checks run on time"
                 else "Restricted. ColorOS and other phones may delay or skip checks; tap to allow",
             ) {
+                expectReturn()
                 if (!unrestricted) {
                     batteryLauncher.launch(
                         Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}"))

@@ -327,6 +327,7 @@ private fun addToCalendar(context: android.content.Context, e: CalEvent) {
         .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, start + 86_400_000L)
         .putExtra(CalendarContract.Events.DESCRIPTION, "From SeerrCtrl")
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    com.vknxworks.seerrctrl.ui.lock.expectReturn()
     try { context.startActivity(i) } catch (_: Exception) {}
 }
 
