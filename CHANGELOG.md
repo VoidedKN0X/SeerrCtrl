@@ -2,6 +2,16 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.11
+
+### Privacy
+
+- **Google-free and de-Googled.** SeerrCtrl has no Google Play services, Firebase or other Google services and never contacts Google. This release removes the last mention of Google from inside the app (a note in the app's setup about emoji fonts), so nothing Google-related is left in it. Nothing changes in how the app works: emoji still use your phone's own emoji font, and SeerrCtrl works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps)
+
+### Changed
+
+- **README**: the "Google-free" line now reads "Google-free and de-Googled" and names the de-Googled phones SeerrCtrl works on
+
 ## 1.4.10
 
 ### Privacy
