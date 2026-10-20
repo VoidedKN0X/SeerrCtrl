@@ -118,18 +118,6 @@ fun MainScreen() {
 
     BackHandler(MainTab.selected != MainTab.DISCOVER) { MainTab.selected = MainTab.DISCOVER }
 
-    // Usage stats (only if the user opted in): which tab, by a fixed name.
-    LaunchedEffect(MainTab.selected) {
-        val tab = when (MainTab.selected) {
-            MainTab.SEARCH -> "search"
-            MainTab.REQUESTS -> "requests"
-            MainTab.ISSUES -> "issues"
-            MainTab.MORE -> "more"
-            else -> "discover"
-        }
-        App.telemetry.track("screen_viewed", mapOf("screen" to "tab_$tab"))
-    }
-
     val content: @Composable () -> Unit = {
         AnimatedContent(MainTab.selected, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
             when (t) {
@@ -191,10 +179,6 @@ fun SearchTab() {
     var debounced by rememberSaveable { mutableStateOf("") }
     var kind by rememberSaveable { mutableStateOf(SearchKind.All) }
     LaunchedEffect(query) { delay(400); debounced = query.trim() }
-    // Usage stats: only that a search ran and which kind (all, keywords, studios), never what was typed.
-    LaunchedEffect(debounced, kind) {
-        if (debounced.isNotEmpty()) App.telemetry.track("search_used", mapOf("kind" to kind.name.lowercase()))
-    }
 
     Column(Modifier.fillMaxSize()) {
         OutlinedTextField(

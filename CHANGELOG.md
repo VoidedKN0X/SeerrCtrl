@@ -2,11 +2,15 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## 1.4.10
+
+### Privacy
+
+- **No more usage stats: SeerrCtrl is now telemetry-free.** The optional anonymous usage stats are gone completely, along with the Usage stats setting in More > App settings and the one-time question after signing in. The app no longer contacts VKNXWorks' stats server at all, and the settings it used are deleted from your phone when you update. SeerrCtrl now only talks to your Seerr server, plus TMDB's image server, plex.tv and Gravatar in the same cases as before (see Privacy in the README)
 
 ### Changed
 
-- **README**: a Screenshots section (screenshots are coming soon), and a link preview image (`.github/assets/social-preview.png`) with SeerrCtrl's icon, name and summary, for when the repo is shared on Reddit, Discord or elsewhere
+- **README**: a Screenshots section (screenshots are coming soon), a new Privacy section and a "Telemetry-free" badge, and a link preview image (`.github/assets/social-preview.png`) with SeerrCtrl's icon, name and summary, for when the repo is shared on Reddit, Discord or elsewhere
 
 ## 1.4.9
 

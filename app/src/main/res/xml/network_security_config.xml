@@ -12,13 +12,6 @@
             <certificates src="user" />
         </trust-anchors>
     </base-config>
-    <!-- VKNXWorks' usage stats server (only used if the user opted in): https only. -->
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">telemetry.vkhub.org</domain>
-        <trust-anchors>
-            <certificates src="system" />
-        </trust-anchors>
-    </domain-config>
     <!-- Third-party hosts: https only, system CAs only. -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">plex.tv</domain>

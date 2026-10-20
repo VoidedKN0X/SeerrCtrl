@@ -2,7 +2,7 @@
 
 **Request movies and shows on your Seerr server from your phone.**
 
-[![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/SeerrCtrl?label=download)](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest) ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
+[![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/SeerrCtrl?label=download)](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest) ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) ![Telemetry-free](https://img.shields.io/badge/telemetry-none-brightgreen) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
 
 SeerrCtrl is an Android app for [Seerr](https://github.com/seerr-team/seerr) (and the older Jellyseerr and Overseerr). Discover, request and manage movies and series on your self-hosted server, with everything the web UI can do.
 
@@ -59,19 +59,13 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 - **Late notifications on ColorOS and similar phones:** in the app go to *More → App settings → Notifications → Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
 
-## Usage stats
+## Privacy
 
-SeerrCtrl can share anonymous usage stats, **only if you say yes**. It asks once after you sign in, and you can change it any time in **More > App settings > Usage stats**.
-
-- **Shared:** which screens you open (the kind of screen, never which movie, series, person or user), whether you request a movie or a series (and in 4K or not), whether requests are approved or declined and from where (button, swipe or notification), that you searched and which search type, the app version, Android version, phone model, language, phone or tablet, and your theme setting.
-- **Never shared:** your server address, username or passwords, which titles you request, approve or search for, TMDB or request IDs, what you type, or any ID that stays the same between sessions.
-- **Where:** VKNXWorks' own self-hosted [Aptabase](https://aptabase.com) server. Nothing goes to Google or analytics companies. Like any website, the server sees your IP address; Aptabase uses it only to work out the country and doesn't store it.
-
-Builds from source don't include the stats key, so they can't send anything and the setting is hidden. The code is in [`Telemetry.kt`](app/src/main/java/com/vknxworks/seerrctrl/data/Telemetry.kt).
+**Telemetry-free.** SeerrCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add, plus the image and sign-in services Seerr itself relies on, listed below.
 
 ### Other servers the app talks to
 
-Apart from your own Seerr server (and the opt-in stats above), SeerrCtrl only contacts:
+Apart from your own Seerr server, SeerrCtrl only contacts:
 
 - **TMDB's image server** (`image.tmdb.org`) for posters, backdrops, photos and studio logos, unless your Seerr admin turned on **Cache images locally** (Settings > General in Seerr). Then every image comes through your Seerr server instead, and TMDB never sees your phone. TMDB sees your IP address and which titles' pictures are loaded.
 - **plex.tv**, only while you sign in with Plex.
