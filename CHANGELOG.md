@@ -2,6 +2,13 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.4.12
+
+### Changed
+
+- **64-bit ARM phones only.** SeerrCtrl now ships only the 64-bit ARM (arm64-v8a) build that nearly every phone from the last several years uses, like every Ctrl app, so the download is smaller. Old 32-bit phones and x86 devices (emulators, some Chromebooks) are no longer supported.
+- **README**: Requirements say 64-bit ARM phones only
+
 ## 1.4.11
 
 ### Privacy
