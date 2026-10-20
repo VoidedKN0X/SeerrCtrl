@@ -21,7 +21,8 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Upcoming calendar** for your requests and watchlist, plus your **Watchlist** and **Profile** (your requests, quota and stats)
 - **Issues**: report, comment and resolve
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
-- **App lock** with PIN and fingerprint; tablet and foldable layout
+- **App lock** with its own PIN (6+ digits) and optional fingerprint; your sign-in stays encrypted with the PIN while the app is locked
+- **Tablet and foldable layout**
 - **Private by default:** the app is hidden from screenshots and the recent-apps screen (you can turn this off), titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on
 
 ## Screenshots

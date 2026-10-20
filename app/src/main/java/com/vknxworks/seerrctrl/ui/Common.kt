@@ -512,6 +512,8 @@ fun ChoiceItem(icon: ImageVector?, title: String, options: List<String>, selecte
  * http and https are opened; anything else (content:, file:, intent:, other apps' schemes) is ignored.
  */
 fun openUrl(context: Context, url: String) {
+    // Opening a link isn't leaving the app: coming straight back doesn't ask for the PIN again.
+    com.vknxworks.seerrctrl.ui.lock.expectReturn()
     val uri = Uri.parse(url.trim())
     val scheme = uri.scheme?.lowercase()
     if ((scheme != "http" && scheme != "https") || uri.host.isNullOrEmpty()) return
