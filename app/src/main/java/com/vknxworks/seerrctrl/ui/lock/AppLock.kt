@@ -152,23 +152,31 @@ class AppLockViewModel : ViewModel() {
 
     init { refreshLockout() }
 
+    /** The current trip away was started by the app itself (a link, trailer, settings). */
+    private var exemptTrip = false
+
     fun onBackground() {
         val trip = LockTrips.expectReturnAt
         LockTrips.expectReturnAt = 0L
-        // Only right after the app opened something itself; leaving later still counts.
-        if (trip > 0 && SystemClock.elapsedRealtime() - trip < 5_000) { backgroundedAt = 0L; return }
         backgroundedAt = SystemClock.elapsedRealtime()
+        // Only right after the app opened something itself; leaving later still counts.
+        exemptTrip = trip > 0 && backgroundedAt - trip < 5_000
+        if (exemptTrip) return
         // "As soon as you leave" locks before the app is hidden, so the key is gone while it's in the background.
         if (settings.pinSet && settings.lockAgain == LockAgain.IMMEDIATELY) lockNow()
     }
 
     fun onForeground() {
         val since = backgroundedAt
+        val exempt = exemptTrip
         backgroundedAt = 0L
+        exemptTrip = false
         LockTrips.expectReturnAt = 0L
         val after = settings.lockAgain.millis
         if (!settings.pinSet || locked || since == 0L || after < 0) return
-        if (SystemClock.elapsedRealtime() - since >= after) lockNow()
+        // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
+        val limit = if (exempt) maxOf(after, 5 * 60_000L) else after
+        if (SystemClock.elapsedRealtime() - since >= limit) lockNow()
     }
 
     fun lockNow() {

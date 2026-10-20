@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.5.1
+
+### Security
+
+- **Trips out of the app no longer skip the lock if you stay away.** Links, trailers, the calendar and Android's settings and permission prompts still don't count as leaving the app, but if you don't come back within 5 minutes (or your "Lock again" time, if that's longer), SeerrCtrl locks anyway. Before, such a trip never locked, however long you were gone.
+
 ## 1.5.0
 
 The app lock now works the same way in every Ctrl app, with the strongest protection of the options we compared.
