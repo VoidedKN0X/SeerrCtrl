@@ -33,7 +33,6 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Palette
@@ -190,20 +189,6 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                     ItemDivider()
                 }
                 NavItem(Icons.AutoMirrored.Outlined.Logout, "Log out", "Sign out and forget this server") { confirmLogout = true }
-            }
-
-            if (App.telemetry.available) {
-                SettingsSection("Usage stats") {
-                    ToggleItem(
-                        Icons.Outlined.Insights, "Share anonymous usage stats", "Helps decide what to improve next",
-                        s.usageStats,
-                    ) { App.telemetry.setOptIn(it) }
-                }
-                Text(
-                    USAGE_STATS_DESCRIPTION,
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp),
-                )
             }
 
             SettingsSection(stringResource(R.string.group_about)) {

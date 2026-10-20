@@ -12,6 +12,13 @@ enum class ThemeMode { System, Light, Dark }
 class Settings(context: Context) {
     private val sp = context.getSharedPreferences("seerr_settings", Context.MODE_PRIVATE)
 
+    init {
+        // Versions before 1.4.10 stored the choice for the old opt-in stats under keys starting with
+        // "usage_". Nothing uses them any more, so they're deleted from the phone.
+        val old = sp.all.keys.filter { it.startsWith("usage_") }
+        if (old.isNotEmpty()) sp.edit().apply { old.forEach { remove(it) } }.apply()
+    }
+
     private fun bool(key: String, def: Boolean) = mutableStateOf(sp.getBoolean(key, def))
     private fun int(key: String, def: Int) = mutableIntStateOf(sp.getInt(key, def))
 
@@ -86,18 +93,6 @@ class Settings(context: Context) {
     var notifyEveryMinutes: Int
         get() = _nEvery.intValue
         set(v) { _nEvery.intValue = v; sp.edit().putInt("notify_every", v).apply() }
-
-    /** Opt-in anonymous usage stats (off until the user says yes). */
-    private val _usageStats = bool("usage_stats", false)
-    var usageStats: Boolean
-        get() = _usageStats.value
-        set(v) { _usageStats.value = v; sp.edit().putBoolean("usage_stats", v).apply() }
-
-    /** Whether the one-time usage stats question has been answered. */
-    private val _usageStatsAsked = bool("usage_stats_asked", false)
-    var usageStatsAsked: Boolean
-        get() = _usageStatsAsked.value
-        set(v) { _usageStatsAsked.value = v; sp.edit().putBoolean("usage_stats_asked", v).apply() }
 
     var askedNotificationPermission: Boolean
         get() = sp.getBoolean("asked_notif_perm", false)
