@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.6.4
+
+### Fixed
+
+- **Fingerprint unlock works again after you leave the app.** Once you'd left SeerrCtrl with the back gesture or by swiping home, the lock screen no longer asked for your fingerprint when you came back, and tapping **Use fingerprint** could do nothing either; only the PIN worked until the app was force-closed. The fingerprint prompt was asked for while SeerrCtrl was still going to the background or coming back on screen, the phone dropped it without answering, and the lock screen never asked again for that lock. Now the prompt only opens once SeerrCtrl is fully back on screen, a prompt that never answered can't block the next one (tapping **Use fingerprint** always opens a fresh one), and the lock screen offers your fingerprint again every time you come back to it. The same applies to the prompt for turning on fingerprint unlock in **Settings**.
+
 ## 1.6.3
 
 ### Privacy
