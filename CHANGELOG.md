@@ -2,6 +2,24 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.5.2
+
+The app lock and App settings now look and work the same as in every other Ctrl app.
+
+### Changed
+
+- **New lock screen look**, the same as in the other Ctrl apps: a round lock badge, PIN dots that show a spinner while your PIN is checked, and **Forgot PIN?** (it still asks first, then logs out and resets the lock).
+- **Turning the app lock on, changing the PIN and turning the lock off now use the same full-screen PIN pad** as the lock screen, instead of a dialog with text boxes. Choosing a PIN asks for it twice; changing it asks for your current PIN first; turning the lock off asks for your PIN.
+- **App settings are grouped like in the other Ctrl apps**: **Appearance**, **Notifications**, **Privacy and security**, **Browsing**, **Server** and **About** at the bottom. Rows have the same look as the other apps, and choices such as Theme, Poster size, Lock again and Check every open a list to pick from. The same look applies to the More tab and the server settings.
+- **Privacy and security** (formerly "Security") has the same rows, wording and icons as every Ctrl app: **App lock**, **Change app PIN**, **Unlock with fingerprint**, **Lock again** and **Hide in screenshots and recent apps** (formerly "Hide content in screenshots & recents"). **Profile pictures from Gravatar and Plex** moved here from Browsing, and a note under the section says what SeerrCtrl connects to.
+- **Theme choices are the same as in the other Ctrl apps**: Follow system, Dark, Light or **Pure black**. Pure black is now one of the themes instead of a separate switch: if you had Dark with pure black on, you now get the Pure black theme; with "System" and pure black on, SeerrCtrl follows the system with the normal dark colours (pick Pure black again if you want it). "Material You colours" is now called **Use wallpaper colours**.
+- **The fingerprint prompts** now say what they're for ("Confirm it's you to see your requests" when unlocking, "Confirm your fingerprint" when turning fingerprint unlock on).
+- **README**: a new App lock section that explains the PIN, fingerprint unlock, the wrong-PIN wait, Lock again, hiding the app in screenshots and recent apps, how notifications work while locked, and Forgot PIN. The Ctrl series table now lists AdCtrl and MemoCtrl.
+
+### Security
+
+- **Open dialogs and menus are covered by the lock.** When SeerrCtrl locked while a dialog, menu or sheet was open (a request, an issue report), that window could stay on top of the lock screen. The lock screen is now a full-screen window of its own above everything else in the app.
+
 ## 1.5.1
 
 ### Security

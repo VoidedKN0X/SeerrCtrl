@@ -21,7 +21,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Upcoming calendar** for your requests and watchlist, plus your **Watchlist** and **Profile** (your requests, quota and stats)
 - **Issues**: report, comment and resolve
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
-- **App lock** with its own PIN (6+ digits) and optional fingerprint; your sign-in stays encrypted with the PIN while the app is locked
+- **App lock** with its own PIN and optional fingerprint unlock; your sign-in stays encrypted while the app is locked
 - **Tablet and foldable layout**
 - **Private by default:** the app is hidden from screenshots and the recent-apps screen (you can turn this off), titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on
 
@@ -60,6 +60,19 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 - **Late notifications on ColorOS and similar phones:** in the app go to *More → App settings → Notifications → Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
 
+## App lock
+
+Turn it on in **More → App settings → Privacy and security → App lock**. It's off until you turn it on.
+
+- **An app PIN of its own**, at least 6 digits and separate from your phone's. Very obvious PINs, like 111111 or 123456, are refused. The PIN is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a key that never leaves the phone's secure hardware, so a copy of the app's files isn't enough to guess it somewhere else.
+- **Unlock with fingerprint** (optional): strong biometrics only, checked by the phone's secure hardware. Adding a fingerprint to the phone turns it off until you turn it on again. The PIN is still needed after the phone restarts and at least every 72 hours.
+- **Wrong PINs make you wait**: 30 seconds after 5 wrong tries, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't end the wait.
+- **Your sign-in stays encrypted while SeerrCtrl is locked**, with a key that only exists in memory while the app is unlocked and is wiped the moment it locks.
+- **Lock again**: as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening a link, a trailer, the calendar or Android's settings from SeerrCtrl doesn't count as leaving, unless you're away for more than 5 minutes.
+- **Hide in screenshots and recent apps** (on by default) blocks screenshots and screen recording. The recent apps screen never shows a preview of SeerrCtrl, and server settings are always hidden.
+- **Notifications keep working while locked**: while notifications are on, the background check needs your session when the app isn't open, so the session is then encrypted only with the Android Keystore, as without the app lock. Turn notifications off to keep it sealed with your PIN too; the App lock setting says which applies.
+- **Forgot PIN?** on the lock screen logs out and deletes what SeerrCtrl keeps on this phone, so you can sign in again. Your Seerr server and requests aren't touched.
+
 ## Privacy
 
 **Telemetry-free.** SeerrCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add, plus the image and sign-in services Seerr itself relies on, listed below.
@@ -70,7 +83,7 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 
 - **TMDB's image server** (`image.tmdb.org`) for posters, backdrops, photos and studio logos, unless your Seerr admin turned on **Cache images locally** (Settings > General in Seerr). Then every image comes through your Seerr server instead, and TMDB never sees your phone. TMDB sees your IP address and which titles' pictures are loaded.
 - **plex.tv**, only while you sign in with Plex.
-- **Gravatar and Plex** for other people's profile pictures, only if you turn on **More > App settings > Profile pictures from Gravatar and Plex**. It's off by default, and people's initials show instead.
+- **Gravatar and Plex** for other people's profile pictures, only if you turn on **More > App settings > Privacy and security > Profile pictures from Gravatar and Plex**. It's off by default, and people's initials show instead.
 - Trailers and links to sites like IMDb only open when you tap them.
 
 ## Build from source
@@ -101,6 +114,7 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 
 | App | What it's for |
 | --- | --- |
+| [AdCtrl](https://github.com/VoidedKN0X/AdCtrl) | Control your AdGuard Home DNS server |
 | [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) | Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app |
 | [BeamCtrl](https://github.com/VoidedKN0X/BeamCtrl) | TV remote for phones with an IR blaster |
 | [CraftyCtrl](https://github.com/VoidedKN0X/CraftyCtrl) | Manage Minecraft servers on Crafty Controller |
@@ -109,6 +123,7 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 | [FrigateCtrl](https://github.com/VoidedKN0X/FrigateCtrl) | Watch and review your Frigate NVR cameras |
 | [ImmichCtrl](https://github.com/VoidedKN0X/ImmichCtrl) | Photos and backup for your Immich server |
 | [JellyCtrl](https://github.com/VoidedKN0X/JellyCtrl) | Movies, shows, music and Live TV from Jellyfin |
+| [MemoCtrl](https://github.com/VoidedKN0X/MemoCtrl) | Notes on your Memos server |
 | [NaviCtrl](https://github.com/VoidedKN0X/NaviCtrl) | Music player for Navidrome servers |
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |

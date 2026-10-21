@@ -1,5 +1,6 @@
 package com.vknxworks.seerrctrl.data
 
+import com.vknxworks.seerrctrl.data.lock.LockVault
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties

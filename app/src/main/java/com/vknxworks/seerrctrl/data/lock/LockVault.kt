@@ -1,4 +1,4 @@
-package com.vknxworks.seerrctrl.data
+package com.vknxworks.seerrctrl.data.lock
 
 import android.content.Context
 import android.content.pm.PackageManager

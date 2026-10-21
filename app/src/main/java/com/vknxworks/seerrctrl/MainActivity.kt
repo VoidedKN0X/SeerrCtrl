@@ -93,6 +93,10 @@ import com.vknxworks.seerrctrl.ui.admin.AdminSectionScreen
 import com.vknxworks.seerrctrl.ui.isAppInDarkTheme
 import com.vknxworks.seerrctrl.ui.lock.AppLockViewModel
 import com.vknxworks.seerrctrl.ui.lock.LockScreen
+import com.vknxworks.seerrctrl.ui.lock.PinRequestScreen
+import com.vknxworks.seerrctrl.ui.lock.PinRequests
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.vknxworks.seerrctrl.ui.lock.expectReturn
 import androidx.compose.ui.semantics.clearAndSetSemantics
 
@@ -280,7 +284,26 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }
     }
-    if (showLock) LockScreen(vm = lockVm, onForgot = { forgetPin(lockVm, ::logout) })
+    // Turning the lock on or off, or changing the PIN (from App settings), on top of the app.
+    val request = PinRequests.request
+    if (!showLock && request != null) PinRequestScreen(request)
+    if (showLock) {
+        // Opaque cover in the app's own window (also behind the system bars).
+        Surface(Modifier.fillMaxSize().clearAndSetSemantics { }, color = MaterialTheme.colorScheme.background) {}
+        // The lock itself is a full-screen window of its own. Dialogs, menus and sheets that were open when the
+        // app locked are separate windows above the app's window, so the lock has to be one too to cover them.
+        Dialog(
+            onDismissRequest = {},
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
+        ) {
+            LockScreen(vm = lockVm, onForgot = { forgetPin(lockVm, ::logout) })
+        }
+    }
 }
 
 /** "Forgot PIN?": the sign-in can't be decrypted without it, so turn the lock off and log out. */
