@@ -2,6 +2,8 @@ package com.vknxworks.seerrctrl.data
 
 import com.vknxworks.seerrctrl.data.lock.LockVault
 import android.content.Context
+import androidx.annotation.StringRes
+import com.vknxworks.seerrctrl.R
 import android.os.SystemClock
 import android.util.Base64
 import androidx.compose.runtime.getValue
@@ -12,13 +14,13 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 /** When the app lock asks again after you leave the app. */
-enum class LockAgain(val label: String, val millis: Long) {
-    IMMEDIATELY("As soon as you leave the app", 0L),
-    MINUTE_1("After 1 minute away", 60_000L),
-    MINUTES_5("After 5 minutes away", 5 * 60_000L),
-    MINUTES_15("After 15 minutes away", 15 * 60_000L),
-    HOUR_1("After 1 hour away", 60 * 60_000L),
-    RESTART("Only when the app restarts", -1L),
+enum class LockAgain(@StringRes val label: Int, val millis: Long) {
+    IMMEDIATELY(R.string.lock_again_immediately, 0L),
+    MINUTE_1(R.string.lock_again_1m, 60_000L),
+    MINUTES_5(R.string.lock_again_5m, 5 * 60_000L),
+    MINUTES_15(R.string.lock_again_15m, 15 * 60_000L),
+    HOUR_1(R.string.lock_again_1h, 60 * 60_000L),
+    RESTART(R.string.lock_again_restart, -1L),
 }
 
 /**
@@ -45,11 +47,28 @@ class LockSettings(context: Context) {
         get() = _again
         set(v) { _again = v; prefs.edit().putString(KEY_LOCK_AGAIN, v.name).apply() }
 
-    /** Hide the app in the recent-apps screen and block screenshots/screen recording. */
-    private var _hide by mutableStateOf(prefs.getBoolean(KEY_HIDE, true))
-    var hideContent: Boolean
-        get() = _hide
-        set(v) { _hide = v; prefs.edit().putBoolean(KEY_HIDE, v).apply() }
+    init {
+        // Before 1.5.4 one setting, "Hide content in screenshots & recents" (on unless turned off), did both. Only a
+        // choice the user made themselves is kept: turned on, both new switches are on; otherwise both start off.
+        if (prefs.contains(KEY_HIDE)) {
+            val on = prefs.getBoolean(KEY_HIDE, false)
+            val edit = prefs.edit().remove(KEY_HIDE)
+            if (on) edit.putBoolean(KEY_HIDE_SCREENSHOTS, true).putBoolean(KEY_HIDE_RECENTS, true)
+            edit.commit()
+        }
+    }
+
+    /** FLAG_SECURE: screenshots and screen recordings show a blank screen. Off by default. */
+    private var _hideShots by mutableStateOf(prefs.getBoolean(KEY_HIDE_SCREENSHOTS, false))
+    var hideScreenshots: Boolean
+        get() = _hideShots
+        set(v) { _hideShots = v; prefs.edit().putBoolean(KEY_HIDE_SCREENSHOTS, v).apply() }
+
+    /** The recent-apps view shows a blank card instead of the app. Off by default. */
+    private var _hideRecents by mutableStateOf(prefs.getBoolean(KEY_HIDE_RECENTS, false))
+    var hideRecents: Boolean
+        get() = _hideRecents
+        set(v) { _hideRecents = v; prefs.edit().putBoolean(KEY_HIDE_RECENTS, v).apply() }
 
     /** Lets the lock screen check the PIN as soon as enough digits are entered. */
     val pinLength: Int get() = if (vault.enabled) vault.pinLength else prefs.getInt(KEY_PIN_LENGTH, 0)
@@ -182,6 +201,8 @@ class LockSettings(context: Context) {
         private const val KEY_LOCK_AFTER = "lock_after"
         private const val KEY_LOCK_AGAIN = "lock_again"
         private const val KEY_HIDE = "hide_content"
+        private const val KEY_HIDE_SCREENSHOTS = "hide_screenshots"
+        private const val KEY_HIDE_RECENTS = "hide_recents"
         private const val KEY_FAILED = "pin_failed"
         private const val KEY_LOCKOUT_UNTIL = "pin_lockout_until"
         private const val KEY_LOCKOUT_REMAINING = "pin_lockout_remaining"

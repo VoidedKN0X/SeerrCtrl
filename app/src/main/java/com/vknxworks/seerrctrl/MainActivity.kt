@@ -140,8 +140,6 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         App.init(this)
-        // Never keep a snapshot of the app for the recents screen.
-        setRecentsScreenshotEnabled(false)
         takeRoute(intent)
         enableEdgeToEdge()
         setContent {
@@ -152,8 +150,12 @@ class MainActivity : FragmentActivity() {
                     else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
                     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 }
-                // Independent of the PIN; admin settings screens (API keys, passwords) are always protected.
-                val secure = App.lock.hideContent || SecureScreen.active > 0
+                // "Hide in screenshots"; sign-in, the lock and PIN screens and admin settings (API keys, passwords)
+                // are always protected.
+                val secure = App.lock.hideScreenshots || SecureScreen.active > 0
+                // "Hide in recent apps", and always with the app lock on: a blank card instead of a snapshot.
+                val blankRecents = App.lock.hideRecents || App.lock.pinSet
+                LaunchedEffect(blankRecents) { setRecentsScreenshotEnabled(!blankRecents) }
                 LaunchedEffect(secure) {
                     if (secure) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
