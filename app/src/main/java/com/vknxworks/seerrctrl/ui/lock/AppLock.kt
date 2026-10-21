@@ -1,12 +1,13 @@
 package com.vknxworks.seerrctrl.ui.lock
 
 import android.content.Context
+import android.hardware.biometrics.BiometricPrompt
+import android.os.CancellationSignal
 import android.os.SystemClock
 import javax.crypto.Cipher
 import androidx.activity.compose.BackHandler
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,23 +40,28 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.data.LockAgain
@@ -65,6 +71,7 @@ import com.vknxworks.seerrctrl.ui.pressScale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
@@ -89,8 +96,20 @@ object LockTrips {
 fun expectReturn() { LockTrips.expectReturnAt = SystemClock.elapsedRealtime() }
 
 /**
+ * The fingerprint prompt that is open right now, if any. Some phones drop a prompt without ever answering
+ * (for example one asked for while the app was still coming back on screen). Asking again always replaces
+ * it and late answers from a replaced prompt are ignored, so such a prompt can never block fingerprint
+ * unlock until the app is closed.
+ */
+private object OpenPrompt {
+    var signal: CancellationSignal? = null
+    var generation = 0
+}
+
+/**
  * Shows the fingerprint prompt for [cipher], a Keystore key from [LockVault] that only works right after a strong
  * match. [onSuccess] gets the cipher the match unlocked; a hooked "success" without it can't open anything.
+ * Asking while another prompt is still marked as open replaces that one.
  */
 fun showBiometricPrompt(
     activity: FragmentActivity,
@@ -100,31 +119,59 @@ fun showBiometricPrompt(
     onError: (String?) -> Unit = {},
     onSuccess: (Cipher) -> Unit,
 ) {
-    val prompt = BiometricPrompt(
-        activity,
-        ContextCompat.getMainExecutor(activity),
-        object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                val c = result.cryptoObject?.cipher
-                if (c != null) onSuccess(c) else onError(activity.getString(R.string.lock_fingerprint_failed))
-            }
-
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                val cancelled = errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                    errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON || errorCode == BiometricPrompt.ERROR_CANCELED
-                onError(if (cancelled) null else errString.toString())
-            }
-        },
-    )
-    prompt.authenticate(
-        BiometricPrompt.PromptInfo.Builder()
+    // Replaces a prompt that is still marked as open; its late answer (if any) is ignored below.
+    OpenPrompt.signal?.let { runCatching { it.cancel() } }
+    val generation = ++OpenPrompt.generation
+    val signal = CancellationSignal()
+    OpenPrompt.signal = signal
+    // True once, and only for the newest prompt.
+    fun finish(): Boolean {
+        if (generation != OpenPrompt.generation || OpenPrompt.signal !== signal) return false
+        OpenPrompt.signal = null
+        return true
+    }
+    try {
+        val prompt = BiometricPrompt.Builder(activity)
             .setTitle(title)
             .apply { if (subtitle != null) setSubtitle(subtitle) }
-            .setNegativeButtonText(activity.getString(R.string.lock_use_pin))
-            .setAllowedAuthenticators(BIOMETRIC_STRONG)
-            .build(),
-        BiometricPrompt.CryptoObject(cipher),
-    )
+            .setAllowedAuthenticators(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setNegativeButton(activity.getString(R.string.lock_use_pin), activity.mainExecutor) { _, _ ->
+                if (finish()) onError(null)
+            }
+            .build()
+        prompt.authenticate(
+            BiometricPrompt.CryptoObject(cipher),
+            signal,
+            activity.mainExecutor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    if (!finish()) return
+                    val c = result.cryptoObject?.cipher
+                    if (c != null) onSuccess(c) else onError(activity.getString(R.string.lock_fingerprint_failed))
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    if (!finish()) return
+                    val cancelled = errorCode == BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED ||
+                        errorCode == BiometricPrompt.BIOMETRIC_ERROR_CANCELED
+                    onError(if (cancelled) null else errString.toString())
+                }
+            },
+        )
+    } catch (e: Exception) {
+        finish()
+        throw e
+    }
+}
+
+/**
+ * Waits until the app is really back on screen: resumed, with its window focused. A fingerprint prompt asked
+ * for earlier (while the app is still coming back from the background) is dropped by the system, on some
+ * phones without any answer, which used to leave fingerprint unlock not working until the app was closed.
+ */
+suspend fun awaitOnScreen(lifecycle: Lifecycle, windowInfo: WindowInfo) {
+    lifecycle.currentStateFlow.first { it.isAtLeast(Lifecycle.State.RESUMED) }
+    snapshotFlow { windowInfo.isWindowFocused }.first { it }
 }
 
 /** Whether the app is locked. Survives rotation; a fresh process always starts locked. */
@@ -152,6 +199,13 @@ class AppLockViewModel : ViewModel() {
     /** Set once the lock screen has shown the biometric prompt, so rotation doesn't show it twice. */
     var biometricShown = false
 
+    /**
+     * Goes up every time you come back to the app after really leaving it, so the lock screen offers the
+     * fingerprint again on every return, not just once per lock.
+     */
+    var returns by mutableIntStateOf(0)
+        private set
+
     private var backgroundedAt = 0L
     private var ticker: Job? = null
 
@@ -177,6 +231,10 @@ class AppLockViewModel : ViewModel() {
         backgroundedAt = 0L
         exemptTrip = false
         LockTrips.expectReturnAt = 0L
+        if (since != 0L) {
+            returns++
+            biometricShown = false
+        }
         val after = settings.lockAgain.millis
         if (!settings.pinSet || locked || since == 0L || after < 0) return
         // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
@@ -304,8 +362,14 @@ fun LockScreen(vm: AppLockViewModel, onForgot: () -> Unit) {
             }
         }
     }
-    LaunchedEffect(Unit) {
-        if (!vm.biometricShown && canBio) { vm.biometricShown = true; askBiometric() }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    // The lock's own window (a dialog) when it has one: the prompt waits until that window has the focus.
+    val windowInfo = LocalWindowInfo.current
+    // Offered on every lock and every time you come back to the lock screen, once the app is really on screen.
+    LaunchedEffect(vm.returns) {
+        if (vm.biometricShown || !canBio) return@LaunchedEffect
+        awaitOnScreen(lifecycle, windowInfo)
+        if (!vm.biometricShown) { vm.biometricShown = true; askBiometric() }
     }
     // Back leaves the app rather than revealing anything underneath.
     BackHandler { activity?.moveTaskToBack(true) }
