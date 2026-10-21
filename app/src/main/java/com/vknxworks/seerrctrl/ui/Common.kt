@@ -431,42 +431,22 @@ fun Backdrop(path: String?, height: Dp, modifier: Modifier = Modifier) {
 
 // ---------------- settings-style lists ----------------
 
+/** A titled block of rows, the same as the settings groups in every Ctrl app. */
 @Composable
 fun SettingsSection(title: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Column(modifier.padding(horizontal = 16.dp)) {
-        Spacer(Modifier.height(18.dp))
-        if (title != null) {
-            Text(
-                title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
-            )
-        }
-        Card(
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-            modifier = Modifier.fillMaxWidth(),
-        ) { Column { content() } }
-    }
+    com.vknxworks.seerrctrl.ui.settings.Group(title, modifier) { content() }
 }
 
 @Composable
-fun itemColors() = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+fun itemColors() = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
 
+/** Rows in a group are set apart by their spacing, as in the other Ctrl apps. */
 @Composable
-fun ItemDivider() = HorizontalDivider(
-    Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-)
+fun ItemDivider() = Unit
 
 @Composable
 fun NavItem(icon: ImageVector?, title: String, subtitle: String? = null, trailing: (@Composable () -> Unit)? = null, onClick: () -> Unit) {
-    ListItem(
-        leadingContent = icon?.let { { Icon(it, null) } },
-        headlineContent = { Text(title) },
-        supportingContent = subtitle?.let { { Text(it) } },
-        trailingContent = trailing,
-        colors = itemColors(),
-        modifier = Modifier.clickable(onClick = onClick),
-    )
+    com.vknxworks.seerrctrl.ui.settings.GroupRow(title, subtitle, icon, onClick = onClick, trailing = trailing)
 }
 
 @Composable
@@ -478,31 +458,13 @@ fun ToggleItem(
     enabled: Boolean = true,
     onChange: (Boolean) -> Unit,
 ) {
-    ListItem(
-        leadingContent = icon?.let { { Icon(it, null) } },
-        headlineContent = { Text(title) },
-        supportingContent = subtitle?.let { { Text(it) } },
-        trailingContent = { Switch(checked, onChange, enabled = enabled) },
-        colors = itemColors(),
-        modifier = Modifier.clickable(enabled) { onChange(!checked) },
-    )
+    com.vknxworks.seerrctrl.ui.settings.GroupSwitch(title, subtitle, checked, icon, enabled, onChange)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** A row showing the current choice; tapping it opens a list to pick another. */
 @Composable
 fun ChoiceItem(icon: ImageVector?, title: String, options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    Column(Modifier.padding(bottom = 12.dp)) {
-        ListItem(leadingContent = icon?.let { { Icon(it, null) } }, headlineContent = { Text(title) }, colors = itemColors())
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-            options.forEachIndexed { i, label ->
-                SegmentedButton(
-                    selected = i == selected,
-                    onClick = { onSelect(i) },
-                    shape = SegmentedButtonDefaults.itemShape(i, options.size),
-                ) { Text(label, maxLines = 1) }
-            }
-        }
-    }
+    com.vknxworks.seerrctrl.ui.settings.GroupChoice(title, options.mapIndexed { i, label -> i to label }, selected, icon) { onSelect(it) }
 }
 
 // ---------------- misc ----------------

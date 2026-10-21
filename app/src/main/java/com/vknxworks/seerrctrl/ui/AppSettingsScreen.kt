@@ -69,7 +69,9 @@ import com.vknxworks.seerrctrl.data.Tls
 import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.data.LockAgain
 import com.vknxworks.seerrctrl.data.LockSettings
-import com.vknxworks.seerrctrl.ui.lock.PIN_MAX
+import com.vknxworks.seerrctrl.ui.lock.PinRequest
+import com.vknxworks.seerrctrl.ui.lock.PinRequests
+import com.vknxworks.seerrctrl.ui.lock.lockActivity
 import com.vknxworks.seerrctrl.ui.lock.PIN_MIN
 import com.vknxworks.seerrctrl.ui.lock.biometricAvailable
 import com.vknxworks.seerrctrl.ui.lock.expectReturn
@@ -83,6 +85,9 @@ private const val REPO_URL = "https://github.com/VoidedKN0X/SeerrCtrl"
 private const val ISSUES_URL = "https://github.com/VoidedKN0X/SeerrCtrl/issues"
 private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
+/** In the same order as every Ctrl app. */
+private val THEMES = listOf(ThemeMode.System, ThemeMode.Dark, ThemeMode.Light, ThemeMode.Black)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSettingsScreen(onLogout: () -> Unit) {
@@ -90,7 +95,6 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
     val s = App.settings
     val ctx = LocalContext.current
     val lock = App.lock
-    var pinDialog by remember { mutableStateOf<PinMode?>(null) }
     var confirmLogout by remember { mutableStateOf(false) }
     val bioAvailable = remember { biometricAvailable(ctx) }
     val server = rememberLoad("status") { App.api.obj("/status") }
@@ -103,76 +107,80 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
             SettingsSection("Appearance") {
                 ChoiceItem(
-                    when (s.theme) { ThemeMode.Light -> Icons.Outlined.LightMode; ThemeMode.Dark -> Icons.Outlined.DarkMode; ThemeMode.System -> Icons.Outlined.Contrast },
-                    "Theme", listOf("System", "Light", "Dark"), s.theme.ordinal,
-                ) { s.theme = ThemeMode.entries[it] }
-                ItemDivider()
-                ToggleItem(Icons.Outlined.Palette, "Material You colours", "Match the app to your wallpaper", s.dynamicColor) { s.dynamicColor = it }
-                ItemDivider()
-                ToggleItem(Icons.Outlined.DarkMode, "Pure black", "True black backgrounds in dark mode", s.pureBlack) { s.pureBlack = it }
-                ItemDivider()
+                    Icons.Outlined.DarkMode,
+                    "Theme",
+                    THEMES.map { it.label },
+                    THEMES.indexOf(s.theme).coerceAtLeast(0),
+                ) { s.theme = THEMES[it] }
+                ToggleItem(Icons.Outlined.Palette, "Use wallpaper colours", "Replaces the default colours with ones from your wallpaper", s.dynamicColor) { s.dynamicColor = it }
                 ChoiceItem(Icons.Outlined.GridView, "Poster size", listOf("Small", "Medium", "Large"), s.posterSize) { s.posterSize = it }
             }
 
-            SettingsSection("Browsing") {
-                ToggleItem(Icons.Outlined.VisibilityOff, "Hide available titles", "Leave out what's already on your media server from discover rows", s.hideAvailable) {
-                    s.hideAvailable = it
+            NotificationSection()
+
+            SettingsSection("Privacy and security") {
+                val lockOn = lock.pinSet
+                ToggleItem(
+                    Icons.Outlined.Lock, "App lock",
+                    "Ask for an app PIN (and optionally your fingerprint) when opening SeerrCtrl. While locked, your sign-in " +
+                        "stays encrypted with the PIN" +
+                        (if (s.notifyEnabled) ", except the copy notifications need to check your server in the background" else ""),
+                    lockOn,
+                ) { on -> PinRequests.request = if (on) PinRequest.ENABLE else PinRequest.DISABLE }
+                if (lockOn) {
+                    NavItem(
+                        Icons.Outlined.Password, "Change app PIN", "At least $PIN_MIN digits, separate from your phone's PIN",
+                        trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    ) { PinRequests.request = PinRequest.CHANGE }
+                    ToggleItem(
+                        Icons.Outlined.Fingerprint, "Unlock with fingerprint",
+                        if (bioAvailable || lock.biometricEnabled) "Only strong biometrics such as your fingerprint, checked by the phone's secure " +
+                            "hardware. The PIN is still needed after a restart and every 72 hours."
+                        else "Set up a fingerprint on this phone first",
+                        lock.biometricEnabled, enabled = bioAvailable || lock.biometricEnabled,
+                    ) { on ->
+                        val act = ctx.lockActivity() as? FragmentActivity
+                        if (on && act != null) {
+                            val cipher = lock.vault.biometricEnrolCipher()
+                            if (cipher == null) scope.launch { snack.showSnackbar("Couldn't set up fingerprint unlock") }
+                            else showBiometricPrompt(act, "Turn on fingerprint unlock", cipher, subtitle = "Confirm your fingerprint") { c ->
+                                if (!lock.vault.finishBiometricEnrol(c)) scope.launch { snack.showSnackbar("Couldn't set up fingerprint unlock") }
+                            }
+                        } else if (!on) {
+                            lock.vault.disableBiometric()
+                        }
+                    }
+                    ChoiceItem(
+                        Icons.Outlined.Timer, "Lock again", LockAgain.entries.map { it.label },
+                        lock.lockAgain.ordinal,
+                    ) { lock.lockAgain = LockAgain.entries[it] }
                 }
-                ItemDivider()
-                ToggleItem(Icons.AutoMirrored.Outlined.OpenInNew, "Open links in the app", "Trailers and external pages open in an in-app browser tab", s.useCustomTabs) {
-                    s.useCustomTabs = it
-                }
-                ItemDivider()
+                ToggleItem(
+                    Icons.Outlined.VisibilityOff, "Hide in screenshots and recent apps",
+                    "Blocks screenshots and screen recording. The recent apps screen never shows SeerrCtrl, and server settings are always hidden",
+                    lock.hideContent,
+                ) { lock.hideContent = it }
                 ToggleItem(
                     Icons.Outlined.AccountCircle, "Profile pictures from Gravatar and Plex",
                     "Gravatar and Plex see your IP address and whose profiles you look at. Off shows initials instead",
                     s.externalAvatars,
                 ) { s.externalAvatars = it }
             }
+            Text(
+                "SeerrCtrl has no analytics or tracking. It only talks to your own Seerr server, plus TMDB's images when your " +
+                    "server doesn't cache them and plex.tv while you sign in with Plex.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
 
-            NotificationSection()
-
-            SettingsSection("Security") {
-                ToggleItem(
-                    Icons.Outlined.Lock, "App lock",
-                    "Ask for an app PIN when opening the app. While locked, your sign-in is encrypted with the PIN" +
-                        (if (s.notifyEnabled) ", except what notifications need to check your server in the background" else ""),
-                    lock.pinSet,
-                ) { on ->
-                    pinDialog = if (on) PinMode.New else PinMode.Disable
+            SettingsSection("Browsing") {
+                ToggleItem(Icons.Outlined.VisibilityOff, "Hide available titles", "Leave out what's already on your media server from discover rows", s.hideAvailable) {
+                    s.hideAvailable = it
                 }
-                if (lock.pinSet) {
-                    ItemDivider()
-                    ToggleItem(
-                        Icons.Outlined.Fingerprint, "Unlock with fingerprint",
-                        if (bioAvailable) "Strong biometrics only. The PIN is still needed after a restart and every 72 hours"
-                        else "No secure fingerprint unlock is set up on this phone",
-                        lock.biometricEnabled, enabled = bioAvailable || lock.biometricEnabled,
-                    ) { on ->
-                        val act = ctx as? FragmentActivity
-                        if (on && act != null) {
-                            val cipher = lock.vault.biometricEnrolCipher()
-                            if (cipher == null) scope.launch { snack.showSnackbar("Fingerprint unlock isn't available on this phone") }
-                            else showBiometricPrompt(act, "Confirm to turn on", cipher) { c ->
-                                if (!lock.vault.finishBiometricEnrol(c)) scope.launch { snack.showSnackbar("Couldn't turn on fingerprint unlock") }
-                            }
-                        } else {
-                            lock.vault.disableBiometric()
-                        }
-                    }
-                    ItemDivider()
-                    ChoiceItem(
-                        Icons.Outlined.Timer, "Lock again", LockAgain.entries.map { it.label },
-                        lock.lockAgain.ordinal,
-                    ) { lock.lockAgain = LockAgain.entries[it] }
-                    ItemDivider()
-                    NavItem(Icons.Outlined.Password, "Change PIN") { pinDialog = PinMode.Change }
+                ToggleItem(Icons.AutoMirrored.Outlined.OpenInNew, "Open links in the app", "Trailers and external pages open in an in-app browser tab", s.useCustomTabs) {
+                    s.useCustomTabs = it
                 }
-                ItemDivider()
-                ToggleItem(
-                    Icons.Outlined.VisibilityOff, "Hide content in screenshots & recents",
-                    "Blocks screenshots and screen recording. Server settings are always hidden", lock.hideContent,
-                ) { lock.hideContent = it }
             }
 
             SettingsSection("Server") {
@@ -226,7 +234,6 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
         }
     }
 
-    pinDialog?.let { mode -> PinSetupDialog(mode) { pinDialog = null } }
     repin?.let { fp ->
         val same = App.api.pinnedFingerprint.isEmpty() || fp.equals(App.api.pinnedFingerprint, ignoreCase = true)
         CertDialog(
@@ -259,89 +266,6 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
 @Composable
 private fun AboutRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
     NavItem(icon, title, subtitle, trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) }, onClick = onClick)
-}
-
-enum class PinMode { New, Change, Disable }
-
-@Composable
-private fun PinSetupDialog(mode: PinMode, onDismiss: () -> Unit) {
-    val lock = App.lock
-    val needsCurrent = mode != PinMode.New
-    val needsNew = mode != PinMode.Disable
-    var current by remember { mutableStateOf("") }
-    var first by remember { mutableStateOf("") }
-    var second by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var working by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    fun digits(v: String) = v.filter { it.isDigit() }.take(PIN_MAX)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Outlined.Lock, null) },
-        title = { Text(when (mode) { PinMode.New -> "Set a PIN"; PinMode.Change -> "Change PIN"; PinMode.Disable -> "Turn off app lock" }) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (mode == PinMode.New) {
-                    Text(
-                        "Use a PIN that's different from your phone's. If you forget it, the only way back in is to log out and sign in again.",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                if (needsCurrent) PinField("Current PIN", current) { current = digits(it) }
-                if (needsNew) {
-                    PinField("New PIN ($PIN_MIN–$PIN_MAX digits)", first) { first = digits(it) }
-                    PinField("Repeat new PIN", second) { second = digits(it) }
-                }
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-            }
-        },
-        confirmButton = {
-            TextButton(enabled = !working, onClick = {
-                scope.launch {
-                    working = true
-                    error = when {
-                        needsNew && first.length < PIN_MIN -> "Use at least $PIN_MIN digits"
-                        needsNew && first != second -> "The PINs don't match"
-                        needsNew && LockSettings.isObvious(first) -> "Too easy to guess. Pick a less obvious PIN"
-                        else -> null
-                    }
-                    if (error == null && needsCurrent) {
-                        // Wrong PINs here count towards the same lockout as on the lock screen.
-                        val result = withContext(Dispatchers.Default) { lock.unlockWithPin(current) }
-                        error = when (result) {
-                            LockSettings.Unlock.Ok, LockSettings.Unlock.NeedsNewPin -> null
-                            LockSettings.Unlock.LockedOut -> "Too many wrong PINs. Try again in ${(lock.lockoutRemaining() + 999) / 1000} s"
-                            LockSettings.Unlock.Wrong -> "Current PIN is wrong"
-                        }
-                    }
-                    if (error == null) {
-                        withContext(Dispatchers.Default) {
-                            when (mode) {
-                                PinMode.New -> App.enableLock(first)
-                                // Same key, new PIN: fingerprint unlock keeps working.
-                                PinMode.Change -> if (lock.vault.isOpen) lock.vault.changePin(first) else App.enableLock(first)
-                                PinMode.Disable -> App.disableLock()
-                            }
-                        }
-                        onDismiss()
-                    }
-                    working = false
-                }
-            }) { Text(if (mode == PinMode.Disable) "Turn off" else "Save") }
-        },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } },
-    )
-}
-
-@Composable
-private fun PinField(label: String, value: String, onChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = value, onValueChange = onChange, label = { Text(label) }, singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 @Composable

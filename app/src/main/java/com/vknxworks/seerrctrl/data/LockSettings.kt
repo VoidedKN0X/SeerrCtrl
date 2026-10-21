@@ -1,5 +1,6 @@
 package com.vknxworks.seerrctrl.data
 
+import com.vknxworks.seerrctrl.data.lock.LockVault
 import android.content.Context
 import android.os.SystemClock
 import android.util.Base64
