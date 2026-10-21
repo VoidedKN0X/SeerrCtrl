@@ -47,14 +47,14 @@ object Notifier {
         val nm = ctx.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannels(
             listOf(
-                NotificationChannel(CH_MINE, "Your requests", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "When your requests are approved, declined, fail or become available"
+                NotificationChannel(CH_MINE, App.str(R.string.your_requests), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = App.str(R.string.when_your_requests_are_approved)
                 },
-                NotificationChannel(CH_PENDING, "Requests to approve", NotificationManager.IMPORTANCE_HIGH).apply {
-                    description = "New requests waiting for approval, with Approve and Decline buttons"
+                NotificationChannel(CH_PENDING, App.str(R.string.requests_to_approve), NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = App.str(R.string.new_requests_waiting_for_approval)
                 },
-                NotificationChannel(CH_ISSUES, "Issues", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "New issues, and replies or fixes on issues you reported"
+                NotificationChannel(CH_ISSUES, App.str(R.string.issues), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = App.str(R.string.new_issues_and_replies_or_fixes_on)
                 },
             )
         )
@@ -184,15 +184,15 @@ object Notifier {
     }
 
     fun publicTitleFor(channel: String): String = when (channel) {
-        CH_PENDING -> "New request"
-        CH_ISSUES -> "Issue update"
-        else -> "Request update"
+        CH_PENDING -> App.str(R.string.new_request)
+        CH_ISSUES -> App.str(R.string.issue_update)
+        else -> App.str(R.string.request_update)
     }
 
     private fun publicVersion(ctx: Context, channel: String, title: String) =
         NotificationCompat.Builder(ctx, channel)
             .setSmallIcon(R.drawable.ic_stat_seerr)
             .setContentTitle(title)
-            .setContentText("Unlock to see details")
+            .setContentText(App.str(R.string.unlock_to_see_details))
             .build()
 }

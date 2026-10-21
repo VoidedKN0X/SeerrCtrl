@@ -111,11 +111,11 @@ fun MainScreen() {
         if (s.can(Perm.MANAGE_ISSUES)) App.api.obj("/issue/count").int("open") else 0
     }
     val tabs = buildList {
-        add(TabDef(MainTab.DISCOVER, Icons.Outlined.Explore, "Discover"))
-        add(TabDef(MainTab.SEARCH, Icons.Outlined.Search, "Search"))
-        add(TabDef(MainTab.REQUESTS, Icons.Outlined.Theaters, "Requests", pending.value ?: 0))
-        if (showIssues) add(TabDef(MainTab.ISSUES, Icons.Outlined.ReportProblem, "Issues", openIssues.value ?: 0))
-        add(TabDef(MainTab.MORE, Icons.Outlined.MoreHoriz, "More"))
+        add(TabDef(MainTab.DISCOVER, Icons.Outlined.Explore, App.str(R.string.discover)))
+        add(TabDef(MainTab.SEARCH, Icons.Outlined.Search, App.str(R.string.tab_search)))
+        add(TabDef(MainTab.REQUESTS, Icons.Outlined.Theaters, App.str(R.string.requests), pending.value ?: 0))
+        if (showIssues) add(TabDef(MainTab.ISSUES, Icons.Outlined.ReportProblem, App.str(R.string.issues), openIssues.value ?: 0))
+        add(TabDef(MainTab.MORE, Icons.Outlined.MoreHoriz, App.str(R.string.tab_more)))
     }
 
     BackHandler(MainTab.selected != MainTab.DISCOVER) { MainTab.selected = MainTab.DISCOVER }
@@ -171,7 +171,7 @@ private fun TabIcon(t: TabDef) {
 // ---------------- search ----------------
 
 private enum class SearchKind(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    All("All", Icons.Outlined.Search), Keyword("Keywords", Icons.Outlined.Tag), Company("Studios", Icons.Outlined.WorkOutline)
+    All(App.str(R.string.all), Icons.Outlined.Search), Keyword(App.str(R.string.keywords), Icons.Outlined.Tag), Company(App.str(R.string.studios), Icons.Outlined.WorkOutline)
 }
 
 @Composable
@@ -186,9 +186,9 @@ fun SearchTab() {
         TabTitle(stringResource(R.string.tab_search))
         OutlinedTextField(
             value = query, onValueChange = { query = it },
-            placeholder = { Text("Search movies, series and people") },
+            placeholder = { Text(stringResource(R.string.search_movies_series_and_people)) },
             leadingIcon = { Icon(Icons.Outlined.Search, null) },
-            trailingIcon = { if (query.isNotEmpty()) IconButton({ query = "" }) { Icon(Icons.Outlined.Close, "Clear") } },
+            trailingIcon = { if (query.isNotEmpty()) IconButton({ query = "" }) { Icon(Icons.Outlined.Close, stringResource(R.string.clear)) } },
             singleLine = true, shape = MaterialTheme.shapes.extraLarge,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { debounced = query.trim() }),
@@ -221,7 +221,7 @@ fun SearchTab() {
                                 },
                             )
                         }
-                        if (list.isEmpty()) item { EmptyBox(Icons.Outlined.Search, "No matches") }
+                        if (list.isEmpty()) item { EmptyBox(Icons.Outlined.Search, stringResource(R.string.no_matches)) }
                     }
                 }
             }
@@ -233,26 +233,26 @@ fun SearchTab() {
 private fun SearchShortcuts() {
     val nav = LocalNav.current
     LazyColumn(contentPadding = ListBottom) {
-        item { SectionHeader("Browse") }
+        item { SectionHeader(stringResource(R.string.browse)) }
         item {
-            NavItem(Icons.Outlined.Theaters, "Movies", "Popular movies, with filters") {
-                nav.browse(BrowseSpec("Movies", "/discover/movies"))
+            NavItem(Icons.Outlined.Theaters, stringResource(R.string.movies), stringResource(R.string.popular_movies_with_filters)) {
+                nav.browse(BrowseSpec(App.str(R.string.movies), "/discover/movies"))
             }
         }
         item {
-            NavItem(Icons.Outlined.Tv, "Series", "Popular series, with filters") {
-                nav.browse(BrowseSpec("Series", "/discover/tv"))
+            NavItem(Icons.Outlined.Tv, stringResource(R.string.series_2), stringResource(R.string.popular_series_with_filters)) {
+                nav.browse(BrowseSpec(App.str(R.string.series_2), "/discover/tv"))
             }
         }
-        item { NavItem(Icons.Outlined.Explore, "Trending", null) { nav.browse(BrowseSpec("Trending", "/discover/trending")) } }
+        item { NavItem(Icons.Outlined.Explore, stringResource(R.string.trending), null) { nav.browse(BrowseSpec(App.str(R.string.trending), "/discover/trending")) } }
         item {
-            NavItem(Icons.Outlined.Theaters, "Upcoming movies", null) {
-                nav.browse(BrowseSpec("Upcoming movies", "/discover/movies/upcoming"))
+            NavItem(Icons.Outlined.Theaters, stringResource(R.string.upcoming_movies), null) {
+                nav.browse(BrowseSpec(App.str(R.string.upcoming_movies), "/discover/movies/upcoming"))
             }
         }
         item {
-            NavItem(Icons.Outlined.Tv, "Upcoming series", null) {
-                nav.browse(BrowseSpec("Upcoming series", "/discover/tv/upcoming"))
+            NavItem(Icons.Outlined.Tv, stringResource(R.string.upcoming_series), null) {
+                nav.browse(BrowseSpec(App.str(R.string.upcoming_series), "/discover/tv/upcoming"))
             }
         }
     }
@@ -271,27 +271,27 @@ fun MoreTab() {
         item { TabTitle(stringResource(R.string.tab_more)) }
         item {
             SettingsSection(null) {
-                NavItem(Icons.Outlined.BookmarkBorder, "Watchlist", null) { nav.go("watchlist/${s.userId}") }
+                NavItem(Icons.Outlined.BookmarkBorder, stringResource(R.string.watchlist), null) { nav.go("watchlist/${s.userId}") }
                 ItemDivider()
-                NavItem(Icons.Outlined.CalendarMonth, "Upcoming", "Release dates and new episodes for your requests") { nav.go("calendar") }
+                NavItem(Icons.Outlined.CalendarMonth, stringResource(R.string.upcoming), stringResource(R.string.release_dates_and_new_episodes_for)) { nav.go("calendar") }
             }
         }
         if (s.can(Perm.MANAGE_USERS, Perm.MANAGE_SETTINGS, Perm.MANAGE_BLOCKLIST, Perm.VIEW_BLOCKLIST, any = true)) {
             item {
-                SettingsSection("Manage") {
+                SettingsSection(stringResource(R.string.manage)) {
                     var first = true
                     if (s.can(Perm.MANAGE_USERS)) {
-                        NavItem(Icons.Outlined.Group, "Users", "Accounts, permissions and quotas") { nav.go("users") }
+                        NavItem(Icons.Outlined.Group, stringResource(R.string.users), stringResource(R.string.accounts_permissions_and_quotas)) { nav.go("users") }
                         first = false
                     }
                     if (s.can(Perm.MANAGE_BLOCKLIST, Perm.VIEW_BLOCKLIST, any = true)) {
                         if (!first) ItemDivider()
-                        NavItem(Icons.Outlined.Block, "Blocklist", "Titles hidden from discovery") { nav.go("blocklist") }
+                        NavItem(Icons.Outlined.Block, stringResource(R.string.blocklist), stringResource(R.string.titles_hidden_from_discovery)) { nav.go("blocklist") }
                         first = false
                     }
                     if (s.can(Perm.MANAGE_SETTINGS)) {
                         if (!first) ItemDivider()
-                        NavItem(Icons.Outlined.AdminPanelSettings, "Server settings", "Media server, services, notifications, jobs, logs") {
+                        NavItem(Icons.Outlined.AdminPanelSettings, stringResource(R.string.server_settings), stringResource(R.string.media_server_services_notifications)) {
                             nav.go("admin")
                         }
                     }

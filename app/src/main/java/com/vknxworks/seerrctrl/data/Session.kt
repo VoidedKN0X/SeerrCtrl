@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.vknxworks.seerrctrl.App
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONObject
+import com.vknxworks.seerrctrl.R
 
 /** The signed-in user and the server's public settings, observable from Compose. */
 class Session(private val api: SeerrApi) {
@@ -16,12 +17,12 @@ class Session(private val api: SeerrApi) {
 
     val userId: Int get() = me.int("id")
     val permissions: Long get() = me.long("permissions")
-    val displayName: String get() = me.str("displayName") ?: me.str("username") ?: me.str("email") ?: "You"
+    val displayName: String get() = me.str("displayName") ?: me.str("username") ?: me.str("email") ?: App.str(R.string.you_title)
 
     fun can(vararg p: Long, any: Boolean = false): Boolean = Perm.has(permissions, *p, any = any)
     val isAdmin get() = can(Perm.ADMIN)
 
-    val appTitle: String get() = public.str("applicationTitle") ?: "Seerr"
+    val appTitle: String get() = public.str("applicationTitle") ?: App.str(R.string.seerr)
     val mediaServer: MediaServer get() = MediaServer.of(public.intOrNull("mediaServerType"))
     val movie4k: Boolean get() = public.bool("movie4kEnabled")
     val series4k: Boolean get() = public.bool("series4kEnabled")

@@ -18,6 +18,8 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509ExtendedTrustManager
 import javax.net.ssl.X509TrustManager
+import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
 
 /** Thrown when a pinned server shows a different certificate than the one the user trusted. */
 class PinMismatchException(msg: String, cause: Throwable? = null) : CertificateException(msg, cause)
@@ -40,11 +42,11 @@ object Tls {
      */
     suspend fun fetchLeaf(base: String): X509Certificate = withContext(Dispatchers.IO) {
         val u = base.toHttpUrl()
-        require(u.isHttps) { "Only https addresses have a certificate" }
+        require(u.isHttps) { App.str(R.string.error_https_only_cert) }
         var captured: Array<out X509Certificate>? = null
         val capture = object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-                throw CertificateException("Not a server")
+                throw CertificateException(App.str(R.string.not_a_server))
             }
             override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) { captured = chain }
             override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
@@ -58,7 +60,7 @@ object Tls {
         } finally {
             runCatching { raw.close() }
         }
-        captured?.firstOrNull() ?: throw CertificateException("The server didn't present a certificate")
+        captured?.firstOrNull() ?: throw CertificateException(App.str(R.string.the_server_didn_t_present_a))
     }
 
     private fun systemTrustManager(): X509TrustManager =
@@ -82,7 +84,7 @@ object Tls {
                 check()
             } catch (e: CertificateException) {
                 onMismatch()
-                throw PinMismatchException("The server's certificate changed since you trusted it", e)
+                throw PinMismatchException(App.str(R.string.the_server_s_certificate_changed), e)
             }
         }
 
@@ -105,13 +107,13 @@ object Tls {
         }
 
         override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            throw CertificateException("Not a server")
+            throw CertificateException(App.str(R.string.not_a_server))
         }
         override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?, socket: Socket?) {
-            throw CertificateException("Not a server")
+            throw CertificateException(App.str(R.string.not_a_server))
         }
         override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?) {
-            throw CertificateException("Not a server")
+            throw CertificateException(App.str(R.string.not_a_server))
         }
 
         override fun getAcceptedIssuers(): Array<X509Certificate> = system.acceptedIssuers

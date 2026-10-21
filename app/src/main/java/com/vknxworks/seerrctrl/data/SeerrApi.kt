@@ -19,6 +19,8 @@ import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
 
 class ApiException(val code: Int, message: String) : Exception(message)
 
@@ -160,7 +162,7 @@ class SeerrApi(private val prefs: Prefs) {
     /** Raw request to plex.tv during Plex sign-in. https only, also across redirects. */
     suspend fun external(verb: String, url: String, headers: Map<String, String>, body: String? = null): JSONObject =
         withContext(Dispatchers.IO) {
-            require(url.startsWith("https://")) { "Plex sign-in needs https" }
+            require(url.startsWith("https://")) { App.str(R.string.error_plex_https) }
             val req = Request.Builder().url(url).apply {
                 headers.forEach { (k, v) -> header(k, v) }
                 header("Accept", "application/json")
@@ -168,7 +170,7 @@ class SeerrApi(private val prefs: Prefs) {
             }.build()
             plainClient.newCall(req).execute().use { r ->
                 val text = r.body?.string().orEmpty()
-                if (!r.isSuccessful) throw ApiException(r.code, "Plex answered HTTP ${r.code}")
+                if (!r.isSuccessful) throw ApiException(r.code, App.str(R.string.plex_answered_http, r.code))
                 parse(text) as? JSONObject ?: JSONObject()
             }
         }
@@ -176,7 +178,7 @@ class SeerrApi(private val prefs: Prefs) {
     private val plainClient by lazy {
         OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS)
             .addNetworkInterceptor { chain ->
-                if (!chain.request().url.isHttps) throw IOException("Refusing an unencrypted connection to ${chain.request().url.host}")
+                if (!chain.request().url.isHttps) throw IOException(App.str(R.string.refusing_an_unencrypted_connection, chain.request().url.host))
                 chain.proceed(chain.request())
             }
             .build()
@@ -186,7 +188,7 @@ class SeerrApi(private val prefs: Prefs) {
     private val otherClient by lazy {
         OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor { chain ->
-                if (!chain.request().url.isHttps) throw IOException("Refusing an unencrypted connection to ${chain.request().url.host}")
+                if (!chain.request().url.isHttps) throw IOException(App.str(R.string.refusing_an_unencrypted_connection, chain.request().url.host))
                 chain.proceed(chain.request())
             }
             .build()
@@ -204,24 +206,24 @@ class SeerrApi(private val prefs: Prefs) {
             j.optString("message").ifBlank { j.optString("error") }.ifBlank { null }
         } catch (_: Exception) { null }
         val friendly = when (msg) {
-            "INVALID_CREDENTIALS" -> "Wrong username or password"
-            "INVALID_AUTH_TOKEN" -> "The sign-in token was rejected"
-            "INVALID_EMAIL" -> "That email address isn't valid"
-            "INVALID_URL" -> "The media server address is invalid"
-            "NOT_ADMIN" -> "Only an admin can do that"
-            "NO_ADMIN_USER" -> "This server has no admin user yet"
-            "CONNECTION_ERROR" -> "Seerr couldn't reach the media server"
-            "UNAUTHORIZED", "Unauthorized" -> "You don't have access to this server"
-            "UNKNOWN" -> "Something went wrong on the server"
-            "SYNC_ERROR_GROUPED_FOLDERS" -> "Library sync failed: grouped folders aren't supported"
-            "SYNC_ERROR_NO_LIBRARIES" -> "Library sync found no libraries"
+            "INVALID_CREDENTIALS" -> App.str(R.string.wrong_username_or_password)
+            "INVALID_AUTH_TOKEN" -> App.str(R.string.the_sign_in_token_was_rejected)
+            "INVALID_EMAIL" -> App.str(R.string.that_email_address_isn_t_valid)
+            "INVALID_URL" -> App.str(R.string.the_media_server_address_is_invalid)
+            "NOT_ADMIN" -> App.str(R.string.only_an_admin_can_do_that)
+            "NO_ADMIN_USER" -> App.str(R.string.this_server_has_no_admin_user_yet)
+            "CONNECTION_ERROR" -> App.str(R.string.seerr_couldn_t_reach_the_media)
+            "UNAUTHORIZED", "Unauthorized" -> App.str(R.string.error_no_access)
+            "UNKNOWN" -> App.str(R.string.error_server_unknown)
+            "SYNC_ERROR_GROUPED_FOLDERS" -> App.str(R.string.library_sync_failed_grouped_folders)
+            "SYNC_ERROR_NO_LIBRARIES" -> App.str(R.string.library_sync_found_no_libraries)
             else -> msg
         }
         return friendly ?: when (code) {
-            401 -> "Not signed in"
-            403 -> "You don't have permission to do that"
-            404 -> "Not found"
-            else -> "Server answered HTTP $code"
+            401 -> App.str(R.string.not_signed_in)
+            403 -> App.str(R.string.you_don_t_have_permission_to_do_that)
+            404 -> App.str(R.string.not_found)
+            else -> App.str(R.string.server_answered_http, code)
         }
     }
 
@@ -232,7 +234,7 @@ class SeerrApi(private val prefs: Prefs) {
             val req0 = chain.request()
             val same = sameServer(req0.url)
             if (!req0.url.isHttps && !(same && httpOk)) {
-                throw IOException("Refusing an unencrypted connection to ${req0.url.host}")
+                throw IOException(App.str(R.string.refusing_an_unencrypted_connection, req0.url.host))
             }
             val req = if (same && cookie.isNotEmpty()) {
                 req0.newBuilder().header("Cookie", "$COOKIE=$cookie").build()

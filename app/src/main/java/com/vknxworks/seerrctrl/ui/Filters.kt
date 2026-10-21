@@ -43,19 +43,21 @@ import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.data.int
 import com.vknxworks.seerrctrl.data.objects
 import com.vknxworks.seerrctrl.data.str
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 private val movieSorts = listOf(
-    "popularity.desc" to "Most popular", "popularity.asc" to "Least popular",
-    "primary_release_date.desc" to "Newest", "primary_release_date.asc" to "Oldest",
-    "vote_average.desc" to "Highest rated", "vote_average.asc" to "Lowest rated",
-    "vote_count.desc" to "Most votes", "revenue.desc" to "Highest revenue",
-    "original_title.asc" to "Title A–Z", "original_title.desc" to "Title Z–A",
+    "popularity.desc" to App.str(R.string.most_popular), "popularity.asc" to App.str(R.string.least_popular),
+    "primary_release_date.desc" to App.str(R.string.newest), "primary_release_date.asc" to App.str(R.string.oldest),
+    "vote_average.desc" to App.str(R.string.highest_rated), "vote_average.asc" to App.str(R.string.lowest_rated),
+    "vote_count.desc" to App.str(R.string.most_votes), "revenue.desc" to App.str(R.string.highest_revenue),
+    "original_title.asc" to App.str(R.string.title_a_z), "original_title.desc" to App.str(R.string.title_z_a),
 )
 private val tvSorts = listOf(
-    "popularity.desc" to "Most popular", "popularity.asc" to "Least popular",
-    "first_air_date.desc" to "Newest", "first_air_date.asc" to "Oldest",
-    "vote_average.desc" to "Highest rated", "vote_average.asc" to "Lowest rated",
-    "vote_count.desc" to "Most votes", "original_name.asc" to "Title A–Z", "original_name.desc" to "Title Z–A",
+    "popularity.desc" to App.str(R.string.most_popular), "popularity.asc" to App.str(R.string.least_popular),
+    "first_air_date.desc" to App.str(R.string.newest), "first_air_date.asc" to App.str(R.string.oldest),
+    "vote_average.desc" to App.str(R.string.highest_rated), "vote_average.asc" to App.str(R.string.lowest_rated),
+    "vote_count.desc" to App.str(R.string.most_votes), "original_name.asc" to App.str(R.string.title_a_z), "original_name.desc" to App.str(R.string.title_z_a),
 )
 
 /** The discover filters from the web UI: sort, genres, dates, language, runtime, rating, streaming services. */
@@ -94,24 +96,24 @@ fun DiscoverFilterSheet(tv: Boolean, current: Map<String, Any?>, onDismiss: () -
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Filters", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.filters), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
 
-            Dropdown("Sort by", (if (tv) tvSorts else movieSorts), sort) { sort = it }
+            Dropdown(stringResource(R.string.sort_by), (if (tv) tvSorts else movieSorts), sort) { sort = it }
 
-            Label("Release year")
+            Label(stringResource(R.string.release_year))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    from, { from = it.filter(Char::isDigit).take(4) }, label = { Text("From") }, singleLine = true,
+                    from, { from = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(R.string.from)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f),
                 )
                 OutlinedTextField(
-                    to, { to = it.filter(Char::isDigit).take(4) }, label = { Text("To") }, singleLine = true,
+                    to, { to = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(R.string.to)) }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f),
                 )
             }
 
             genreList.value?.let { list ->
-                Label("Genres")
+                Label(stringResource(R.string.genres))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     list.forEach { g ->
                         val id = g.int("id")
@@ -122,25 +124,25 @@ fun DiscoverFilterSheet(tv: Boolean, current: Map<String, Any?>, onDismiss: () -
 
             langList.value?.let { list ->
                 Dropdown(
-                    "Original language",
-                    listOf("" to "Any") + list.map { (it.str("iso_639_1") ?: "") to (it.str("english_name") ?: it.str("iso_639_1") ?: "") },
+                    stringResource(R.string.original_language),
+                    listOf("" to App.str(R.string.any)) + list.map { (it.str("iso_639_1") ?: "") to (it.str("english_name") ?: it.str("iso_639_1") ?: "") },
                     lang,
                 ) { lang = it }
             }
 
-            Label("Runtime: ${runtime.start.toInt()}–${runtime.endInclusive.toInt()} min")
+            Label(stringResource(R.string.runtime_min, runtime.start.toInt(), runtime.endInclusive.toInt()))
             RangeSlider(runtime, { runtime = it }, valueRange = 0f..400f, steps = 39)
 
-            Label("TMDB rating: ${"%.1f".format(rating.start)}–${"%.1f".format(rating.endInclusive)}")
+            Label(stringResource(R.string.tmdb_rating, "%.1f".format(rating.start), "%.1f".format(rating.endInclusive)))
             RangeSlider(rating, { rating = it }, valueRange = 0f..10f, steps = 19)
 
             OutlinedTextField(
-                minVotes, { minVotes = it.filter(Char::isDigit) }, label = { Text("Minimum number of votes") }, singleLine = true,
+                minVotes, { minVotes = it.filter(Char::isDigit) }, label = { Text(stringResource(R.string.minimum_number_of_votes)) }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth(),
             )
 
             providerList.value?.takeIf { it.isNotEmpty() }?.let { list ->
-                Label("Streaming services ($region)")
+                Label(stringResource(R.string.streaming_services, region))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     list.take(60).forEach { p ->
                         val id = p.int("id")
@@ -159,7 +161,7 @@ fun DiscoverFilterSheet(tv: Boolean, current: Map<String, Any?>, onDismiss: () -
                         onApply(current.filterKeys { it in setOf("keywords", "studio", "network") })
                     },
                     modifier = Modifier.weight(1f),
-                ) { Text("Reset") }
+                ) { Text(stringResource(R.string.reset)) }
                 Button(
                     onClick = {
                         val m = current.toMutableMap()
@@ -179,7 +181,7 @@ fun DiscoverFilterSheet(tv: Boolean, current: Map<String, Any?>, onDismiss: () -
                         onApply(m)
                     },
                     modifier = Modifier.weight(1f),
-                ) { Text("Apply") }
+                ) { Text(stringResource(R.string.apply)) }
             }
             Spacer(Modifier.height(8.dp))
         }

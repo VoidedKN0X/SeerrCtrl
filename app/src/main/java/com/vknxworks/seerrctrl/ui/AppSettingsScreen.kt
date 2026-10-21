@@ -93,7 +93,7 @@ fun AppSettingsScreen() {
                     THEMES.indexOf(s.theme).coerceAtLeast(0),
                 ) { s.theme = THEMES[it] }
                 ToggleItem(Icons.Outlined.Palette, stringResource(R.string.dynamic_colour), stringResource(R.string.dynamic_colour_subtitle), s.dynamicColor) { s.dynamicColor = it }
-                ChoiceItem(Icons.Outlined.GridView, "Poster size", listOf("Small", "Medium", "Large"), s.posterSize) { s.posterSize = it }
+                ChoiceItem(Icons.Outlined.GridView, stringResource(R.string.poster_size), listOf(App.str(R.string.small), App.str(R.string.medium), App.str(R.string.large)), s.posterSize) { s.posterSize = it }
             }
 
             NotificationSection()
@@ -142,8 +142,8 @@ fun AppSettingsScreen() {
                     lock.hideRecents,
                 ) { lock.hideRecents = it }
                 ToggleItem(
-                    Icons.Outlined.AccountCircle, "Profile pictures from Gravatar and Plex",
-                    "Gravatar and Plex see your IP address and whose profiles you look at. Off shows initials instead",
+                    Icons.Outlined.AccountCircle, stringResource(R.string.profile_pictures_from_gravatar_and),
+                    stringResource(R.string.gravatar_and_plex_see_your_ip),
                     s.externalAvatars,
                 ) { s.externalAvatars = it }
             }
@@ -154,11 +154,11 @@ fun AppSettingsScreen() {
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
 
-            SettingsSection("Browsing") {
-                ToggleItem(Icons.Outlined.VisibilityOff, "Hide available titles", "Leave out what's already on your media server from discover rows", s.hideAvailable) {
+            SettingsSection(stringResource(R.string.browsing)) {
+                ToggleItem(Icons.Outlined.VisibilityOff, stringResource(R.string.hide_available_titles), stringResource(R.string.leave_out_what_s_already_on_your), s.hideAvailable) {
                     s.hideAvailable = it
                 }
-                ToggleItem(Icons.AutoMirrored.Outlined.OpenInNew, "Open links in the app", "Trailers and external pages open in an in-app browser tab", s.useCustomTabs) {
+                ToggleItem(Icons.AutoMirrored.Outlined.OpenInNew, stringResource(R.string.open_links_in_the_app), stringResource(R.string.trailers_and_external_pages_open_in), s.useCustomTabs) {
                     s.useCustomTabs = it
                 }
             }
@@ -183,10 +183,10 @@ private fun NotificationSection() {
     }
     fun resched() = Notifier.schedule(ctx)
 
-    SettingsSection("Notifications") {
+    SettingsSection(stringResource(R.string.notifications)) {
         ToggleItem(
-            Icons.Outlined.Notifications, "Notifications",
-            if (!canPost) "Android isn't allowing notifications for SeerrCtrl yet" else "Checks your server in the background",
+            Icons.Outlined.Notifications, stringResource(R.string.notifications),
+            if (!canPost) stringResource(R.string.android_isn_t_allowing_notifications) else stringResource(R.string.checks_your_server_in_the_background),
             s.notifyEnabled && canPost,
         ) { on ->
             if (on && !canPost) { expectReturn(); launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
@@ -194,27 +194,27 @@ private fun NotificationSection() {
         }
         if (s.notifyEnabled && canPost) {
             ItemDivider()
-            ToggleItem(null, "Your requests", "Approved, declined, failed, now available", s.notifyMine) { s.notifyMine = it; resched() }
+            ToggleItem(null, stringResource(R.string.your_requests), stringResource(R.string.approved_declined_failed_now), s.notifyMine) { s.notifyMine = it; resched() }
             if (session.can(Perm.MANAGE_REQUESTS)) {
                 ItemDivider()
-                ToggleItem(null, "Requests to approve", "New requests, with Approve and Decline buttons", s.notifyPending) { s.notifyPending = it; resched() }
+                ToggleItem(null, stringResource(R.string.requests_to_approve), stringResource(R.string.new_requests_with_approve_and), s.notifyPending) { s.notifyPending = it; resched() }
             }
             ItemDivider()
             ToggleItem(
-                null, "Issues",
-                if (session.can(Perm.MANAGE_ISSUES)) "New issues, and replies on issues you reported" else "Replies and fixes on issues you reported",
+                null, stringResource(R.string.issues),
+                if (session.can(Perm.MANAGE_ISSUES)) stringResource(R.string.new_issues_and_replies_on_issues_you) else stringResource(R.string.replies_and_fixes_on_issues_you),
                 s.notifyIssues,
             ) { s.notifyIssues = it; resched() }
             ItemDivider()
             val every = listOf(15, 30, 60)
-            ChoiceItem(Icons.Outlined.Timer, "Check every", listOf("15 min", "30 min", "1 hour"), every.indexOf(s.notifyEveryMinutes).coerceAtLeast(0)) {
+            ChoiceItem(Icons.Outlined.Timer, stringResource(R.string.check_every), listOf(App.str(R.string.15_min), App.str(R.string.30_min), App.str(R.string.1_hour)), every.indexOf(s.notifyEveryMinutes).coerceAtLeast(0)) {
                 s.notifyEveryMinutes = every[it]; resched()
             }
             ItemDivider()
             NavItem(
-                Icons.Outlined.BatteryChargingFull, "Background activity",
-                if (unrestricted) "Unrestricted, so checks run on time"
-                else "Restricted. ColorOS and other phones may delay or skip checks; tap to allow",
+                Icons.Outlined.BatteryChargingFull, stringResource(R.string.background_activity),
+                if (unrestricted) stringResource(R.string.unrestricted_so_checks_run_on_time)
+                else stringResource(R.string.restricted_coloros_and_other_phones),
             ) {
                 expectReturn()
                 if (!unrestricted) {
@@ -226,7 +226,7 @@ private fun NotificationSection() {
                 }
             }
             ItemDivider()
-            NavItem(Icons.Outlined.Refresh, "Check now", "Run a check straight away") { Notifier.checkNow(ctx) }
+            NavItem(Icons.Outlined.Refresh, stringResource(R.string.check_now), stringResource(R.string.run_a_check_straight_away)) { Notifier.checkNow(ctx) }
         }
     }
 }

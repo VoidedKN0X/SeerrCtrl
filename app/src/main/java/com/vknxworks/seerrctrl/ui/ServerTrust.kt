@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLPeerUnverifiedException
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 /** True when a failure is about the certificate (untrusted, wrong name, pin changed), not about reaching the server. */
 fun isCertError(e: Throwable): Boolean {
@@ -44,18 +46,16 @@ fun isNoHttps(e: Throwable): Boolean =
     !isCertError(e) && e !is java.net.UnknownHostException && (e is java.io.IOException || e is SSLException)
 
 @Composable
-fun CertDialog(host: String, fingerprint: String, changed: Boolean, onTrust: () -> Unit, onCancel: () -> Unit, cancelLabel: String = "Cancel") {
+fun CertDialog(host: String, fingerprint: String, changed: Boolean, onTrust: () -> Unit, onCancel: () -> Unit, cancelLabel: String = stringResource(R.string.lock_cancel)) {
     AlertDialog(
         onDismissRequest = onCancel,
         icon = { Icon(Icons.Outlined.GppMaybe, null) },
-        title = { Text(if (changed) "Certificate changed" else "Trust this certificate?") },
+        title = { Text(if (changed) stringResource(R.string.certificate_changed) else stringResource(R.string.trust_this_certificate)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    if (changed) "$host now shows a different certificate than the one you trusted. If you didn't renew it yourself, " +
-                        "someone may be intercepting the connection. Only trust it if the fingerprint matches your server's."
-                    else "$host uses a certificate your phone doesn't recognise. Check that this SHA-256 fingerprint matches your " +
-                        "server's certificate. SeerrCtrl will only accept this exact certificate from now on.",
+                    if (changed) stringResource(R.string.cert_changed_body, host)
+                    else stringResource(R.string.cert_new_body, host),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 SelectionContainer {
@@ -63,26 +63,25 @@ fun CertDialog(host: String, fingerprint: String, changed: Boolean, onTrust: () 
                 }
             }
         },
-        confirmButton = { TextButton(onTrust) { Text("Trust") } },
+        confirmButton = { TextButton(onTrust) { Text(stringResource(R.string.trust)) } },
         dismissButton = { TextButton(onCancel) { Text(cancelLabel) } },
     )
 }
 
 @Composable
-fun HttpWarningDialog(host: String, fallback: Boolean, onContinue: () -> Unit, onCancel: () -> Unit, cancelLabel: String = "Cancel") {
+fun HttpWarningDialog(host: String, fallback: Boolean, onContinue: () -> Unit, onCancel: () -> Unit, cancelLabel: String = stringResource(R.string.lock_cancel)) {
     AlertDialog(
         onDismissRequest = onCancel,
         icon = { Icon(Icons.Outlined.NoEncryption, null) },
-        title = { Text("Not encrypted (HTTP)") },
+        title = { Text(stringResource(R.string.not_encrypted)) },
         text = {
             Text(
-                (if (fallback) "$host didn't answer over https. " else "") +
-                    "Over plain http, your password and session are sent unencrypted, so anyone on the same network can read them. " +
-                    "Only continue on a network you trust, or put Seerr behind https.",
+                if (fallback) stringResource(R.string.http_warning_fallback, host)
+                else stringResource(R.string.http_warning),
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
-        confirmButton = { TextButton(onContinue) { Text(if (fallback) "Use http" else "Continue") } },
+        confirmButton = { TextButton(onContinue) { Text(if (fallback) stringResource(R.string.use_http) else stringResource(R.string.continue)) } },
         dismissButton = { TextButton(onCancel) { Text(cancelLabel) } },
     )
 }
@@ -117,7 +116,7 @@ fun ServerTrustPrompts(onLogout: () -> Unit) {
                 httpAcked = true
                 scope.launch { try { App.session.refresh() } catch (_: Exception) {} }
             },
-            onCancel = { dismissed = true; onLogout() }, cancelLabel = "Log out",
+            onCancel = { dismissed = true; onLogout() }, cancelLabel = stringResource(R.string.log_out),
         )
         (needsPin || api.certChanged) && offered != null -> CertDialog(
             host, offered!!, changed = api.certChanged,
@@ -127,7 +126,7 @@ fun ServerTrustPrompts(onLogout: () -> Unit) {
                 scope.launch { try { App.session.refresh() } catch (_: Exception) {} }
             },
             onCancel = { dismissed = true },
-            cancelLabel = "Not now",
+            cancelLabel = stringResource(R.string.not_now),
         )
     }
 }

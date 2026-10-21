@@ -100,6 +100,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.vknxworks.seerrctrl.ui.lock.expectReturn
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.res.stringResource
 
 // FragmentActivity (a ComponentActivity) is required by the fingerprint prompt.
 class MainActivity : FragmentActivity() {
@@ -243,7 +244,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             App.session.clear()
             forgetAccountData(activity)
             signedIn = false
-            snack.showSnackbar("Your session ended. Please sign in again.")
+            snack.showSnackbar(App.str(R.string.your_session_ended_please_sign_in))
         }
     }
 
@@ -401,6 +402,6 @@ private fun EmptyPane() {
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Outlined.Movie, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.outline)
         Spacer(Modifier.height(12.dp))
-        Text("Pick something on the left", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.pick_something_on_the_left), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

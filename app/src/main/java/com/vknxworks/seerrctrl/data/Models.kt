@@ -1,5 +1,8 @@
 package com.vknxworks.seerrctrl.data
 
+import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
+
 /** Seerr permission bits (server/lib/permissions.ts). */
 object Perm {
     const val ADMIN = 2L
@@ -42,54 +45,54 @@ object Perm {
     data class Node(val bit: Long, val name: String, val desc: String, val children: List<Node> = emptyList())
 
     val tree: List<Node> = listOf(
-        Node(ADMIN, "Admin", "Full administrator access. Bypasses all other permission checks."),
-        Node(MANAGE_SETTINGS, "Manage settings", "Modify Seerr's settings. Users need this to grant it to others."),
-        Node(MANAGE_USERS, "Manage users", "Manage users. Users with this can't change users with Admin, or grant it."),
-        Node(MANAGE_REQUESTS, "Manage requests", "Approve, decline and edit media requests.", listOf(
-            Node(REQUEST_ADVANCED, "Advanced requests", "Pick server, quality profile and folder when requesting."),
-            Node(REQUEST_VIEW, "View requests", "See requests made by other users."),
-            Node(RECENT_VIEW, "View recently added", "See the list of recently added media."),
-            Node(WATCHLIST_VIEW, "View watchlists", "See other users' watchlists."),
+        Node(ADMIN, App.str(R.string.admin), App.str(R.string.full_administrator_access_bypasses)),
+        Node(MANAGE_SETTINGS, App.str(R.string.manage_settings), App.str(R.string.modify_seerr_s_settings_users_need)),
+        Node(MANAGE_USERS, App.str(R.string.manage_users), App.str(R.string.manage_users_users_with_this_can_t)),
+        Node(MANAGE_REQUESTS, App.str(R.string.manage_requests), App.str(R.string.approve_decline_and_edit_media), listOf(
+            Node(REQUEST_ADVANCED, App.str(R.string.advanced_requests), App.str(R.string.pick_server_quality_profile_and)),
+            Node(REQUEST_VIEW, App.str(R.string.view_requests), App.str(R.string.see_requests_made_by_other_users)),
+            Node(RECENT_VIEW, App.str(R.string.view_recently_added), App.str(R.string.see_the_list_of_recently_added_media)),
+            Node(WATCHLIST_VIEW, App.str(R.string.view_watchlists), App.str(R.string.see_other_users_watchlists)),
         )),
-        Node(REQUEST, "Request", "Request non-4K media.", listOf(
-            Node(REQUEST_MOVIE, "Request movies", "Request non-4K movies."),
-            Node(REQUEST_TV, "Request series", "Request non-4K series."),
+        Node(REQUEST, App.str(R.string.request), App.str(R.string.request_non_4k_media), listOf(
+            Node(REQUEST_MOVIE, App.str(R.string.request_movies), App.str(R.string.request_non_4k_movies)),
+            Node(REQUEST_TV, App.str(R.string.request_series), App.str(R.string.request_non_4k_series)),
         )),
-        Node(AUTO_APPROVE, "Auto-approve", "Approve all non-4K requests automatically.", listOf(
-            Node(AUTO_APPROVE_MOVIE, "Auto-approve movies", "Approve non-4K movie requests automatically."),
-            Node(AUTO_APPROVE_TV, "Auto-approve series", "Approve non-4K series requests automatically."),
+        Node(AUTO_APPROVE, App.str(R.string.auto_approve), App.str(R.string.approve_all_non_4k_requests), listOf(
+            Node(AUTO_APPROVE_MOVIE, App.str(R.string.auto_approve_movies), App.str(R.string.approve_non_4k_movie_requests)),
+            Node(AUTO_APPROVE_TV, App.str(R.string.auto_approve_series), App.str(R.string.approve_non_4k_series_requests)),
         )),
-        Node(AUTO_REQUEST, "Auto-request", "Request non-4K media on the user's watchlist automatically.", listOf(
-            Node(AUTO_REQUEST_MOVIE, "Auto-request movies", "Request watchlisted movies automatically."),
-            Node(AUTO_REQUEST_TV, "Auto-request series", "Request watchlisted series automatically."),
+        Node(AUTO_REQUEST, App.str(R.string.auto_request), App.str(R.string.request_non_4k_media_on_the_user_s), listOf(
+            Node(AUTO_REQUEST_MOVIE, App.str(R.string.auto_request_movies), App.str(R.string.request_watchlisted_movies)),
+            Node(AUTO_REQUEST_TV, App.str(R.string.auto_request_series), App.str(R.string.request_watchlisted_series)),
         )),
-        Node(REQUEST_4K, "Request 4K", "Request 4K media.", listOf(
-            Node(REQUEST_4K_MOVIE, "Request 4K movies", "Request 4K movies."),
-            Node(REQUEST_4K_TV, "Request 4K series", "Request 4K series."),
+        Node(REQUEST_4K, App.str(R.string.request_4k), App.str(R.string.request_4k_media), listOf(
+            Node(REQUEST_4K_MOVIE, App.str(R.string.request_4k_movies_2), App.str(R.string.request_4k_movies)),
+            Node(REQUEST_4K_TV, App.str(R.string.request_4k_series_2), App.str(R.string.request_4k_series)),
         )),
-        Node(AUTO_APPROVE_4K, "Auto-approve 4K", "Approve all 4K requests automatically.", listOf(
-            Node(AUTO_APPROVE_4K_MOVIE, "Auto-approve 4K movies", "Approve 4K movie requests automatically."),
-            Node(AUTO_APPROVE_4K_TV, "Auto-approve 4K series", "Approve 4K series requests automatically."),
+        Node(AUTO_APPROVE_4K, App.str(R.string.auto_approve_4k), App.str(R.string.approve_all_4k_requests), listOf(
+            Node(AUTO_APPROVE_4K_MOVIE, App.str(R.string.auto_approve_4k_movies), App.str(R.string.approve_4k_movie_requests)),
+            Node(AUTO_APPROVE_4K_TV, App.str(R.string.auto_approve_4k_series), App.str(R.string.approve_4k_series_requests)),
         )),
-        Node(MANAGE_ISSUES, "Manage issues", "Manage media issues.", listOf(
-            Node(CREATE_ISSUES, "Report issues", "Report media issues."),
-            Node(VIEW_ISSUES, "View issues", "See issues reported by other users."),
+        Node(MANAGE_ISSUES, App.str(R.string.manage_issues), App.str(R.string.manage_media_issues), listOf(
+            Node(CREATE_ISSUES, App.str(R.string.report_issues), App.str(R.string.report_media_issues)),
+            Node(VIEW_ISSUES, App.str(R.string.view_issues), App.str(R.string.see_issues_reported_by_other_users)),
         )),
-        Node(MANAGE_BLOCKLIST, "Manage blocklist", "Add and remove blocklisted media.", listOf(
-            Node(VIEW_BLOCKLIST, "View blocklist", "See blocklisted media."),
+        Node(MANAGE_BLOCKLIST, App.str(R.string.manage_blocklist), App.str(R.string.add_and_remove_blocklisted_media), listOf(
+            Node(VIEW_BLOCKLIST, App.str(R.string.view_blocklist), App.str(R.string.see_blocklisted_media)),
         )),
     )
 }
 
 /** Media availability (MediaStatus). */
 enum class MediaStatus(val code: Int, val label: String) {
-    Unknown(1, "Not requested"),
-    Pending(2, "Pending"),
-    Processing(3, "Requested"),
-    Partial(4, "Partially available"),
-    Available(5, "Available"),
-    Blocklisted(6, "Blocklisted"),
-    Deleted(7, "Deleted");
+    Unknown(1, App.str(R.string.not_requested)),
+    Pending(2, App.str(R.string.pending)),
+    Processing(3, App.str(R.string.requested)),
+    Partial(4, App.str(R.string.partially_available)),
+    Available(5, App.str(R.string.available)),
+    Blocklisted(6, App.str(R.string.blocklisted)),
+    Deleted(7, App.str(R.string.deleted));
 
     companion object {
         fun of(code: Int?): MediaStatus = entries.firstOrNull { it.code == code } ?: Unknown
@@ -98,11 +101,11 @@ enum class MediaStatus(val code: Int, val label: String) {
 
 /** Request state (MediaRequestStatus). */
 enum class RequestStatus(val code: Int, val label: String) {
-    Pending(1, "Pending approval"),
-    Approved(2, "Approved"),
-    Declined(3, "Declined"),
-    Failed(4, "Failed"),
-    Completed(5, "Completed");
+    Pending(1, App.str(R.string.pending_approval)),
+    Approved(2, App.str(R.string.approved)),
+    Declined(3, App.str(R.string.declined)),
+    Failed(4, App.str(R.string.failed)),
+    Completed(5, App.str(R.string.completed));
 
     companion object {
         fun of(code: Int?): RequestStatus = entries.firstOrNull { it.code == code } ?: Pending
@@ -110,16 +113,16 @@ enum class RequestStatus(val code: Int, val label: String) {
 }
 
 object IssueTypes {
-    val all = listOf(1 to "Video", 2 to "Audio", 3 to "Subtitles", 4 to "Other")
-    fun name(t: Int) = all.firstOrNull { it.first == t }?.second ?: "Other"
+    val all = listOf(1 to App.str(R.string.video), 2 to App.str(R.string.audio), 3 to App.str(R.string.subtitles), 4 to App.str(R.string.other))
+    fun name(t: Int) = all.firstOrNull { it.first == t }?.second ?: App.str(R.string.other)
 }
 
 object UserTypes {
-    fun name(t: Int) = when (t) { 1 -> "Plex user"; 2 -> "Local user"; 3 -> "Jellyfin user"; 4 -> "Emby user"; else -> "User" }
+    fun name(t: Int) = when (t) { 1 -> App.str(R.string.plex_user); 2 -> App.str(R.string.local_user); 3 -> App.str(R.string.jellyfin_user); 4 -> App.str(R.string.emby_user); else -> App.str(R.string.user) }
 }
 
 enum class MediaServer(val code: Int, val label: String) {
-    Plex(1, "Plex"), Jellyfin(2, "Jellyfin"), Emby(3, "Emby"), None(4, "Not configured");
+    Plex(1, App.str(R.string.plex)), Jellyfin(2, App.str(R.string.jellyfin)), Emby(3, App.str(R.string.emby)), None(4, App.str(R.string.not_configured));
 
     companion object {
         fun of(code: Int?): MediaServer = entries.firstOrNull { it.code == code } ?: None
@@ -149,7 +152,7 @@ fun org.json.JSONObject.toTile(): Tile? {
     return Tile(
         id = id,
         type = type,
-        title = str("title") ?: str("name") ?: str("originalTitle") ?: str("originalName") ?: "Untitled",
+        title = str("title") ?: str("name") ?: str("originalTitle") ?: str("originalName") ?: App.str(R.string.untitled),
         image = str("posterPath") ?: str("profilePath"),
         year = year(str("releaseDate") ?: str("firstAirDate")),
         status = MediaStatus.of(info.intOrNull("status")),

@@ -73,6 +73,8 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 /** One dated thing on the calendar: a release (cinema, digital, disc) or an episode airing. */
 data class CalEvent(
@@ -87,7 +89,7 @@ data class CalEvent(
     enum class Kind { Cinema, Digital, Physical, Release, Episode, Premiere }
 }
 
-private enum class Source(val label: String) { Mine("My requests"), All("All requests"), Watchlist("Watchlist") }
+private enum class Source(val label: String) { Mine(App.str(R.string.my_requests)), All(App.str(R.string.all_requests)), Watchlist(App.str(R.string.watchlist)) }
 
 private fun parseDay(raw: String?): LocalDate? = try {
     when {
@@ -111,7 +113,7 @@ fun eventsFor(type: String, d: JSONObject, region: String): List<CalEvent> {
         }
         d.objs("seasons").filter { it.int("seasonNumber") > 0 }.forEach { s ->
             val day = parseDay(s.str("airDate")) ?: return@forEach
-            if (out.none { it.date == day }) out += CalEvent(day, type, id, title, poster, "${s.str("name") ?: "Season ${s.int("seasonNumber")}"} premiere", CalEvent.Kind.Premiere)
+            if (out.none { it.date == day }) out += CalEvent(day, type, id, title, poster, App.str(R.string.premiere, s.str("name") ?: App.str(R.string.season_2, s.int("seasonNumber"))), CalEvent.Kind.Premiere)
         }
     } else {
         val rel = d.obj("releases").objs("results")
@@ -128,12 +130,12 @@ fun eventsFor(type: String, d: JSONObject, region: String): List<CalEvent> {
             if (!seen.add(kind)) return@forEach
             out += CalEvent(
                 day, type, id, title, poster,
-                when (kind) { CalEvent.Kind.Cinema -> "In cinemas"; CalEvent.Kind.Digital -> "Digital release"; else -> "Disc release" } +
+                App.str(when (kind) { CalEvent.Kind.Cinema -> R.string.in_cinemas; CalEvent.Kind.Digital -> R.string.digital_release; else -> R.string.disc_release }) +
                     (r.str("note")?.takeIf { it.isNotBlank() }?.let { " · $it" } ?: ""),
                 kind,
             )
         }
-        if (out.isEmpty()) parseDay(d.str("releaseDate"))?.let { out += CalEvent(it, type, id, title, poster, "Release", CalEvent.Kind.Release) }
+        if (out.isEmpty()) parseDay(d.str("releaseDate"))?.let { out += CalEvent(it, type, id, title, poster, App.str(R.string.release), CalEvent.Kind.Release) }
     }
     return out
 }
@@ -174,7 +176,7 @@ fun CalendarScreen() {
         }
     }
 
-    Scaffold(topBar = { BackBar("Upcoming", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.upcoming), { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Source.entries.filter { it != Source.All || canAll }.forEach { src ->
@@ -196,10 +198,10 @@ fun CalendarScreen() {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 selected?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))
-                                    ?: if (month == YearMonth.now()) "Coming up this month" else month.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + month.year,
+                                    ?: if (month == YearMonth.now()) stringResource(R.string.coming_up_this_month) else month.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + month.year,
                                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f),
                             )
-                            if (selected != null) TextButton({ selected = null }) { Text("Whole month") }
+                            if (selected != null) TextButton({ selected = null }) { Text(stringResource(R.string.whole_month)) }
                         }
                     }
                     val rows = shown.mapIndexed { i, e -> Triple(i, e, selected == null && (i == 0 || shown[i - 1].date != e.date)) }
@@ -216,7 +218,7 @@ fun CalendarScreen() {
                         }
                     }
                     if (shown.isEmpty()) {
-                        item { EmptyBox(Icons.Outlined.EventNote, if (events.isEmpty()) "Nothing dated is coming up for these titles" else "Nothing on these dates") }
+                        item { EmptyBox(Icons.Outlined.EventNote, if (events.isEmpty()) stringResource(R.string.nothing_dated_is_coming_up_for_these) else stringResource(R.string.nothing_on_these_dates)) }
                     }
                 }
             }
@@ -239,12 +241,12 @@ private fun MonthGrid(
     val today = LocalDate.now()
     Column(Modifier.padding(horizontal = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton({ onMonth(month.minusMonths(1)) }) { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, "Previous month") }
+            IconButton({ onMonth(month.minusMonths(1)) }) { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, stringResource(R.string.previous_month)) }
             Text(
                 month.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + month.year,
                 style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.weight(1f),
             )
-            IconButton({ onMonth(month.plusMonths(1)) }) { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, "Next month") }
+            IconButton({ onMonth(month.plusMonths(1)) }) { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, stringResource(R.string.next_month)) }
         }
         Row {
             days.forEach { d: DayOfWeek ->
@@ -313,7 +315,7 @@ private fun EventRow(e: CalEvent, onOpen: () -> Unit, onAdd: () -> Unit) {
             Text(e.title, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(e.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        IconButton(onAdd) { Icon(Icons.Outlined.EventAvailable, "Add to calendar") }
+        IconButton(onAdd) { Icon(Icons.Outlined.EventAvailable, stringResource(R.string.add_to_calendar)) }
     }
 }
 
@@ -325,7 +327,7 @@ private fun addToCalendar(context: android.content.Context, e: CalEvent) {
         .putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
         .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, start)
         .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, start + 86_400_000L)
-        .putExtra(CalendarContract.Events.DESCRIPTION, "From SeerrCtrl")
+        .putExtra(CalendarContract.Events.DESCRIPTION, App.str(R.string.calendar_from_app))
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     com.vknxworks.seerrctrl.ui.lock.expectReturn()
     try { context.startActivity(i) } catch (_: Exception) {}

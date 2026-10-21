@@ -57,6 +57,8 @@ import com.vknxworks.seerrctrl.data.objs
 import com.vknxworks.seerrctrl.data.str
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 /** Report a playback problem (video, audio, subtitles, other), optionally for a season/episode. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -75,7 +77,7 @@ fun ReportIssueDialog(details: JSONObject, tv: Boolean, onDismiss: () -> Unit, o
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Outlined.ReportProblem, null) },
-        title = { Text("Report an issue") },
+        title = { Text(stringResource(R.string.report_an_issue)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(details.str("title") ?: details.str("name") ?: "", fontWeight = FontWeight.SemiBold)
@@ -84,17 +86,17 @@ fun ReportIssueDialog(details: JSONObject, tv: Boolean, onDismiss: () -> Unit, o
                 }
                 if (tv) {
                     Dropdown(
-                        "Season",
-                        listOf("0" to "All seasons") + seasons.map { it.int("seasonNumber").toString() to (it.str("name") ?: "Season ${it.int("seasonNumber")}") },
+                        stringResource(R.string.season_3),
+                        listOf("0" to App.str(R.string.all_seasons)) + seasons.map { it.int("seasonNumber").toString() to (it.str("name") ?: App.str(R.string.season_2, it.int("seasonNumber"))) },
                         season,
                     ) { season = it; episode = "0" }
                     val count = seasons.firstOrNull { it.int("seasonNumber").toString() == season }?.int("episodeCount") ?: 0
                     if (season != "0" && count > 0) {
-                        Dropdown("Episode", listOf("0" to "All episodes") + (1..count).map { "$it" to "Episode $it" }, episode) { episode = it }
+                        Dropdown(stringResource(R.string.episode_2), listOf("0" to App.str(R.string.all_episodes)) + (1..count).map { "$it" to App.str(R.string.episode, it) }, episode) { episode = it }
                     }
                 }
                 OutlinedTextField(
-                    message, { message = it }, label = { Text("What's wrong?") }, minLines = 3,
+                    message, { message = it }, label = { Text(stringResource(R.string.what_s_wrong)) }, minLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -119,9 +121,9 @@ fun ReportIssueDialog(details: JSONObject, tv: Boolean, onDismiss: () -> Unit, o
                         busy = false
                     }
                 },
-            ) { if (busy) CircularProgressIndicator(strokeWidth = 2.dp) else Text("Submit") }
+            ) { if (busy) CircularProgressIndicator(strokeWidth = 2.dp) else Text(stringResource(R.string.submit)) }
         },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.lock_cancel)) } },
     )
 }
 
@@ -146,52 +148,52 @@ fun ManageMediaSheet(details: JSONObject, type: String, onDismiss: () -> Unit, o
 
     ModalBottomSheet(onDismiss, sheetState = sheet) {
         Column(Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = 16.dp)) {
-            Text("Manage $title", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Text(stringResource(R.string.manage_2, title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
 
             if (s.can(Perm.MANAGE_REQUESTS) && mediaId != null) {
                 for (fourK in if (has4k) listOf(false, true) else listOf(false)) {
                     val label = if (fourK) " (4K)" else ""
                     val st = MediaStatus.of(info.intOrNull(if (fourK) "status4k" else "status"))
-                    SheetHeader("Availability$label · ${st.label}")
+                    SheetHeader(stringResource(R.string.availability, label, st.label))
                     (if (fourK) info.str("serviceUrl4k") else info.str("serviceUrl"))?.let { url ->
-                        SheetItem(Icons.Outlined.OpenInNew, "Open in ${if (tv) "Sonarr" else "Radarr"}$label") { openUrl(context, url) }
+                        SheetItem(Icons.Outlined.OpenInNew, stringResource(R.string.open_in, if (tv) "Sonarr" else "Radarr", label)) { openUrl(context, url) }
                     }
                     if (st != MediaStatus.Available) {
-                        SheetItem(Icons.Outlined.CheckCircle, "Mark as available$label") {
-                            done("Marked as available") { App.api.post("/media/$mediaId/available", jsonOf("is4k" to fourK)) }
+                        SheetItem(Icons.Outlined.CheckCircle, stringResource(R.string.mark_as_available, label)) {
+                            done(App.str(R.string.marked_as_available)) { App.api.post("/media/$mediaId/available", jsonOf("is4k" to fourK)) }
                         }
                     }
                     if (tv && st != MediaStatus.Partial) {
-                        SheetItem(Icons.Outlined.CheckCircle, "Mark as partially available$label") {
-                            done("Marked as partially available") { App.api.post("/media/$mediaId/partial", jsonOf("is4k" to fourK)) }
+                        SheetItem(Icons.Outlined.CheckCircle, stringResource(R.string.mark_as_partially_available, label)) {
+                            done(App.str(R.string.marked_as_partially_available)) { App.api.post("/media/$mediaId/partial", jsonOf("is4k" to fourK)) }
                         }
                     }
                     if (st == MediaStatus.Available || st == MediaStatus.Partial) {
-                        SheetItem(Icons.Outlined.HourglassEmpty, "Mark as not available$label") {
-                            done("Status reset") { App.api.post("/media/$mediaId/unknown", jsonOf("is4k" to fourK)) }
+                        SheetItem(Icons.Outlined.HourglassEmpty, stringResource(R.string.mark_as_not_available, label)) {
+                            done(App.str(R.string.status_reset)) { App.api.post("/media/$mediaId/unknown", jsonOf("is4k" to fourK)) }
                         }
                     }
                     val sid = info.intOrNull(if (fourK) "serviceId4k" else "serviceId")
                     if (sid != null || info.intOrNull(if (fourK) "externalServiceId4k" else "externalServiceId") != null) {
-                        SheetItem(Icons.Outlined.RemoveCircleOutline, "Remove from ${if (tv) "Sonarr" else "Radarr"}$label", danger = true) {
+                        SheetItem(Icons.Outlined.RemoveCircleOutline, stringResource(R.string.remove_from, if (tv) "Sonarr" else "Radarr", label), danger = true) {
                             confirm = Triple(
-                                "Remove from ${if (tv) "Sonarr" else "Radarr"}?",
-                                "This deletes $title and its files from ${if (tv) "Sonarr" else "Radarr"}$label.",
+                                App.str(R.string.remove_from_2, if (tv) "Sonarr" else "Radarr"),
+                                App.str(R.string.this_deletes_and_its_files_from, title, if (tv) "Sonarr" else "Radarr", label),
                             ) { App.api.delete("/media/$mediaId/file", query = mapOf("is4k" to fourK)) }
                         }
                     }
                 }
-                SheetHeader("Data")
-                SheetItem(Icons.Outlined.DeleteSweep, "Clear data", "Removes requests, status and issues for this title from Seerr", danger = true) {
-                    confirm = Triple("Clear data?", "All of Seerr's data for $title (requests, availability, issues) will be removed. Files are not touched.") {
+                SheetHeader(stringResource(R.string.data))
+                SheetItem(Icons.Outlined.DeleteSweep, stringResource(R.string.clear_data), stringResource(R.string.removes_requests_status_and_issues), danger = true) {
+                    confirm = Triple(App.str(R.string.clear_data_2), App.str(R.string.all_of_seerr_s_data_for_requests, title)) {
                         App.api.delete("/media/$mediaId")
                     }
                 }
             }
             if (s.can(Perm.MANAGE_BLOCKLIST)) {
-                SheetHeader("Blocklist")
-                SheetItem(Icons.Outlined.Block, "Add to blocklist", "Hides it from discovery and blocks requests", danger = true) {
-                    done("Added to blocklist") {
+                SheetHeader(stringResource(R.string.blocklist))
+                SheetItem(Icons.Outlined.Block, stringResource(R.string.add_to_blocklist), stringResource(R.string.hides_it_from_discovery_and_blocks), danger = true) {
+                    done(App.str(R.string.added_to_blocklist)) {
                         App.api.post("/blocklist", jsonOf("tmdbId" to details.int("id"), "mediaType" to type, "title" to title, "user" to s.userId))
                     }
                 }
@@ -206,8 +208,8 @@ fun ManageMediaSheet(details: JSONObject, type: String, onDismiss: () -> Unit, o
             icon = { Icon(Icons.Outlined.DeleteForever, null) },
             title = { Text(t) },
             text = { Text(body) },
-            confirmButton = { TextButton({ confirm = null; done("Done", block) }) { Text("Confirm", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton({ confirm = null }) { Text("Cancel") } },
+            confirmButton = { TextButton({ confirm = null; done(App.str(R.string.lock_done), block) }) { Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton({ confirm = null }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }

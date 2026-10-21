@@ -85,6 +85,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.vknxworks.seerrctrl.R
 
 // ---------------- profile ----------------
 
@@ -106,10 +109,10 @@ fun ProfileScreen(id: Int) {
 
     Scaffold(
         topBar = {
-            BackBar(if (self) "Your profile" else load.value?.first?.str("displayName") ?: "User", { nav.back() }) {
-                IconButton({ nav.go("watchlist/$id") }) { Icon(Icons.Outlined.Bookmark, "Watchlist") }
-                if (self || s.can(Perm.MANAGE_USERS)) IconButton({ nav.go("user/$id/settings") }) { Icon(Icons.Outlined.Settings, "Settings") }
-                if (canManage && id != 1) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete user") }
+            BackBar(if (self) stringResource(R.string.your_profile) else load.value?.first?.str("displayName") ?: stringResource(R.string.user), { nav.back() }) {
+                IconButton({ nav.go("watchlist/$id") }) { Icon(Icons.Outlined.Bookmark, stringResource(R.string.watchlist)) }
+                if (self || s.can(Perm.MANAGE_USERS)) IconButton({ nav.go("user/$id/settings") }) { Icon(Icons.Outlined.Settings, stringResource(R.string.settings)) }
+                if (canManage && id != 1) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, stringResource(R.string.delete_user)) }
             }
         },
     ) { pad ->
@@ -125,16 +128,16 @@ fun ProfileScreen(id: Int) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         u.str("email")?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                        prettyDate(u.str("createdAt"))?.let { Text("Joined $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        prettyDate(u.str("createdAt"))?.let { Text(stringResource(R.string.joined, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     }
                 }
                 Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatCard("Requests", "${u.int("requestCount")}", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.requests), "${u.int("requestCount")}", Modifier.weight(1f))
                     q.obj("movie")?.takeIf { it.int("limit") > 0 }?.let { m ->
-                        StatCard("Movie quota", "${m.int("used")}/${m.int("limit")}", Modifier.weight(1f), "per ${m.int("days")} days")
+                        StatCard(stringResource(R.string.movie_quota), "${m.int("used")}/${m.int("limit")}", Modifier.weight(1f), stringResource(R.string.per_days, m.int("days")))
                     }
                     q.obj("tv")?.takeIf { it.int("limit") > 0 }?.let { t ->
-                        StatCard("Season quota", "${t.int("used")}/${t.int("limit")}", Modifier.weight(1f), "per ${t.int("days")} days")
+                        StatCard(stringResource(R.string.season_quota), "${t.int("used")}/${t.int("limit")}", Modifier.weight(1f), stringResource(R.string.per_days, t.int("days")))
                     }
                 }
                 if (self || s.can(Perm.MANAGE_REQUESTS, Perm.REQUEST_VIEW, any = true)) {
@@ -146,22 +149,22 @@ fun ProfileScreen(id: Int) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this user?") },
-            text = { Text("Their requests are removed too. This can't be undone.") },
+            title = { Text(stringResource(R.string.delete_this_user)) },
+            text = { Text(stringResource(R.string.their_requests_are_removed_too_this)) },
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("User deleted", onOk = { closeScreen() }) { App.api.delete("/user/$id") }
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                    act.run(App.str(R.string.user_deleted), onOk = { closeScreen() }) { App.api.delete("/user/$id") }
+                }) { Text(stringResource(R.string.lock_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },
+            dismissButton = { TextButton({ confirmDelete = false }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
 
 fun roleOf(u: JSONObject?): String? = when {
-    u.int("id") == 1 -> "Owner"
-    Perm.has(u.long("permissions"), Perm.ADMIN) -> "Admin"
+    u.int("id") == 1 -> App.str(R.string.owner)
+    Perm.has(u.long("permissions"), Perm.ADMIN) -> App.str(R.string.admin)
     else -> null
 }
 
@@ -182,7 +185,7 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier, sub: S
 fun WatchlistScreen(userId: Int) {
     val nav = LocalNav.current
     val self = userId == App.session.userId
-    Scaffold(topBar = { BackBar(if (self) "Your watchlist" else "Watchlist", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(if (self) stringResource(R.string.your_watchlist) else stringResource(R.string.watchlist), { nav.back() }) }) { pad ->
         PagedTileGrid(if (self) "/discover/watchlist" else "/user/$userId/watchlist", emptyMap(), Modifier.padding(pad))
     }
 }
@@ -197,36 +200,36 @@ fun BlocklistScreen() {
         delay(if (search.isEmpty()) 0 else 350)
         App.api.obj("/blocklist", mapOf("take" to 100, "search" to search.ifBlank { null })).objs("results")
     }
-    Scaffold(topBar = { BackBar("Blocklist", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.blocklist), { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad)) {
             OutlinedTextField(
-                search, { search = it }, placeholder = { Text("Search blocklist") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                search, { search = it }, placeholder = { Text(stringResource(R.string.search_blocklist)) }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
                 singleLine = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
             Loaded(load) { list ->
                 LazyColumn(contentPadding = ListBottom) {
                     items(list, key = { it.int("id") }) { b ->
                         ListItem(
-                            headlineContent = { Text(b.str("title") ?: "TMDB ${b.int("tmdbId")}") },
+                            headlineContent = { Text(b.str("title") ?: stringResource(R.string.tmdb_2, b.int("tmdbId"))) },
                             supportingContent = {
                                 Text(listOfNotNull(
-                                    if (b.str("mediaType") == "tv") "Series" else "Movie",
-                                    b.obj("user").str("displayName")?.let { "by $it" },
+                                    if (b.str("mediaType") == "tv") App.str(R.string.series_2) else App.str(R.string.movie_2),
+                                    b.obj("user").str("displayName")?.let { App.str(R.string.by_2, it) },
                                     prettyDate(b.str("createdAt")),
-                                    b.str("blocklistedTags")?.let { "tags $it" },
+                                    b.str("blocklistedTags")?.let { App.str(R.string.tags_2, it) },
                                 ).joinToString(" · "))
                             },
                             trailingContent = if (App.session.can(Perm.MANAGE_BLOCKLIST)) ({
                                 IconButton({
-                                    act.run("Removed from blocklist", onOk = { reload++ }) {
+                                    act.run(App.str(R.string.removed_from_blocklist), onOk = { reload++ }) {
                                         App.api.delete("/blocklist/${b.int("tmdbId")}", query = mapOf("mediaType" to b.str("mediaType")))
                                     }
-                                }) { Icon(Icons.Outlined.Close, "Remove") }
+                                }) { Icon(Icons.Outlined.Close, stringResource(R.string.remove)) }
                             }) else null,
                             modifier = Modifier.clickable { nav.openMedia(b.str("mediaType"), b.int("tmdbId")) },
                         )
                     }
-                    if (list.isEmpty()) item { EmptyBox(Icons.Outlined.Shield, "Nothing is blocklisted") }
+                    if (list.isEmpty()) item { EmptyBox(Icons.Outlined.Shield, stringResource(R.string.nothing_is_blocklisted)) }
                 }
             }
         }
@@ -260,7 +263,7 @@ fun UsersScreen() {
             val j = App.api.obj("/user", mapOf("take" to 25, "skip" to users.size, "sort" to sort, "q" to query.ifBlank { null }))
             users.addAll(j.objs("results").filter { u -> users.none { it.int("id") == u.int("id") } })
             total = j.obj("pageInfo").int("results", users.size)
-        } catch (e: Exception) { act.say(e.message ?: "Couldn't load users") }
+        } catch (e: Exception) { act.say(e.message ?: App.str(R.string.couldn_t_load_users)) }
         loading = false
     }
     LaunchedEffect(query, sort, reload) { more() }
@@ -270,15 +273,15 @@ fun UsersScreen() {
     Scaffold(
         topBar = {
             if (selected.isNotEmpty()) {
-                BackBar("${selected.size} selected", { selected.clear() }) {
-                    TextButton({ dialog = "perms" }) { Text("Edit permissions") }
+                BackBar(pluralStringResource(R.plurals.users_selected, selected.size, selected.size), { selected.clear() }) {
+                    TextButton({ dialog = "perms" }) { Text(stringResource(R.string.edit_permissions)) }
                 }
             } else {
-                BackBar("Users", { nav.back() }, subtitle = if (total >= 0) "$total users" else null) {
+                BackBar(stringResource(R.string.users), { nav.back() }, subtitle = if (total >= 0) pluralStringResource(R.plurals.users_count, total, total) else null) {
                     Box {
-                        TextButton({ sortMenu = true }) { Text("Sort") }
+                        TextButton({ sortMenu = true }) { Text(stringResource(R.string.sort)) }
                         DropdownMenu(sortMenu, { sortMenu = false }) {
-                            listOf("displayname" to "Name", "created" to "Joined", "requests" to "Requests", "usertype" to "Type", "role" to "Role").forEach { (k, l) ->
+                            listOf("displayname" to App.str(R.string.name), "created" to App.str(R.string.joined_2), "requests" to App.str(R.string.requests), "usertype" to App.str(R.string.type), "role" to App.str(R.string.role)).forEach { (k, l) ->
                                 DropdownMenuItem({ Text(l) }, { sort = k; sortMenu = false })
                             }
                         }
@@ -288,15 +291,15 @@ fun UsersScreen() {
         },
         floatingActionButton = {
             Box {
-                FloatingActionButton({ menu = true }) { Icon(Icons.Outlined.PersonAdd, "Add users") }
+                FloatingActionButton({ menu = true }) { Icon(Icons.Outlined.PersonAdd, stringResource(R.string.add_users)) }
                 DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem({ Text("Create local user") }, { menu = false; dialog = "create" }, leadingIcon = { Icon(Icons.Outlined.PersonAdd, null) })
+                    DropdownMenuItem({ Text(stringResource(R.string.create_local_user)) }, { menu = false; dialog = "create" }, leadingIcon = { Icon(Icons.Outlined.PersonAdd, null) })
                     val ms = App.session.mediaServer
                     if (ms == MediaServer.Jellyfin || ms == MediaServer.Emby) {
-                        DropdownMenuItem({ Text("Import ${ms.label} users") }, { menu = false; dialog = "jellyfin" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
+                        DropdownMenuItem({ Text(stringResource(R.string.import_users, ms.label)) }, { menu = false; dialog = "jellyfin" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
                     }
                     if (ms == MediaServer.Plex) {
-                        DropdownMenuItem({ Text("Import Plex users") }, { menu = false; dialog = "plex" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
+                        DropdownMenuItem({ Text(stringResource(R.string.import_plex_users)) }, { menu = false; dialog = "plex" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
                     }
                 }
             }
@@ -304,7 +307,7 @@ fun UsersScreen() {
     ) { pad ->
         Column(Modifier.padding(pad)) {
             OutlinedTextField(
-                query, { query = it }, placeholder = { Text("Search users") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                query, { query = it }, placeholder = { Text(stringResource(R.string.search_users)) }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
                 singleLine = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
             LazyColumn(state = list, contentPadding = ListBottom) {
@@ -316,9 +319,9 @@ fun UsersScreen() {
                             if (selected.isNotEmpty()) Checkbox(sel, { if (sel) selected.remove(id) else selected.add(id) })
                             else Avatar(u.str("avatar"), u.str("displayName") ?: "?")
                         },
-                        headlineContent = { Text(u.str("displayName") ?: u.str("email") ?: "User $id") },
+                        headlineContent = { Text(u.str("displayName") ?: u.str("email") ?: stringResource(R.string.user_2, id)) },
                         supportingContent = {
-                            Text(listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u), "${u.int("requestCount")} requests").joinToString(" · "))
+                            Text(listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u), pluralStringResource(R.plurals.requests_count, u.int("requestCount"), u.int("requestCount"))).joinToString(" · "))
                         },
                         colors = ListItemDefaults.colors(containerColor = if (sel) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
                         modifier = Modifier.combinedClickable(
@@ -331,7 +334,7 @@ fun UsersScreen() {
                     )
                 }
                 if (loading) item { Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) { CircularProgressIndicator() } }
-                if (!loading && users.isEmpty()) item { EmptyBox(Icons.Outlined.Group, "No users found") }
+                if (!loading && users.isEmpty()) item { EmptyBox(Icons.Outlined.Group, stringResource(R.string.no_users_found)) }
             }
         }
     }
@@ -343,18 +346,18 @@ fun UsersScreen() {
             var perms by remember { mutableLongStateOf(0L) }
             AlertDialog(
                 onDismissRequest = { dialog = null },
-                title = { Text("Permissions for ${selected.size} users") },
+                title = { Text(pluralStringResource(R.plurals.permissions_for_users, selected.size, selected.size)) },
                 text = { Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) { PermissionEditor(perms) { perms = it } } },
                 confirmButton = {
                     TextButton({
                         val ids = selected.toList()
                         dialog = null
-                        act.run("Permissions updated", onOk = { selected.clear(); reload++ }) {
+                        act.run(App.str(R.string.permissions_updated), onOk = { selected.clear(); reload++ }) {
                             App.api.put("/user", JSONObject().put("ids", JSONArray(ids)).put("permissions", perms))
                         }
-                    }) { Text("Save") }
+                    }) { Text(stringResource(R.string.save)) }
                 },
-                dismissButton = { TextButton({ dialog = null }) { Text("Cancel") } },
+                dismissButton = { TextButton({ dialog = null }) { Text(stringResource(R.string.lock_cancel)) } },
             )
         }
     }
@@ -370,13 +373,13 @@ private fun CreateUserDialog(onDismiss: () -> Unit, onDone: () -> Unit) {
     val emailOn = App.session.public.bool("emailEnabled")
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Create local user") },
+        title = { Text(stringResource(R.string.create_local_user)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(name, { name = it }, label = { Text("Display name") }, singleLine = true)
-                OutlinedTextField(email, { email = it }, label = { Text("Email") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
+                OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.display_name)) }, singleLine = true)
+                OutlinedTextField(email, { email = it }, label = { Text(stringResource(R.string.email)) }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
                 OutlinedTextField(
-                    password, { password = it }, label = { Text(if (emailOn) "Password (blank = email them one)" else "Password") },
+                    password, { password = it }, label = { Text(if (emailOn) stringResource(R.string.password_blank_email_them_one) else stringResource(R.string.password)) },
                     singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard,
                 )
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -390,9 +393,9 @@ private fun CreateUserDialog(onDismiss: () -> Unit, onDone: () -> Unit) {
                         onDone()
                     } catch (e: Exception) { error = e.message }
                 }
-            }, enabled = email.isNotBlank() && (emailOn || password.length >= 8)) { Text("Create") }
+            }, enabled = email.isNotBlank() && (emailOn || password.length >= 8)) { Text(stringResource(R.string.create)) }
         },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.lock_cancel)) } },
     )
 }
 
@@ -404,7 +407,7 @@ private fun ImportUsersDialog(plex: Boolean, onDismiss: () -> Unit, onDone: () -
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Import ${if (plex) "Plex" else App.session.mediaServer.label} users") },
+        title = { Text(stringResource(R.string.import_users, if (plex) "Plex" else App.session.mediaServer.label)) },
         text = {
             Box(Modifier.heightIn(min = 80.dp, max = 460.dp)) {
                 Loaded(load) { list ->
@@ -416,7 +419,7 @@ private fun ImportUsersDialog(plex: Boolean, onDismiss: () -> Unit, onDone: () -
                                 Text(u.str("username") ?: u.str("title") ?: u.str("email") ?: id)
                             }
                         }
-                        if (list.isEmpty()) item { Text("No users to import") }
+                        if (list.isEmpty()) item { Text(stringResource(R.string.no_users_to_import)) }
                     }
                 }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.BottomStart)) }
@@ -431,9 +434,9 @@ private fun ImportUsersDialog(plex: Boolean, onDismiss: () -> Unit, onDone: () -
                         onDone()
                     } catch (e: Exception) { error = e.message }
                 }
-            }, enabled = picked.isNotEmpty()) { Text("Import ${picked.size}") }
+            }, enabled = picked.isNotEmpty()) { Text(stringResource(R.string.import, picked.size)) }
         },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.lock_cancel)) } },
     )
 }
 
@@ -482,18 +485,18 @@ fun UserSettingsScreen(id: Int) {
     val s = App.session
     val self = id == s.userId
     val tabs = buildList {
-        add("General"); add("Password"); add("Notifications")
-        if (!self && s.can(Perm.MANAGE_USERS) && id != 1 || self) add("Permissions")
+        add(App.str(R.string.general)); add(App.str(R.string.password)); add(App.str(R.string.notifications))
+        if (!self && s.can(Perm.MANAGE_USERS) && id != 1 || self) add(App.str(R.string.permissions))
     }
     var tab by remember { mutableIntStateOf(0) }
-    Scaffold(topBar = { BackBar(if (self) "Account settings" else "User settings", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(if (self) stringResource(R.string.you_account_settings) else stringResource(R.string.user_settings), { nav.back() }) }) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             PrimaryTabRow(tab) { tabs.forEachIndexed { i, t -> Tab(i == tab, { tab = i }, text = { Text(t, maxLines = 1) }) } }
             when (tabs[tab]) {
-                "General" -> GeneralSettings(id)
-                "Password" -> PasswordSettings(id, self)
-                "Notifications" -> NotificationSettings(id)
-                "Permissions" -> PermissionSettings(id, readOnly = self)
+                App.str(R.string.general) -> GeneralSettings(id)
+                App.str(R.string.password) -> PasswordSettings(id, self)
+                App.str(R.string.notifications) -> NotificationSettings(id)
+                App.str(R.string.permissions) -> PermissionSettings(id, readOnly = self)
             }
         }
     }
@@ -503,7 +506,7 @@ fun UserSettingsScreen(id: Int) {
 private fun SaveBar(state: FormState, busy: Boolean, onSave: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
         androidx.compose.material3.Button(onSave, enabled = state.dirty && !busy) {
-            if (busy) CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp) else Text("Save changes")
+            if (busy) CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.save_changes))
         }
     }
 }
@@ -521,8 +524,8 @@ private fun GeneralSettings(id: Int) {
     }
     Loaded(load) { (main, regions, langs) ->
         val state = remember(main) { FormState(main) }
-        val regionChoices = listOf("" to "Default (server setting)") + regions.map { (it.str("iso_3166_1") ?: "") to (it.str("english_name") ?: "") }.sortedBy { it.second }
-        val langChoices = listOf("" to "Default (server setting)") + langs.map { (it.str("iso_639_1") ?: "") to (it.str("english_name") ?: "") }.sortedBy { it.second }
+        val regionChoices = listOf("" to App.str(R.string.default_server_setting)) + regions.map { (it.str("iso_3166_1") ?: "") to (it.str("english_name") ?: "") }.sortedBy { it.second }
+        val langChoices = listOf("" to App.str(R.string.default_server_setting)) + langs.map { (it.str("iso_639_1") ?: "") to (it.str("english_name") ?: "") }.sortedBy { it.second }
         val canQuota = s.can(Perm.MANAGE_USERS) && id != s.userId
         val hide = buildSet {
             addAll(listOf("globalMovieQuotaDays", "globalMovieQuotaLimit", "globalTvQuotaDays", "globalTvQuotaLimit", "locale"))
@@ -535,18 +538,18 @@ private fun GeneralSettings(id: Int) {
                 state,
                 FormSpec(
                     labels = mapOf(
-                        "username" to "Display name", "discordId" to "Discord user ID",
-                        "discoverRegion" to "Discover region", "streamingRegion" to "Streaming region",
-                        "originalLanguage" to "Discover language",
-                        "movieQuotaLimit" to "Movie request limit", "movieQuotaDays" to "Movie limit period (days)",
-                        "tvQuotaLimit" to "Season request limit", "tvQuotaDays" to "Season limit period (days)",
-                        "watchlistSyncMovies" to "Auto-request movies on Plex watchlist", "watchlistSyncTv" to "Auto-request series on Plex watchlist",
+                        "username" to App.str(R.string.display_name), "discordId" to App.str(R.string.discord_user_id),
+                        "discoverRegion" to App.str(R.string.discover_region), "streamingRegion" to App.str(R.string.streaming_region),
+                        "originalLanguage" to App.str(R.string.discover_language),
+                        "movieQuotaLimit" to App.str(R.string.movie_request_limit), "movieQuotaDays" to App.str(R.string.movie_limit_period_days),
+                        "tvQuotaLimit" to App.str(R.string.season_request_limit), "tvQuotaDays" to App.str(R.string.season_limit_period_days),
+                        "watchlistSyncMovies" to App.str(R.string.auto_request_movies_on_plex), "watchlistSyncTv" to App.str(R.string.auto_request_series_on_plex),
                     ),
                     help = mapOf(
-                        "movieQuotaLimit" to "Leave empty to use the global limit (${main.int("globalMovieQuotaLimit")} per ${main.int("globalMovieQuotaDays")} days)",
-                        "tvQuotaLimit" to "Leave empty to use the global limit (${main.int("globalTvQuotaLimit")} per ${main.int("globalTvQuotaDays")} days)",
-                        "discoverRegion" to "Filters discover content by regional availability",
-                        "streamingRegion" to "Shows streaming sites by regional availability",
+                        "movieQuotaLimit" to App.str(R.string.leave_empty_to_use_the_global_limit, main.int("globalMovieQuotaLimit"), main.int("globalMovieQuotaDays")),
+                        "tvQuotaLimit" to App.str(R.string.leave_empty_to_use_the_global_limit, main.int("globalTvQuotaLimit"), main.int("globalTvQuotaDays")),
+                        "discoverRegion" to App.str(R.string.filters_discover_content_by_regional),
+                        "streamingRegion" to App.str(R.string.shows_streaming_sites_by_regional),
                     ),
                     hide = hide,
                     types = mapOf(
@@ -558,7 +561,7 @@ private fun GeneralSettings(id: Int) {
                 ),
             )
             SaveBar(state, act.busy) {
-                act.run("Saved", onOk = {
+                act.run(App.str(R.string.saved), onOk = {
                     state.saved()
                     if (id == s.userId) try { s.refresh() } catch (_: Exception) {}
                 }) { App.api.post("/user/$id/settings/main", state.obj) }
@@ -578,21 +581,21 @@ private fun PasswordSettings(id: Int, self: Boolean) {
     Loaded(load) { has ->
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                if (has) "Change the password used for signing in with email." else "This account has no Seerr password yet. Set one to allow email sign-in.",
+                if (has) stringResource(R.string.change_the_password_used_for_signing) else stringResource(R.string.this_account_has_no_seerr_password),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (has && self) OutlinedTextField(current, { current = it }, label = { Text("Current password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(new1, { new1 = it }, label = { Text("New password (8+ characters)") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(new2, { new2 = it }, label = { Text("Repeat new password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth(),
+            if (has && self) OutlinedTextField(current, { current = it }, label = { Text(stringResource(R.string.current_password)) }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(new1, { new1 = it }, label = { Text(stringResource(R.string.new_password_8_characters)) }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(new2, { new2 = it }, label = { Text(stringResource(R.string.repeat_new_password)) }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth(),
                 isError = new2.isNotEmpty() && new1 != new2)
             androidx.compose.material3.Button(
                 enabled = new1.length >= 8 && new1 == new2 && !act.busy,
                 onClick = {
-                    act.run("Password saved", onOk = { current = ""; new1 = ""; new2 = "" }) {
+                    act.run(App.str(R.string.password_saved), onOk = { current = ""; new1 = ""; new2 = "" }) {
                         App.api.post("/user/$id/settings/password", jsonOf("currentPassword" to current.ifEmpty { null }, "newPassword" to new1, "confirmPassword" to new2))
                     }
                 },
-            ) { Text("Save password") }
+            ) { Text(stringResource(R.string.save_password)) }
         }
     }
 }
@@ -601,10 +604,10 @@ private fun PasswordSettings(id: Int, self: Boolean) {
 private val PasswordKeyboard = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false)
 
 val NotificationTypeList = listOf(
-    2L to "Request pending approval", 128L to "Request automatically approved", 4L to "Request approved",
-    64L to "Request declined", 8L to "Request available", 16L to "Request processing failed",
-    4096L to "Request automatically submitted", 256L to "Issue reported", 512L to "Issue comment",
-    1024L to "Issue resolved", 2048L to "Issue reopened",
+    2L to App.str(R.string.request_pending_approval), 128L to App.str(R.string.request_automatically_approved), 4L to App.str(R.string.request_approved),
+    64L to App.str(R.string.request_declined), 8L to App.str(R.string.request_available), 16L to App.str(R.string.request_processing_failed),
+    4096L to App.str(R.string.request_automatically_submitted), 256L to App.str(R.string.issue_reported), 512L to App.str(R.string.issue_comment),
+    1024L to App.str(R.string.issue_resolved), 2048L to App.str(R.string.issue_reopened),
 )
 
 @Composable
@@ -614,34 +617,34 @@ private fun NotificationSettings(id: Int) {
     Loaded(load) { n ->
         val state = remember(n) { FormState(n) }
         val agents = buildList {
-            if (n.bool("emailEnabled")) add("email" to "Email")
-            if (n.bool("discordEnabled")) add("discord" to "Discord")
-            add("pushbullet" to "Pushbullet"); add("pushover" to "Pushover")
-            if (n.bool("telegramEnabled")) add("telegram" to "Telegram")
-            if (n.bool("webPushEnabled")) add("webpush" to "Web push")
+            if (n.bool("emailEnabled")) add("email" to App.str(R.string.email))
+            if (n.bool("discordEnabled")) add("discord" to App.str(R.string.discord))
+            add("pushbullet" to App.str(R.string.pushbullet)); add("pushover" to App.str(R.string.pushover))
+            if (n.bool("telegramEnabled")) add("telegram" to App.str(R.string.telegram))
+            if (n.bool("webPushEnabled")) add("webpush" to App.str(R.string.web_push))
         }
         var agent by remember { mutableIntStateOf(0) }
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Text(
-                "Agents your server has turned on, and which events reach you through each.",
+                stringResource(R.string.agents_your_server_has_turned_on_and),
                 color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp),
             )
             JsonFields(
                 state,
                 FormSpec(
                     hide = setOf("emailEnabled", "discordEnabled", "telegramEnabled", "webPushEnabled", "notificationTypes", "telegramBotUsername", "discordEnabledTypes", "discordIds"),
-                    labels = mapOf("pgpKey" to "PGP public key (email)", "telegramChatId" to "Telegram chat ID", "telegramMessageThreadId" to "Telegram thread ID",
-                        "telegramSendSilently" to "Telegram: send silently", "pushoverSound" to "Pushover sound"),
+                    labels = mapOf("pgpKey" to App.str(R.string.pgp_public_key_email), "telegramChatId" to App.str(R.string.telegram_chat_id), "telegramMessageThreadId" to App.str(R.string.telegram_thread_id),
+                        "telegramSendSilently" to App.str(R.string.telegram_send_silently), "pushoverSound" to App.str(R.string.pushover_sound)),
                     multiline = setOf("pgpKey"),
                     types = mapOf("pgpKey" to "string", "pushbulletAccessToken" to "string", "pushoverApplicationToken" to "string", "pushoverUserKey" to "string",
                         "pushoverSound" to "string", "telegramChatId" to "string", "telegramMessageThreadId" to "string", "telegramSendSilently" to "bool"),
                 ),
             )
             n.str("telegramBotUsername")?.let {
-                Text("Start a chat with @$it on Telegram, then send /my_id to get your chat ID.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp))
+                Text(stringResource(R.string.start_a_chat_with_on_telegram_then, it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp))
             }
             if (agents.isNotEmpty()) {
-                SheetHeader("Notify me about")
+                SheetHeader(stringResource(R.string.notify_me_about))
                 androidx.compose.material3.ScrollableTabRow(agent, edgePadding = 16.dp) {
                     agents.forEachIndexed { i, (_, l) -> Tab(i == agent, { agent = i }, text = { Text(l) }) }
                 }
@@ -659,7 +662,7 @@ private fun NotificationSettings(id: Int) {
                 }
             }
             SaveBar(state, act.busy) {
-                act.run("Saved", onOk = { state.saved() }) { App.api.post("/user/$id/settings/notifications", state.obj) }
+                act.run(App.str(R.string.saved), onOk = { state.saved() }) { App.api.post("/user/$id/settings/notifications", state.obj) }
             }
             Spacer(Modifier.padding(40.dp))
         }
@@ -673,14 +676,14 @@ private fun PermissionSettings(id: Int, readOnly: Boolean) {
     Loaded(load) { initial ->
         var perms by remember(initial) { mutableLongStateOf(initial) }
         Column(Modifier.verticalScroll(rememberScrollState()).padding(8.dp)) {
-            if (readOnly) Text("Only another admin can change your permissions.", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(8.dp))
+            if (readOnly) Text(stringResource(R.string.only_another_admin_can_change_your), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(8.dp))
             PermissionEditor(perms, enabled = !readOnly) { perms = it }
             if (!readOnly) {
                 Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.End) {
                     androidx.compose.material3.Button(
                         enabled = perms != initial && !act.busy,
-                        onClick = { act.run("Permissions saved", onOk = { load.reload(silent = true) }) { App.api.post("/user/$id/settings/permissions", jsonOf("permissions" to perms)) } },
-                    ) { Text("Save permissions") }
+                        onClick = { act.run(App.str(R.string.permissions_saved), onOk = { load.reload(silent = true) }) { App.api.post("/user/$id/settings/permissions", jsonOf("permissions" to perms)) } },
+                    ) { Text(stringResource(R.string.save_permissions)) }
                 }
             }
             Spacer(Modifier.padding(40.dp))

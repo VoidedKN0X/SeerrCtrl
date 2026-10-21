@@ -33,6 +33,8 @@ import com.vknxworks.seerrctrl.data.deepCopy
 import com.vknxworks.seerrctrl.data.humanize
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 /** How to show the fields of a settings object. Keys can be dotted paths ("options.webhookUrl"). */
 data class FormSpec(
@@ -141,7 +143,7 @@ private fun JsonField(state: FormState, spec: FormSpec, path: String, key: Strin
             if (objects) {
                 ListItem(
                     headlineContent = { Text(label) },
-                    supportingContent = { Text("${value.length()} entries (edit in the web UI)") },
+                    supportingContent = { Text(stringResource(R.string.entries_edit_in_the_web_ui, value.length())) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             } else {
@@ -191,7 +193,7 @@ private fun TextInput(
             singleLine = !multiline, minLines = if (multiline) 3 else 1,
             visualTransformation = if (secret && !show) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = if (secret) ({
-                IconButton({ show = !show }) { Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, "Show") }
+                IconButton({ show = !show }) { Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, stringResource(R.string.show)) }
             }) else null,
             keyboardOptions = KeyboardOptions(
                 keyboardType = when {
