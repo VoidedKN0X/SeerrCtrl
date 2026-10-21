@@ -8,13 +8,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import com.vknxworks.seerrctrl.R
 
 /** Approve / Decline buttons on "new request" notifications. */
 class ActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val requestId = intent.getIntExtra(EXTRA_REQUEST, 0)
         val nid = intent.getIntExtra(EXTRA_NOTIFICATION, 0)
-        val title = intent.getStringExtra(EXTRA_TITLE) ?: "Request"
+        val title = intent.getStringExtra(EXTRA_TITLE) ?: App.str(R.string.request)
         val approve = intent.action == APPROVE
         if (requestId == 0) return
         App.init(context.applicationContext)
@@ -28,10 +29,10 @@ class ActionReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 App.api.post("/request/$requestId/${if (approve) "approve" else "decline"}")
-                Notifier.replace(context, nid, Notifier.CH_PENDING, title, if (approve) "Approved" else "Declined")
+                Notifier.replace(context, nid, Notifier.CH_PENDING, title, if (approve) App.str(R.string.approved) else App.str(R.string.declined))
                 Notifier.bump()
             } catch (_: Exception) {
-                Notifier.replace(context, nid, Notifier.CH_PENDING, title, "Couldn't ${if (approve) "approve" else "decline"} — open the app")
+                Notifier.replace(context, nid, Notifier.CH_PENDING, title, App.str(if (approve) R.string.notify_approve_failed else R.string.notify_decline_failed))
             } finally {
                 pending.finish()
             }

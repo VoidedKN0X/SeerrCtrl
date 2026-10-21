@@ -1,6 +1,8 @@
 package com.vknxworks.seerrctrl
 
 import android.content.Context
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import com.vknxworks.seerrctrl.data.LockSettings
 import com.vknxworks.seerrctrl.data.Prefs
 import com.vknxworks.seerrctrl.data.SeerrApi
@@ -20,8 +22,17 @@ object App {
     lateinit var lock: LockSettings
         private set
 
+    private lateinit var appContext: Context
+
+    /** Text from strings.xml for code that has no Context of its own (data layer, background checks, actions). */
+    fun str(@StringRes id: Int, vararg args: Any): String = appContext.getString(id, *args)
+
+    /** A plural from strings.xml, for code that has no Context of its own. */
+    fun plural(@PluralsRes id: Int, count: Int, vararg args: Any): String = appContext.resources.getQuantityString(id, count, *args)
+
     fun init(ctx: Context) {
         if (::prefs.isInitialized) return
+        appContext = ctx.applicationContext
         prefs = Prefs(ctx.applicationContext)
         settings = Settings(ctx.applicationContext)
         lock = LockSettings(ctx.applicationContext)

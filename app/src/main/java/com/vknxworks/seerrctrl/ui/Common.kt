@@ -83,6 +83,8 @@ import com.vknxworks.seerrctrl.data.RequestStatus
 import com.vknxworks.seerrctrl.data.Tile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 // ---------------- navigation ----------------
 
@@ -185,7 +187,7 @@ fun <T> Loaded(load: Load<T>, modifier: Modifier = Modifier, content: @Composabl
     when {
         v != null -> content(v)
         load.loading -> LoadingBox(modifier)
-        else -> ErrorBox(load.error ?: "Couldn't load", modifier) { load.reload() }
+        else -> ErrorBox(load.error ?: stringResource(R.string.couldn_t_load), modifier) { load.reload() }
     }
 }
 
@@ -206,7 +208,7 @@ fun ErrorBox(message: String, modifier: Modifier = Modifier, onRetry: (() -> Uni
         Text(message, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (onRetry != null) {
             Spacer(Modifier.height(16.dp))
-            Button(onRetry) { Text("Try again") }
+            Button(onRetry) { Text(stringResource(R.string.try_again)) }
         }
     }
 }
@@ -236,7 +238,7 @@ class Actions(private val scope: CoroutineScope, private val snack: SnackbarHost
                 onOk()
                 done?.let { snack.showSnackbar(it) }
             } catch (e: Exception) {
-                snack.showSnackbar(e.message ?: "Something went wrong")
+                snack.showSnackbar(e.message ?: App.str(R.string.something_went_wrong))
             }
             busy = false
         }
@@ -272,7 +274,7 @@ fun BackBar(
                 }
             }
         },
-        navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") } },
+        navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) } },
         actions = { actions() },
         scrollBehavior = scroll,
         colors = TopAppBarDefaults.topAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -343,7 +345,7 @@ fun PosterCard(tile: Tile, width: Dp?, onClick: () -> Unit, modifier: Modifier =
                     modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
                 ) {
                     Text(
-                        if (tile.type == "tv") "SERIES" else "MOVIE",
+                        if (tile.type == "tv") stringResource(R.string.series) else stringResource(R.string.movie),
                         style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
@@ -380,7 +382,7 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, onMore: (() -> U
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
         if (onMore != null) {
             TextButton(onMore) {
-                Text("See all")
+                Text(stringResource(R.string.see_all))
                 Spacer(Modifier.width(4.dp))
                 Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(16.dp))
             }

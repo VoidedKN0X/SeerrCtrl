@@ -2,6 +2,16 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.6.1
+
+### Changed
+
+- **All text is now in one place, ready for translations.** Over 700 pieces of text that were written straight into the code (Discover, Search, Requests, Issues, media and people pages, the request and report dialogs, server settings, users, the calendar, sign-in, certificate warnings, notifications and their channels, and error messages) now come from the app's text resources. The wording stays the same.
+
+### Fixed
+
+- **Counts read correctly in the singular and plural**: "1 season", "1 episode", "1 user", "1 movie", "1 request", "1 comment", "Request 1 season" and "Permissions for 1 user" instead of "1 seasons", "1 users" and so on, in the app and in notifications.
+
 ## 1.6.0
 
 Settings now open from your profile picture, the same way as in every other Ctrl app.

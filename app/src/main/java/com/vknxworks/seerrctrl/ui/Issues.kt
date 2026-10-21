@@ -80,13 +80,16 @@ import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.data.timeAgo
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.vknxworks.seerrctrl.R
 
 private fun issueWhere(i: JSONObject): String? {
     val s = i.int("problemSeason")
     val e = i.int("problemEpisode")
     return when {
-        s > 0 && e > 0 -> "Season $s, episode $e"
-        s > 0 -> "Season $s"
+        s > 0 && e > 0 -> App.str(R.string.season_episode, s, e)
+        s > 0 -> App.str(R.string.season_2, s)
         else -> null
     }
 }
@@ -119,10 +122,10 @@ fun IssuesTab() {
     LaunchedEffect(nearEnd) { if (nearEnd && items.isNotEmpty()) more() }
 
     Column(Modifier.fillMaxSize()) {
-        TabTitle("Issues")
+        TabTitle(stringResource(R.string.issues))
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("open" to "Open", "resolved" to "Resolved", "all" to "All").forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
-            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
+            listOf("open" to App.str(R.string.open), "resolved" to App.str(R.string.resolved), "all" to App.str(R.string.all)).forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
+            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text(stringResource(R.string.recently_changed), maxLines = 1) })
         }
         PullToRefreshBox(false, { reloadKey++ }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -131,7 +134,7 @@ fun IssuesTab() {
                 if (!loading && items.isEmpty()) {
                     item {
                         if (error != null) ErrorBox(error!!) { scope.launch { more() } }
-                        else EmptyBox(Icons.Outlined.CheckCircle, if (filter == "open") "No open issues" else "No issues")
+                        else EmptyBox(Icons.Outlined.CheckCircle, if (filter == "open") stringResource(R.string.no_open_issues) else stringResource(R.string.no_issues))
                     }
                 }
             }
@@ -159,14 +162,14 @@ private fun IssueCard(i: JSONObject) {
                 Text(d.str("title") ?: d.str("name") ?: "…", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Pill(IssueTypes.name(i.int("issueType")), MaterialTheme.colorScheme.secondary)
-                    Pill(if (open) "Open" else "Resolved", if (open) Status.pending else Status.available)
+                    Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) Status.pending else Status.available)
                 }
                 issueWhere(i)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 i.objs("comments").firstOrNull()?.str("message")?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 Text(
-                    "${by.str("displayName") ?: "Someone"} · ${timeAgo(i.str("createdAt")) ?: ""} · ${i.objs("comments").size} comments",
+                    pluralStringResource(R.plurals.issue_byline, i.objs("comments").size, i.objs("comments").size, by.str("displayName") ?: stringResource(R.string.someone), timeAgo(i.str("createdAt")) ?: ""),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -189,10 +192,10 @@ fun IssueScreen(id: Int) {
 
     Scaffold(
         topBar = {
-            BackBar("Issue #$id", { nav.back() }) {
+            BackBar(stringResource(R.string.issue_2, id), { nav.back() }) {
                 val i = load.value
                 if (i != null && (s.can(Perm.MANAGE_ISSUES) || i.obj("createdBy").int("id") == s.userId)) {
-                    IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete issue") }
+                    IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, stringResource(R.string.delete_issue)) }
                 }
             }
         },
@@ -200,7 +203,7 @@ fun IssueScreen(id: Int) {
             val i = load.value
             if (i != null) Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
                 Row(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(reply, { reply = it }, placeholder = { Text("Add a comment") }, modifier = Modifier.weight(1f), maxLines = 4)
+                    OutlinedTextField(reply, { reply = it }, placeholder = { Text(stringResource(R.string.add_a_comment)) }, modifier = Modifier.weight(1f), maxLines = 4)
                     Spacer(Modifier.width(8.dp))
                     FilledIconButton(
                         enabled = reply.isNotBlank() && !act.busy,
@@ -209,7 +212,7 @@ fun IssueScreen(id: Int) {
                                 App.api.post("/issue/${i.int("id")}/comment", jsonOf("message" to reply.trim()))
                             }
                         },
-                    ) { Icon(Icons.AutoMirrored.Outlined.Send, "Send") }
+                    ) { Icon(Icons.AutoMirrored.Outlined.Send, stringResource(R.string.send)) }
                 }
             }
         },
@@ -230,12 +233,12 @@ fun IssueScreen(id: Int) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(d.str("title") ?: d.str("name") ?: "…", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Pill(IssueTypes.name(i.int("issueType")) + " issue", MaterialTheme.colorScheme.secondary)
-                                Pill(if (open) "Open" else "Resolved", if (open) Status.pending else Status.available)
+                                Pill(stringResource(R.string.issue_title, IssueTypes.name(i.int("issueType"))), MaterialTheme.colorScheme.secondary)
+                                Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) Status.pending else Status.available)
                             }
                             issueWhere(i)?.let { Text(it) }
                             Text(
-                                "Reported by ${i.obj("createdBy").str("displayName") ?: "?"} · ${prettyDateTime(i.str("createdAt")) ?: ""}",
+                                stringResource(R.string.reported_by, i.obj("createdBy").str("displayName") ?: "?", prettyDateTime(i.str("createdAt")) ?: ""),
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -246,19 +249,19 @@ fun IssueScreen(id: Int) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (open) {
                                 FilledTonalButton({
-                                    act.run("Marked as resolved", onOk = { load.reload(silent = true) }) { App.api.post("/issue/${i.int("id")}/resolved") }
-                                }) { Icon(Icons.Outlined.CheckCircle, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Resolve") }
+                                    act.run(App.str(R.string.marked_as_resolved), onOk = { load.reload(silent = true) }) { App.api.post("/issue/${i.int("id")}/resolved") }
+                                }) { Icon(Icons.Outlined.CheckCircle, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.resolve)) }
                             } else {
                                 OutlinedButton({
-                                    act.run("Reopened", onOk = { load.reload(silent = true) }) { App.api.post("/issue/${i.int("id")}/open") }
-                                }) { Icon(Icons.AutoMirrored.Outlined.Undo, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Reopen") }
+                                    act.run(App.str(R.string.reopened), onOk = { load.reload(silent = true) }) { App.api.post("/issue/${i.int("id")}/open") }
+                                }) { Icon(Icons.AutoMirrored.Outlined.Undo, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.reopen)) }
                             }
                         }
                     }
                 }
                 items(i.objs("comments"), key = { it.int("id") }) { c ->
                     Comment(c, onEdit = { editing = c }, onDelete = {
-                        act.run("Comment deleted", onOk = { load.reload(silent = true) }) { App.api.delete("/issueComment/${c.int("id")}") }
+                        act.run(App.str(R.string.comment_deleted), onOk = { load.reload(silent = true) }) { App.api.delete("/issueComment/${c.int("id")}") }
                     })
                 }
             }
@@ -268,29 +271,29 @@ fun IssueScreen(id: Int) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this issue?") },
+            title = { Text(stringResource(R.string.delete_this_issue)) },
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("Issue deleted", onOk = { closeScreen() }) { App.api.delete("/issue/$id") }
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                    act.run(App.str(R.string.issue_deleted), onOk = { closeScreen() }) { App.api.delete("/issue/$id") }
+                }) { Text(stringResource(R.string.lock_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },
+            dismissButton = { TextButton({ confirmDelete = false }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
     editing?.let { c ->
         var text by remember(c) { mutableStateOf(c.str("message") ?: "") }
         AlertDialog(
             onDismissRequest = { editing = null },
-            title = { Text("Edit comment") },
+            title = { Text(stringResource(R.string.edit_comment)) },
             text = { OutlinedTextField(text, { text = it }, minLines = 3, modifier = Modifier.fillMaxWidth()) },
             confirmButton = {
                 TextButton({
                     editing = null
                     act.run(onOk = { load.reload(silent = true) }) { App.api.put("/issueComment/${c.int("id")}", jsonOf("message" to text.trim())) }
-                }) { Text("Save") }
+                }) { Text(stringResource(R.string.save)) }
             },
-            dismissButton = { TextButton({ editing = null }) { Text("Cancel") } },
+            dismissButton = { TextButton({ editing = null }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
@@ -307,14 +310,14 @@ private fun Comment(c: JSONObject, onEdit: () -> Unit, onDelete: () -> Unit) {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh), modifier = Modifier.weight(1f)) {
             Column(Modifier.padding(start = 12.dp, top = 4.dp, bottom = 12.dp, end = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(user.str("displayName") ?: "Someone", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                    Text(user.str("displayName") ?: stringResource(R.string.someone), fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                     Text(timeAgo(c.str("createdAt")) ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (mine || s.can(Perm.MANAGE_ISSUES)) {
                         Box {
-                            IconButton({ menu = true }) { Icon(Icons.Outlined.MoreVert, "More") }
+                            IconButton({ menu = true }) { Icon(Icons.Outlined.MoreVert, stringResource(R.string.tab_more)) }
                             DropdownMenu(menu, { menu = false }) {
-                                if (mine) DropdownMenuItem({ Text("Edit") }, { menu = false; onEdit() }, leadingIcon = { Icon(Icons.Outlined.Edit, null) })
-                                DropdownMenuItem({ Text("Delete") }, { menu = false; onDelete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null) })
+                                if (mine) DropdownMenuItem({ Text(stringResource(R.string.edit)) }, { menu = false; onEdit() }, leadingIcon = { Icon(Icons.Outlined.Edit, null) })
+                                DropdownMenuItem({ Text(stringResource(R.string.lock_delete)) }, { menu = false; onDelete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null) })
                             }
                         }
                     }

@@ -75,7 +75,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
 
     private suspend fun titleAndPoster(type: String, tmdbId: Int): Pair<String, Bitmap?> {
         val d = try { MediaCache.get(type, tmdbId) } catch (_: Exception) { null }
-        val title = d.str("title") ?: d.str("name") ?: if (type == "tv") "A series" else "A movie"
+        val title = d.str("title") ?: d.str("name") ?: if (type == "tv") App.str(R.string.a_series) else App.str(R.string.a_movie)
         val poster = try {
             // Through Seerr's image cache when it's on, like the posters in the app.
             val url = App.session.tmdb(d.str("posterPath"), "w185")
@@ -109,15 +109,15 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             val type = media.str("mediaType") ?: "movie"
             val tmdbId = media.int("tmdbId")
             val (title, poster) = titleAndPoster(type, tmdbId)
-            val k = if (is4k) " in 4K" else ""
+            val what = if (is4k) App.str(R.string.title_in_4k, title) else title
             val text = when {
-                avail == MediaStatus.Available && pAv != MediaStatus.Available.code -> "$title is now available$k"
-                avail == MediaStatus.Partial && pAv != MediaStatus.Partial.code -> "$title is partially available$k"
+                avail == MediaStatus.Available && pAv != MediaStatus.Available.code -> App.str(R.string.notify_available, what)
+                avail == MediaStatus.Partial && pAv != MediaStatus.Partial.code -> App.str(R.string.notify_partial, what)
                 st != RequestStatus.of(pSt) -> when (st) {
-                    RequestStatus.Approved -> "Your request for $title$k was approved"
-                    RequestStatus.Declined -> "Your request for $title$k was declined"
-                    RequestStatus.Failed -> "Your request for $title$k failed to process"
-                    RequestStatus.Completed -> "Your request for $title$k is complete"
+                    RequestStatus.Approved -> App.str(R.string.notify_approved, what)
+                    RequestStatus.Declined -> App.str(R.string.notify_declined, what)
+                    RequestStatus.Failed -> App.str(R.string.notify_failed, what)
+                    RequestStatus.Completed -> App.str(R.string.notify_completed, what)
                     RequestStatus.Pending -> null
                 }
                 else -> null
@@ -144,14 +144,19 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             val tmdbId = media.int("tmdbId")
             val (title, poster) = titleAndPoster(type, tmdbId)
             val seasons = r.objs("seasons").map { it.int("seasonNumber") }.sorted()
-            val text = "${by.str("displayName") ?: "Someone"} requested ${if (r.bool("is4k")) "4K " else ""}" +
-                (if (type == "tv" && seasons.isNotEmpty()) "season${if (seasons.size > 1) "s" else ""} ${seasons.joinToString(", ")}" else if (type == "tv") "this series" else "this movie")
+            val who = by.str("displayName") ?: App.str(R.string.someone)
+            val what = when {
+                type == "tv" && seasons.isNotEmpty() -> App.plural(R.plurals.notify_seasons, seasons.size, seasons.size, seasons.joinToString(", "))
+                type == "tv" -> App.str(R.string.notify_this_series)
+                else -> App.str(R.string.notify_this_movie)
+            }
+            val text = if (r.bool("is4k")) App.str(R.string.notify_requested_4k, who, what) else App.str(R.string.notify_requested, who, what)
             val nid = 20_000 + id
             Notifier.post(
                 applicationContext, nid, Notifier.CH_PENDING, title, text, mediaRoute(type, tmdbId), poster,
                 actions = listOf(
-                    action(nid, id, ActionReceiver.APPROVE, "Approve", title),
-                    action(nid, id, ActionReceiver.DECLINE, "Decline", title),
+                    action(nid, id, ActionReceiver.APPROVE, App.str(R.string.approve), title),
+                    action(nid, id, ActionReceiver.DECLINE, App.str(R.string.decline), title),
                 ),
             )
         }
@@ -190,7 +195,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 val msg = i.objs("comments").firstOrNull()?.str("message")
                 Notifier.post(
                     applicationContext, 30_000 + id, Notifier.CH_ISSUES,
-                    "${IssueTypes.name(i.int("issueType"))} issue: $title",
+                    App.str(R.string.notify_issue, IssueTypes.name(i.int("issueType")), title),
                     "${i.obj("createdBy").str("displayName") ?: "Someone"}: ${msg ?: "reported a problem"}",
                     "issue/$id", poster,
                 )
@@ -212,14 +217,14 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             val media = i.obj("media")
             val (title, poster) = titleAndPoster(media.str("mediaType") ?: "movie", media.int("tmdbId"))
             val text = when {
-                i.int("status") == 2 && pSt != 2 -> "Your issue was marked as resolved"
-                i.int("status") == 1 && pSt == 2 -> "Your issue was reopened"
+                i.int("status") == 2 && pSt != 2 -> App.str(R.string.your_issue_was_marked_as_resolved)
+                i.int("status") == 1 && pSt == 2 -> App.str(R.string.your_issue_was_reopened)
                 i.objs("comments").size > pCount -> {
                     // The list doesn't say who wrote a comment; the issue itself does.
                     val full = try { App.api.obj("/issue/$id") } catch (_: Exception) { null }
                     val last = full.objs("comments").lastOrNull()
                     if (last != null && last.obj("user").int("id") == myId) null
-                    else "${last.obj("user").str("displayName") ?: "Someone"} replied: ${last.str("message") ?: ""}"
+                    else App.str(R.string.notify_replied, last.obj("user").str("displayName") ?: App.str(R.string.someone), last.str("message") ?: "")
                 }
                 else -> null
             } ?: continue

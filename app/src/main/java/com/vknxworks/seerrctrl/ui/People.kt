@@ -58,6 +58,9 @@ import com.vknxworks.seerrctrl.data.strings
 import com.vknxworks.seerrctrl.data.toTile
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.vknxworks.seerrctrl.R
 
 @Composable
 private fun FloatingBack() {
@@ -66,7 +69,7 @@ private fun FloatingBack() {
         onClick = { nav.back() },
         colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
         modifier = Modifier.statusBarsPadding().padding(8.dp),
-    ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
+    ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
 }
 
 @Composable
@@ -108,10 +111,10 @@ fun PersonScreen(id: Int) {
                                 p.str("knownForDepartment")?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
                                 val born = prettyDate(p.str("birthday"))
                                 val died = prettyDate(p.str("deathday"))
-                                if (born != null) Text("Born $born" + (p.str("placeOfBirth")?.let { " in $it" } ?: ""), style = MaterialTheme.typography.bodySmall)
-                                if (died != null) Text("Died $died", style = MaterialTheme.typography.bodySmall)
+                                if (born != null) Text(p.str("placeOfBirth")?.let { stringResource(R.string.born_in, born, it) } ?: stringResource(R.string.born, born), style = MaterialTheme.typography.bodySmall)
+                                if (died != null) Text(stringResource(R.string.died, died), style = MaterialTheme.typography.bodySmall)
                                 val aka = p.arr("alsoKnownAs").strings().take(3)
-                                if (aka.isNotEmpty()) Text("Also known as " + aka.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (aka.isNotEmpty()) Text(stringResource(R.string.also_known_as, aka.joinToString(", ")), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                         p.str("biography")?.let { bio ->
@@ -122,8 +125,8 @@ fun PersonScreen(id: Int) {
                         }
                         if (cast.isNotEmpty() && crew.isNotEmpty()) {
                             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(!crewMode, { crewMode = false }, label = { Text("Appearances (${cast.size})") })
-                                FilterChip(crewMode, { crewMode = true }, label = { Text("Crew (${crew.size})") })
+                                FilterChip(!crewMode, { crewMode = false }, label = { Text(stringResource(R.string.appearances, cast.size)) })
+                                FilterChip(crewMode, { crewMode = true }, label = { Text(stringResource(R.string.crew_2, crew.size)) })
                             }
                         }
                     }
@@ -159,18 +162,18 @@ fun CollectionScreen(id: Int) {
                     Column {
                         Box(Modifier.padding(horizontal = 0.dp)) { Backdrop(c.str("backdropPath"), 220.dp) }
                         Text(c.str("name") ?: "", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Text("${tiles.size} movies", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(pluralStringResource(R.plurals.movies_count, tiles.size, tiles.size), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         c.str("overview")?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
                         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (missing.isNotEmpty() && s.can(Perm.REQUEST, Perm.REQUEST_MOVIE, any = true)) {
-                                Button({ confirm = false }) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp)); Text("Request ${missing.size}") }
+                                Button({ confirm = false }) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.request_2, missing.size)) }
                             }
                             if (s.movie4k && missing4k.isNotEmpty() && s.can(Perm.REQUEST_4K, Perm.REQUEST_4K_MOVIE, any = true)) {
-                                OutlinedButton({ confirm = true }) { Text("Request in 4K") }
+                                OutlinedButton({ confirm = true }) { Text(stringResource(R.string.request_in_4k)) }
                             }
                             if (s.can(Perm.MANAGE_BLOCKLIST)) {
                                 OutlinedButton({
-                                    act.run("Collection blocklisted", onOk = { load.reload(silent = true) }) { App.api.post("/blocklist/collection/$id") }
+                                    act.run(App.str(R.string.collection_blocklisted), onOk = { load.reload(silent = true) }) { App.api.post("/blocklist/collection/$id") }
                                 }) { Icon(Icons.Outlined.Block, null) }
                             }
                         }
@@ -182,22 +185,22 @@ fun CollectionScreen(id: Int) {
                 val list = if (fourK) missing4k else missing
                 AlertDialog(
                     onDismissRequest = { confirm = null },
-                    title = { Text("Request ${list.size} movies${if (fourK) " in 4K" else ""}?") },
+                    title = { Text(if (fourK) pluralStringResource(R.plurals.request_movies_4k, list.size, list.size) else pluralStringResource(R.plurals.request_movies, list.size, list.size)) },
                     text = { Text(list.joinToString("\n") { "• " + it.title + (it.year?.let { y -> " ($y)" } ?: "") }) },
                     confirmButton = {
                         TextButton({
                             confirm = null
-                            act.run("Requested ${list.size} movies", onOk = { load.reload(silent = true) }) {
+                            act.run(App.plural(R.plurals.requested_movies, list.size, list.size), onOk = { load.reload(silent = true) }) {
                                 var failed = 0
                                 list.forEach { t ->
                                     try { App.api.post("/request", jsonOf("mediaType" to "movie", "mediaId" to t.id, "is4k" to fourK)) }
                                     catch (_: Exception) { failed++ }
                                 }
-                                if (failed > 0) error("$failed of ${list.size} requests failed")
+                                if (failed > 0) error(App.str(R.string.of_requests_failed, failed, list.size))
                             }
-                        }) { Text("Request") }
+                        }) { Text(stringResource(R.string.request)) }
                     },
-                    dismissButton = { TextButton({ confirm = null }) { Text("Cancel") } },
+                    dismissButton = { TextButton({ confirm = null }) { Text(stringResource(R.string.lock_cancel)) } },
                 )
             }
         }

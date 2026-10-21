@@ -73,8 +73,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.URLEncoder
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
-private enum class Method(val label: String) { MediaServer("Media server"), Plex("Plex"), Local("Seerr account") }
+private enum class Method(val label: String) { MediaServer(App.str(R.string.media_server)), Plex(App.str(R.string.plex)), Local(App.str(R.string.seerr_account)) }
 
 /**
  * First start (and re-login): server address, then whichever sign-in methods the server has turned on —
@@ -110,9 +112,9 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
         return try {
             val pub = App.api.obj("/settings/public")
             if (!pub.has("applicationTitle") && !pub.has("initialized")) {
-                error = "That doesn't look like a Seerr, Jellyseerr or Overseerr server"
+                error = App.str(R.string.that_doesn_t_look_like_a_seerr)
             } else if (!pub.bool("initialized", true)) {
-                error = "This server hasn't been set up yet. Finish Seerr's setup in a browser first."
+                error = App.str(R.string.this_server_hasn_t_been_set_up_yet)
             } else server = pub
             null
         } catch (e: Exception) { e }
@@ -123,7 +125,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
             busy = true; error = null
             val e = probe(base, pin, allowHttp)
             if (e != null) {
-                error = "Couldn't reach the server: ${e.message ?: e.javaClass.simpleName}"
+                error = App.str(R.string.couldn_t_reach_the_server, e.message ?: e.javaClass.simpleName)
             }
             busy = false
         }
@@ -132,7 +134,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
     fun connect() {
         val explicit = SeerrApi.hasScheme(url)
         val base = SeerrApi.normalize(url)
-        if (base.isEmpty()) { error = "Enter your Seerr address"; return }
+        if (base.isEmpty()) { error = App.str(R.string.enter_your_seerr_address); return }
         url = base
         if (base.startsWith("http://")) {
             // The user typed http:// themselves: still say what that means before anything is sent.
@@ -151,12 +153,12 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                         val fp = com.vknxworks.seerrctrl.data.Tls.sha256(com.vknxworks.seerrctrl.data.Tls.fetchLeaf(base))
                         certPrompt = base to fp
                     } catch (x: Exception) {
-                        error = "Couldn't read the server's certificate: ${x.message ?: x.javaClass.simpleName}"
+                        error = App.str(R.string.couldn_t_read_the_server_s, x.message ?: x.javaClass.simpleName)
                     }
                 }
-                isCertError(e) -> error = "Secure connection failed (${e.message}). If the server uses a self-signed certificate, turn on the option below."
+                isCertError(e) -> error = App.str(R.string.secure_connection_failed_if_the, e.message)
                 !explicit && isNoHttps(e) -> httpPrompt = SeerrApi.toHttp(base) to true
-                else -> error = "Couldn't reach the server: ${e.message ?: e.javaClass.simpleName}"
+                else -> error = App.str(R.string.couldn_t_reach_the_server, e.message ?: e.javaClass.simpleName)
             }
             busy = false
         }
@@ -166,7 +168,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
         CertDialog(
             host(base), fp, changed = false,
             onTrust = { certPrompt = null; connectWith(base, fp, false) },
-            onCancel = { certPrompt = null; error = "Certificate not trusted" },
+            onCancel = { certPrompt = null; error = App.str(R.string.certificate_not_trusted) },
         )
     }
     httpPrompt?.let { (base, fallback) ->
@@ -184,14 +186,14 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
         ) {
             Row(Modifier.fillMaxWidth()) {
                 when {
-                    server != null -> IconButton({ server = null; error = null }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
-                    onCancel != null -> IconButton(onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
+                    server != null -> IconButton({ server = null; error = null }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
+                    onCancel != null -> IconButton(onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
                 }
             }
             Spacer(Modifier.height(24.dp))
-            Text("SeerrCtrl", fontSize = 34.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.app_name), fontSize = 34.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
             Text(
-                "Request movies and series from your own Seerr server",
+                stringResource(R.string.request_movies_and_series_from_your),
                 style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp),
             )
@@ -202,7 +204,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                     if (pub == null) {
                         OutlinedTextField(
                             value = url, onValueChange = { url = it; error = null },
-                            label = { Text("Server address") },
+                            label = { Text(stringResource(R.string.server_address)) },
                             placeholder = { Text("https://requests.example.com") },
                             leadingIcon = { Icon(Icons.Outlined.Dns, null) },
                             singleLine = true,
@@ -212,14 +214,14 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(insecure, { insecure = it })
-                            Text("Allow self-signed certificate (you'll confirm its fingerprint)", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.allow_self_signed_certificate_you_ll), style = MaterialTheme.typography.bodyMedium)
                         }
                         ErrorText(error)
                         Button(::connect, enabled = !busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                            if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp) else Text("Continue")
+                            if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.continue))
                         }
                         Text(
-                            "Works with Seerr, Jellyseerr and Overseerr.",
+                            stringResource(R.string.works_with_seerr_jellyseerr_and),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
                         )
@@ -251,7 +253,7 @@ private fun SignIn(pub: JSONObject, onSignedIn: (Any?) -> Unit, openUrl: (String
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Sign in to ${pub.str("applicationTitle") ?: "Seerr"}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.sign_in_to, pub.str("applicationTitle") ?: "Seerr"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(App.api.baseUrl, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (methods.size > 1) {
                 PrimaryTabRow(selectedTabIndex = tab, containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
@@ -277,7 +279,7 @@ private fun PasswordField(value: String, label: String, onChange: (String) -> Un
         value = value, onValueChange = onChange, label = { Text(label) }, singleLine = true,
         leadingIcon = { Icon(Icons.Outlined.Key, null) },
         trailingIcon = {
-            IconButton({ show = !show }) { Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, "Show password") }
+            IconButton({ show = !show }) { Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, stringResource(R.string.show_password)) }
         },
         visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
@@ -303,29 +305,29 @@ private fun LocalSignIn(pub: JSONObject, onSignedIn: (Any?) -> Unit) {
     }
 
     OutlinedTextField(
-        value = email, onValueChange = { email = it }, label = { Text("Email") }, singleLine = true,
+        value = email, onValueChange = { email = it }, label = { Text(stringResource(R.string.email)) }, singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
         modifier = Modifier.fillMaxWidth(),
     )
-    PasswordField(pass, "Password", { pass = it }) { go() }
+    PasswordField(pass, stringResource(R.string.password), { pass = it }) { go() }
     ErrorText(error)
     info?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary) }
     Button({ go() }, enabled = !busy && email.isNotBlank() && pass.isNotEmpty(), modifier = Modifier.fillMaxWidth().height(50.dp)) {
         if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-        else { Icon(Icons.AutoMirrored.Outlined.Login, null); Spacer(Modifier.size(8.dp)); Text("Sign in") }
+        else { Icon(Icons.AutoMirrored.Outlined.Login, null); Spacer(Modifier.size(8.dp)); Text(stringResource(R.string.sign_in)) }
     }
     if (pub.bool("emailEnabled")) {
         TextButton(
             onClick = {
                 scope.launch {
-                    if (email.isBlank()) { error = "Enter your email first"; return@launch }
+                    if (email.isBlank()) { error = App.str(R.string.enter_your_email_first); return@launch }
                     try {
                         App.api.post("/auth/reset-password", jsonOf("email" to email.trim()))
-                        info = "If that account exists, a reset link is on its way by email."
+                        info = App.str(R.string.if_that_account_exists_a_reset_link)
                     } catch (e: Exception) { error = e.message }
                 }
             },
-        ) { Text("Forgot password?") }
+        ) { Text(stringResource(R.string.forgot_password)) }
     }
 }
 
@@ -354,8 +356,8 @@ private fun JellyfinSignIn(type: MediaServer, pub: JSONObject, onSignedIn: (Any?
         quickJob = scope.launch {
             error = null
             try {
-                val init = App.api.post("/auth/jellyfin/quickconnect/initiate") as? JSONObject ?: error("No code")
-                val secret = init.str("secret") ?: error("No code")
+                val init = App.api.post("/auth/jellyfin/quickconnect/initiate") as? JSONObject ?: error(App.str(R.string.no_code))
+                val secret = init.str("secret") ?: error(App.str(R.string.no_code))
                 quickCode = init.str("code")
                 val deadline = System.currentTimeMillis() + 5 * 60_000
                 while (System.currentTimeMillis() < deadline) {
@@ -366,7 +368,7 @@ private fun JellyfinSignIn(type: MediaServer, pub: JSONObject, onSignedIn: (Any?
                         return@launch
                     }
                 }
-                error = "The Quick Connect code expired. Try again."
+                error = App.str(R.string.the_quick_connect_code_expired_try)
                 quickCode = null
             } catch (e: Exception) {
                 error = e.message; quickCode = null
@@ -375,9 +377,9 @@ private fun JellyfinSignIn(type: MediaServer, pub: JSONObject, onSignedIn: (Any?
     }
 
     if (quickCode != null) {
-        Text("Quick Connect", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.quick_connect), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Text(
-            "In Jellyfin on a signed-in device, open your profile → Quick Connect and enter this code:",
+            stringResource(R.string.in_jellyfin_on_a_signed_in_device),
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(
@@ -386,28 +388,28 @@ private fun JellyfinSignIn(type: MediaServer, pub: JSONObject, onSignedIn: (Any?
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            Text("Waiting for approval…", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.waiting_for_approval), style = MaterialTheme.typography.bodyMedium)
         }
         ErrorText(error)
-        OutlinedButton({ quickJob?.cancel(); quickCode = null }, Modifier.fillMaxWidth()) { Text("Cancel") }
+        OutlinedButton({ quickJob?.cancel(); quickCode = null }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.lock_cancel)) }
         return
     }
 
     OutlinedTextField(
-        value = user, onValueChange = { user = it }, label = { Text("${type.label} username") }, singleLine = true,
+        value = user, onValueChange = { user = it }, label = { Text(stringResource(R.string.username, type.label)) }, singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next), modifier = Modifier.fillMaxWidth(),
     )
-    PasswordField(pass, "Password", { pass = it }) { go() }
+    PasswordField(pass, stringResource(R.string.password), { pass = it }) { go() }
     ErrorText(error)
     Button({ go() }, enabled = !busy && user.isNotBlank(), modifier = Modifier.fillMaxWidth().height(50.dp)) {
         if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-        else { Icon(Icons.AutoMirrored.Outlined.Login, null); Spacer(Modifier.size(8.dp)); Text("Sign in with ${type.label}") }
+        else { Icon(Icons.AutoMirrored.Outlined.Login, null); Spacer(Modifier.size(8.dp)); Text(stringResource(R.string.sign_in_with, type.label)) }
     }
     if (type == MediaServer.Jellyfin) {
-        FilledTonalButton(::quickConnect, Modifier.fillMaxWidth()) { Text("Use Quick Connect") }
+        FilledTonalButton(::quickConnect, Modifier.fillMaxWidth()) { Text(stringResource(R.string.use_quick_connect)) }
     }
     pub.str("jellyfinForgotPasswordUrl")?.let { link ->
-        TextButton({ openUrl(link) }) { Text("Forgot password?") }
+        TextButton({ openUrl(link) }) { Text(stringResource(R.string.forgot_password)) }
     }
 }
 
@@ -435,8 +437,8 @@ private fun PlexSignIn(onSignedIn: (Any?) -> Unit, openUrl: (String) -> Unit) {
             try {
                 val pin = App.api.external("POST", "https://plex.tv/api/v2/pins?strong=true", headers)
                 // Plex PIN ids can be larger than an Int.
-                val id = pin.long("id").takeIf { it > 0 } ?: error("Plex didn't return a sign-in code")
-                val code = pin.str("code")?.takeIf { c -> c.all { it.isLetterOrDigit() } } ?: error("Plex didn't return a code")
+                val id = pin.long("id").takeIf { it > 0 } ?: error(App.str(R.string.plex_didn_t_return_a_sign_in_code))
+                val code = pin.str("code")?.takeIf { c -> c.all { it.isLetterOrDigit() } } ?: error(App.str(R.string.plex_didn_t_return_a_code))
                 fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
                 val authUrl = "https://app.plex.tv/auth/#!?clientID=${enc(App.prefs.plexClientId)}&code=${enc(code)}" +
                     "&context%5Bdevice%5D%5Bproduct%5D=SeerrCtrl&context%5Bdevice%5D%5Bplatform%5D=Android"
@@ -451,7 +453,7 @@ private fun PlexSignIn(onSignedIn: (Any?) -> Unit, openUrl: (String) -> Unit) {
                         return@launch
                     }
                 }
-                error = "Plex sign-in timed out. Try again."
+                error = App.str(R.string.plex_sign_in_timed_out_try_again)
             } catch (e: Exception) {
                 error = e.message
             }
@@ -460,15 +462,15 @@ private fun PlexSignIn(onSignedIn: (Any?) -> Unit, openUrl: (String) -> Unit) {
     }
 
     Text(
-        "You'll sign in on plex.tv in a browser tab, then come back here.",
+        stringResource(R.string.you_ll_sign_in_on_plex_tv_in_a),
         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     ErrorText(error)
     Button(::start, enabled = !busy, modifier = Modifier.fillMaxWidth().height(50.dp)) {
         if (busy) {
             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-            Spacer(Modifier.size(10.dp)); Text("Waiting for Plex…")
-        } else Text("Sign in with Plex")
+            Spacer(Modifier.size(10.dp)); Text(stringResource(R.string.waiting_for_plex))
+        } else Text(stringResource(R.string.sign_in_with_plex))
     }
-    if (busy) OutlinedButton({ job?.cancel(); busy = false }, Modifier.fillMaxWidth()) { Text("Cancel") }
+    if (busy) OutlinedButton({ job?.cancel(); busy = false }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.lock_cancel)) }
 }

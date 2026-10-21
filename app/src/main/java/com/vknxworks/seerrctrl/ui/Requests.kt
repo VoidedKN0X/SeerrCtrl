@@ -83,10 +83,12 @@ import com.vknxworks.seerrctrl.data.timeAgo
 import com.vknxworks.seerrctrl.data.year
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 private val requestFilters = listOf(
-    "all" to "All", "pending" to "Pending", "approved" to "Approved", "processing" to "Processing",
-    "available" to "Available", "unavailable" to "Unavailable", "failed" to "Failed", "deleted" to "Deleted", "completed" to "Completed",
+    "all" to App.str(R.string.all), "pending" to App.str(R.string.pending), "approved" to App.str(R.string.approved), "processing" to App.str(R.string.processing),
+    "available" to App.str(R.string.available), "unavailable" to App.str(R.string.unavailable), "failed" to App.str(R.string.failed), "deleted" to App.str(R.string.deleted), "completed" to App.str(R.string.completed),
 )
 
 /** The request list (everyone's for managers, your own otherwise), with filters and approve/decline. */
@@ -126,7 +128,7 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     fun changed() { reloadKey++; onChanged() }
 
     Column(Modifier.fillMaxSize()) {
-        if (userId == null) TabTitle("Requests")
+        if (userId == null) TabTitle(stringResource(R.string.requests))
         Row(
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -134,17 +136,17 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
             requestFilters.forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
         }
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("all" to "Movies & series", "movie" to "Movies", "tv" to "Series").forEach { (k, l) ->
+            listOf("all" to App.str(R.string.movies_series), "movie" to App.str(R.string.movies), "tv" to App.str(R.string.series_2)).forEach { (k, l) ->
                 FilterChip(mediaType == k, { mediaType = k }, label = { Text(l, maxLines = 1) })
             }
-            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
+            FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text(stringResource(R.string.recently_changed), maxLines = 1) })
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
                     item(key = "hint") {
                         Text(
-                            "Swipe a pending request right to approve, left to decline",
+                            stringResource(R.string.swipe_a_pending_request_right_to),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -164,7 +166,7 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
                 if (!loading && items.isEmpty()) {
                     item {
                         if (error != null) ErrorBox(error!!) { scope.launch { more() } }
-                        else EmptyBox(Icons.Outlined.Theaters, "No requests here")
+                        else EmptyBox(Icons.Outlined.Theaters, stringResource(R.string.no_requests_here))
                     }
                 }
             }
@@ -214,11 +216,11 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    d.str("title") ?: d.str("name") ?: "Loading…", style = MaterialTheme.typography.titleMedium,
+                    d.str("title") ?: d.str("name") ?: stringResource(R.string.loading), style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    listOfNotNull(year(d.str("releaseDate") ?: d.str("firstAirDate")), if (type == "tv") "Series" else "Movie").joinToString(" · "),
+                    listOfNotNull(year(d.str("releaseDate") ?: d.str("firstAirDate")), if (type == "tv") App.str(R.string.series_2) else App.str(R.string.movie_2)).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -229,7 +231,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                 val seasons = r.objs("seasons").map { it.int("seasonNumber") }.sorted()
                 if (type == "tv" && seasons.isNotEmpty()) {
                     Text(
-                        "Seasons " + seasons.joinToString(", "), style = MaterialTheme.typography.bodySmall,
+                        stringResource(R.string.seasons_list, seasons.joinToString(", ")), style = MaterialTheme.typography.bodySmall,
                         maxLines = 2, overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -245,7 +247,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                 r.obj("modifiedBy")?.let { m ->
                     if (status != RequestStatus.Pending) {
                         Text(
-                            "${if (status == RequestStatus.Declined) "Declined" else "Approved"} by ${m.str("displayName") ?: "?"} · ${timeAgo(r.str("updatedAt")) ?: ""}",
+                            stringResource(if (status == RequestStatus.Declined) R.string.declined_by else R.string.approved_by, m.str("displayName") ?: "?", timeAgo(r.str("updatedAt")) ?: ""),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -261,24 +263,24 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
             ) {
                 if (manage && status == RequestStatus.Pending) {
                     FilledTonalButton(enabled = !act.busy, onClick = {
-                        act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") }
-                    }) { Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Approve") }
+                        act.run(App.str(R.string.approved), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") }
+                    }) { Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.approve)) }
                     OutlinedButton(enabled = !act.busy, onClick = {
-                        act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") }
-                    }) { Icon(Icons.Outlined.Close, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Decline") }
+                        act.run(App.str(R.string.declined), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") }
+                    }) { Icon(Icons.Outlined.Close, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.decline)) }
                 }
                 if (manage && status == RequestStatus.Failed) {
                     FilledTonalButton(enabled = !act.busy, onClick = {
-                        act.run("Retrying", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/retry") }
-                    }) { Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Retry") }
+                        act.run(App.str(R.string.retrying), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/retry") }
+                    }) { Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.retry)) }
                 }
                 if (canEdit && d != null) {
-                    OutlinedButton({ edit = true }) { Icon(Icons.Outlined.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Edit") }
+                    OutlinedButton({ edit = true }) { Icon(Icons.Outlined.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.edit)) }
                 }
                 if (canDelete) {
                     TextButton({ confirmDelete = true }) {
                         Icon(Icons.Outlined.Delete, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
-                        Text(if (mine && status == RequestStatus.Pending && !manage) "Cancel request" else "Delete")
+                        Text(if (mine && status == RequestStatus.Pending && !manage) stringResource(R.string.cancel_request) else stringResource(R.string.lock_delete))
                     }
                 }
             }
@@ -291,15 +293,15 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this request?") },
-            text = { Text("The request is removed from Seerr. Anything already downloaded stays.") },
+            title = { Text(stringResource(R.string.delete_this_request)) },
+            text = { Text(stringResource(R.string.the_request_is_removed_from_seerr)) },
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("Request deleted", onOk = { MediaCache.invalidate(type, tmdbId); onChanged() }) { App.api.delete("/request/${r.int("id")}") }
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                    act.run(App.str(R.string.request_deleted), onOk = { MediaCache.invalidate(type, tmdbId); onChanged() }) { App.api.delete("/request/${r.int("id")}") }
+                }) { Text(stringResource(R.string.lock_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton({ confirmDelete = false }) { Text("Keep") } },
+            dismissButton = { TextButton({ confirmDelete = false }) { Text(stringResource(R.string.keep)) } },
         )
     }
 }
@@ -322,24 +324,24 @@ fun RequestInline(r: JSONObject, onChanged: () -> Unit, onEdit: () -> Unit) {
                 Avatar(by.str("avatar"), by.str("displayName") ?: "?", 28.dp)
                 Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(by.str("displayName") ?: "Someone", fontWeight = FontWeight.SemiBold)
+                    Text(by.str("displayName") ?: stringResource(R.string.someone), fontWeight = FontWeight.SemiBold)
                     Text(timeAgo(r.str("createdAt")) ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (r.bool("is4k")) { Pill("4K", MaterialTheme.colorScheme.tertiary); Spacer(Modifier.width(6.dp)) }
                 RequestPill(status)
             }
             val seasons = r.objs("seasons").map { it.int("seasonNumber") }.sorted()
-            if (seasons.isNotEmpty()) Text("Seasons " + seasons.joinToString(", "), style = MaterialTheme.typography.bodySmall)
+            if (seasons.isNotEmpty()) Text(stringResource(R.string.seasons_list, seasons.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
             if (status == RequestStatus.Pending && (manage || mine) || manage && status == RequestStatus.Failed) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (manage && status == RequestStatus.Pending) {
-                        FilledTonalButton({ act.run("Approved", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") } }) { Text("Approve") }
-                        OutlinedButton({ act.run("Declined", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") } }) { Text("Decline") }
+                        FilledTonalButton({ act.run(App.str(R.string.approved), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/approve") } }) { Text(stringResource(R.string.approve)) }
+                        OutlinedButton({ act.run(App.str(R.string.declined), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/decline") } }) { Text(stringResource(R.string.decline)) }
                     }
                     if (manage && status == RequestStatus.Failed) {
-                        FilledTonalButton({ act.run("Retrying", onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/retry") } }) { Text("Retry") }
+                        FilledTonalButton({ act.run(App.str(R.string.retrying), onOk = { onChanged() }) { App.api.post("/request/${r.int("id")}/retry") } }) { Text(stringResource(R.string.retry)) }
                     }
-                    if (status == RequestStatus.Pending) TextButton(onEdit) { Text("Edit") }
+                    if (status == RequestStatus.Pending) TextButton(onEdit) { Text(stringResource(R.string.edit)) }
                 }
             }
         }
@@ -393,7 +395,7 @@ fun SwipeToDecide(
                 else -> return@rememberSwipeToDismissBoxState false
             }
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            act.run(if (approve) "Approved" else "Declined", onOk = { onDecided(approve) }) {
+            act.run(if (approve) App.str(R.string.approved) else App.str(R.string.declined), onOk = { onDecided(approve) }) {
                 try { App.api.post("/request/${r.int("id")}/${if (approve) "approve" else "decline"}") }
                 catch (e: Exception) { onFailed(); throw e }
             }
@@ -419,7 +421,7 @@ fun SwipeToDecide(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = Color.White)
                         Spacer(Modifier.width(8.dp))
-                        Text(if (approve) "Approve" else "Decline", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(if (approve) stringResource(R.string.approve) else stringResource(R.string.decline), color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }

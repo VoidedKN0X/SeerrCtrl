@@ -57,6 +57,8 @@ import com.vknxworks.seerrctrl.data.str
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 private const val ANIME_KEYWORD = 210024
 
@@ -151,7 +153,7 @@ fun RequestDialog(
     }
 
     fun submit() {
-        if (tv && selected.isEmpty()) { error = "Pick at least one season"; return }
+        if (tv && selected.isEmpty()) { error = App.str(R.string.pick_at_least_one_season); return }
         scope.launch {
             busy = true; error = null
             try {
@@ -173,10 +175,10 @@ fun RequestDialog(
                 asUser?.let { if (it != s.userId) body.put("userId", it) }
                 if (existing != null) {
                     App.api.put("/request/${existing.int("id")}", body)
-                    snack.showSnackbar("Request updated")
+                    snack.showSnackbar(App.str(R.string.request_updated))
                 } else {
                     App.api.post("/request", body)
-                    snack.showSnackbar("Requested $title" + if (is4k) " in 4K" else "")
+                    snack.showSnackbar(if (is4k) App.str(R.string.requested_4k, title) else App.str(R.string.requested_3, title))
                 }
                 MediaCache.invalidate(type, tmdbId)
                 onDone()
@@ -189,7 +191,7 @@ fun RequestDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                (if (existing != null) "Edit request" else if (is4k) "Request in 4K" else "Request") + "\n" + title,
+                (if (existing != null) App.str(R.string.edit_request) else if (is4k) App.str(R.string.request_in_4k) else App.str(R.string.request)) + "\n" + title,
                 style = MaterialTheme.typography.titleLarge,
             )
         },
@@ -200,7 +202,7 @@ fun RequestDialog(
                     val limit = part.int("limit")
                     if (limit > 0) {
                         Text(
-                            "${part.int("remaining")} of $limit ${if (tv) "season" else "movie"} requests left (resets every ${part.int("days")} days)",
+                            stringResource(if (tv) R.string.season_requests_left else R.string.movie_requests_left, part.int("remaining"), limit, part.int("days")),
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (part.bool("restricted")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -213,7 +215,7 @@ fun RequestDialog(
                         Checkbox(free.isNotEmpty() && selected.containsAll(free), { on ->
                             selected.clear(); if (on) selected.addAll(free)
                         })
-                        Text("All seasons", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.all_seasons), fontWeight = FontWeight.SemiBold)
                     }
                     HorizontalDivider()
                     details.objs("seasons").filter { it.int("seasonNumber") in allSeasons }.forEach { season ->
@@ -227,11 +229,11 @@ fun RequestDialog(
                         ) {
                             Checkbox(n in selected, { if (it) selected.add(n) else selected.remove(n) }, enabled = !blocked)
                             Column(Modifier.weight(1f)) {
-                                Text(season.str("name") ?: "Season $n")
-                                Text("${season.int("episodeCount")} episodes", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(season.str("name") ?: stringResource(R.string.season_2, n))
+                                Text(stringResource(R.string.episodes_2, season.int("episodeCount")), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             if (st != null && st != MediaStatus.Unknown) MediaStatusPill(st)
-                            else if (blocked) Pill("Requested", Status.processing)
+                            else if (blocked) Pill(stringResource(R.string.requested), Status.processing)
                         }
                     }
                 }
@@ -241,37 +243,37 @@ fun RequestDialog(
                         Modifier.fillMaxWidth().clickable { showAdvanced = !showAdvanced }.padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Advanced", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.advanced), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                         Icon(if (showAdvanced) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
                     }
                 }
                 if (showAdvanced) {
                     if (advanced && servers.isNotEmpty()) {
                         if (servers.size > 1) {
-                            Dropdown("Server", servers.map { it.int("id").toString() to (it.str("name") ?: "Server") + if (it.bool("isDefault")) " (default)" else "" }, serverId?.toString() ?: "") {
+                            Dropdown(stringResource(R.string.group_server), servers.map { it.int("id").toString() to (it.str("name") ?: App.str(R.string.group_server)).let { n -> if (it.bool("isDefault")) App.str(R.string.server_default, n) else n } }, serverId?.toString() ?: "") {
                                 serverId = it.toIntOrNull()
                             }
                         }
                         val det = detailsOfServer
                         if (det == null) CircularProgressIndicator(Modifier.padding(8.dp))
                         else {
-                            Dropdown("Quality profile", det.objs("profiles").map { it.int("id").toString() to (it.str("name") ?: "") }, profileId?.toString() ?: "") {
+                            Dropdown(stringResource(R.string.quality_profile), det.objs("profiles").map { it.int("id").toString() to (it.str("name") ?: "") }, profileId?.toString() ?: "") {
                                 profileId = it.toIntOrNull()
                             }
                             Dropdown(
-                                "Root folder",
-                                det.objs("rootFolders").map { (it.str("path") ?: "") to ((it.str("path") ?: "") + (it.long("freeSpace").takeIf { f -> f > 0 }?.let { f -> " (${humanBytes(f)} free)" } ?: "")) },
+                                stringResource(R.string.root_folder),
+                                det.objs("rootFolders").map { (it.str("path") ?: "") to ((it.str("path") ?: "").let { p -> it.long("freeSpace").takeIf { f -> f > 0 }?.let { f -> App.str(R.string.folder_free, p, humanBytes(f)) } ?: p }) },
                                 rootFolder ?: "",
                             ) { rootFolder = it }
                             val langs = det.objs("languageProfiles")
                             if (langs.isNotEmpty()) {
-                                Dropdown("Language profile", langs.map { it.int("id").toString() to (it.str("name") ?: "") }, languageProfileId?.toString() ?: "") {
+                                Dropdown(stringResource(R.string.language_profile), langs.map { it.int("id").toString() to (it.str("name") ?: "") }, languageProfileId?.toString() ?: "") {
                                     languageProfileId = it.toIntOrNull()
                                 }
                             }
                             val tagList = det.objs("tags")
                             if (tagList.isNotEmpty()) {
-                                Text("Tags", style = MaterialTheme.typography.labelLarge)
+                                Text(stringResource(R.string.tags), style = MaterialTheme.typography.labelLarge)
                                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     tagList.forEach { t ->
                                         val id = t.int("id")
@@ -283,8 +285,8 @@ fun RequestDialog(
                     }
                     if (canRequestAs && users.isNotEmpty()) {
                         Dropdown(
-                            "Request as",
-                            users.map { it.int("id").toString() to (it.str("displayName") ?: it.str("email") ?: "User ${it.int("id")}") },
+                            stringResource(R.string.request_as),
+                            users.map { it.int("id").toString() to (it.str("displayName") ?: it.str("email") ?: App.str(R.string.user_2, it.int("id"))) },
                             (asUser ?: s.userId).toString(),
                         ) { asUser = it.toIntOrNull() }
                     }
@@ -298,14 +300,14 @@ fun RequestDialog(
                 if (busy) CircularProgressIndicator(Modifier.width(18.dp).height(18.dp), strokeWidth = 2.dp)
                 else Text(
                     when {
-                        existing != null -> "Save"
-                        tv && selected.isNotEmpty() -> "Request ${selected.size} season" + if (selected.size > 1) "s" else ""
-                        else -> "Request"
+                        existing != null -> App.str(R.string.save)
+                        tv && selected.isNotEmpty() -> App.plural(R.plurals.request_seasons, selected.size, selected.size)
+                        else -> App.str(R.string.request)
                     }
                 )
             }
         },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.lock_cancel)) } },
     )
 }
 

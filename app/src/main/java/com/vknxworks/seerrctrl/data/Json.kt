@@ -7,6 +7,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
 
 // Small null-safe helpers over org.json, so screens read like `movie.str("title")`.
 
@@ -82,10 +84,10 @@ fun timeAgo(raw: String?): String? {
     val t = try { Instant.parse(raw) } catch (_: Exception) { return raw }
     val s = (System.currentTimeMillis() - t.toEpochMilli()) / 1000
     return when {
-        s < 60 -> "just now"
-        s < 3600 -> "${s / 60} min ago"
-        s < 86400 -> "${s / 3600} h ago"
-        s < 86400 * 30 -> "${s / 86400} d ago"
+        s < 60 -> App.str(R.string.just_now)
+        s < 3600 -> App.str(R.string.min_ago, s / 60)
+        s < 86400 -> App.str(R.string.h_ago, s / 3600)
+        s < 86400 * 30 -> App.str(R.string.d_ago, s / 86400)
         else -> prettyDate(raw)
     }
 }

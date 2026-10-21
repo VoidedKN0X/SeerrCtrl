@@ -103,6 +103,9 @@ import com.vknxworks.seerrctrl.data.year
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import com.vknxworks.seerrctrl.R
 
 private class MediaPage(
     val d: JSONObject,
@@ -170,7 +173,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                                     Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                                     val facts = listOfNotNull(
                                         year(d.str("releaseDate") ?: d.str("firstAirDate")),
-                                        if (tv) d.int("numberOfSeasons").takeIf { it > 0 }?.let { "$it season" + if (it > 1) "s" else "" }
+                                        if (tv) d.int("numberOfSeasons").takeIf { it > 0 }?.let { App.plural(R.plurals.seasons_count, it, it) }
                                         else runtime(d.int("runtime")),
                                         d.objs("genres").take(3).mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null },
                                     )
@@ -189,12 +192,12 @@ fun MediaScreen(type: String, tmdbId: Int) {
                             onManage = { manage = true },
                             onTrailer = { url -> openUrl(context, url) },
                             onWatchlist = {
-                                act.run("Added to watchlist", onOk = { load.reload(silent = true) }) {
+                                act.run(App.str(R.string.added_to_watchlist), onOk = { load.reload(silent = true) }) {
                                     App.api.post("/watchlist", jsonOf("tmdbId" to tmdbId, "mediaType" to type, "title" to title))
                                 }
                             },
                             onWatchlistRemove = {
-                                act.run("Removed from watchlist", onOk = { load.reload(silent = true) }) {
+                                act.run(App.str(R.string.removed_from_watchlist), onOk = { load.reload(silent = true) }) {
                                     App.api.delete("/watchlist/$tmdbId", query = mapOf("mediaType" to type))
                                 }
                             },
@@ -212,7 +215,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     }
                     item {
                         Text(
-                            d.str("overview") ?: "No overview available.",
+                            d.str("overview") ?: stringResource(R.string.no_overview_available),
                             style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                         )
                     }
@@ -220,7 +223,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     // ----- downloads -----
                     val downloads = info.objs("downloadStatus") + info.objs("downloadStatus4k")
                     if (downloads.isNotEmpty()) {
-                        item { SectionHeader("Downloading") }
+                        item { SectionHeader(stringResource(R.string.downloading)) }
                         items(downloads) { dl -> DownloadRow(dl) }
                     }
 
@@ -228,7 +231,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     if (requests.isNotEmpty() && s.can(Perm.MANAGE_REQUESTS, Perm.REQUEST_VIEW, any = true) || requests.any { it.obj("requestedBy").int("id") == s.userId }) {
                         val visible = if (s.can(Perm.MANAGE_REQUESTS, Perm.REQUEST_VIEW, any = true)) requests else requests.filter { it.obj("requestedBy").int("id") == s.userId }
                         if (visible.isNotEmpty()) {
-                            item { SectionHeader("Requests") }
+                            item { SectionHeader(stringResource(R.string.requests)) }
                             items(visible, key = { "r" + it.int("id") }) { r ->
                                 RequestInline(r, onChanged = { load.reload(silent = true) }, onEdit = { editRequest = r })
                             }
@@ -244,7 +247,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     val providers = d.objs("watchProviders").firstOrNull { it.str("iso_3166_1") == region }
                     val streams = providers.objs("flatrate")
                     if (streams.isNotEmpty()) {
-                        item { SectionHeader("Streaming in $region") }
+                        item { SectionHeader(stringResource(R.string.streaming_in, region)) }
                         item {
                             LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 items(streams) { p ->
@@ -262,7 +265,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     if (tv) {
                         val seasons = d.objs("seasons").filter { s.specialEpisodes || it.int("seasonNumber") > 0 }
                         if (seasons.isNotEmpty()) {
-                            item { SectionHeader("Seasons") }
+                            item { SectionHeader(stringResource(R.string.seasons)) }
                             items(seasons, key = { "s" + it.int("seasonNumber") }) { season ->
                                 SeasonRow(tmdbId, season, info.objs("seasons").firstOrNull { it.int("seasonNumber") == season.int("seasonNumber") })
                             }
@@ -276,28 +279,28 @@ fun MediaScreen(type: String, tmdbId: Int) {
 
                     // ----- cast & crew -----
                     val cast = d.obj("credits").objs("cast").distinctBy { it.int("id") }.take(30).mapNotNull { it.put("mediaType", "person").toTile() }
-                    item { TileRow("Cast", cast) }
+                    item { TileRow(stringResource(R.string.cast), cast) }
                     val crew = d.obj("credits").objs("crew")
                         .filter { it.str("job") in setOf("Director", "Screenplay", "Writer", "Producer", "Original Music Composer", "Director of Photography", "Novel", "Creator") }
                         .distinctBy { it.int("id") }.take(20)
                         .mapNotNull { it.put("mediaType", "person").toTile() }
-                    item { TileRow("Crew", crew) }
+                    item { TileRow(stringResource(R.string.crew), crew) }
                     if (tv) {
-                        val creators = d.objs("createdBy").distinctBy { it.int("id") }.mapNotNull { it.put("mediaType", "person").put("job", "Creator").toTile() }
-                        item { TileRow("Created by", creators) }
+                        val creators = d.objs("createdBy").distinctBy { it.int("id") }.mapNotNull { it.put("mediaType", "person").put("job", App.str(R.string.creator)).toTile() }
+                        item { TileRow(stringResource(R.string.created_by), creators) }
                     }
 
                     // ----- issues -----
                     val issues = info.objs("issues")
                     if (issues.isNotEmpty() && s.can(Perm.MANAGE_ISSUES, Perm.VIEW_ISSUES, any = true)) {
-                        item { SectionHeader("Issues") }
+                        item { SectionHeader(stringResource(R.string.issues)) }
                         items(issues, key = { "i" + it.int("id") }) { iss -> IssueMini(iss) }
                     }
 
                     // ----- keywords -----
                     val keywords = d.objs("keywords")
                     if (keywords.isNotEmpty()) {
-                        item { SectionHeader("Keywords") }
+                        item { SectionHeader(stringResource(R.string.keywords)) }
                         item {
                             FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 keywords.forEach { k ->
@@ -312,8 +315,8 @@ fun MediaScreen(type: String, tmdbId: Int) {
                         }
                     }
 
-                    item { TileRow("Recommendations", page.recommended, onMore = { nav.browse(BrowseSpec("Recommendations · $title", "/$type/$tmdbId/recommendations")) }) }
-                    item { TileRow("Similar", page.similar, onMore = { nav.browse(BrowseSpec("Similar to $title", "/$type/$tmdbId/similar")) }) }
+                    item { TileRow(stringResource(R.string.recommendations_2), page.recommended, onMore = { nav.browse(BrowseSpec(App.str(R.string.recommendations, title), "/$type/$tmdbId/recommendations")) }) }
+                    item { TileRow(stringResource(R.string.similar), page.similar, onMore = { nav.browse(BrowseSpec(App.str(R.string.similar_to, title), "/$type/$tmdbId/similar")) }) }
                 }
 
                 if (requestDialog != null) {
@@ -345,7 +348,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
             onClick = { nav.back() },
             colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
             modifier = Modifier.statusBarsPadding().padding(8.dp),
-        ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
+        ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
     }
 }
 
@@ -385,39 +388,39 @@ private fun ActionRow(
         if (playUrl != null && (status == MediaStatus.Available || status == MediaStatus.Partial)) {
             Button({ onPlay(playUrl) }) {
                 Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp))
-                Text("Play on ${s.mediaServer.label}")
+                Text(stringResource(R.string.play_on, s.mediaServer.label))
             }
         }
         if (play4k != null && (status4k == MediaStatus.Available || status4k == MediaStatus.Partial)) {
-            FilledTonalButton({ onPlay(play4k) }) { Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text("Play 4K") }
+            FilledTonalButton({ onPlay(play4k) }) { Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.play_4k)) }
         }
         if (status == MediaStatus.Blocklisted) {
-            OutlinedButton({}, enabled = false) { Icon(Icons.Outlined.Block, null); Spacer(Modifier.width(6.dp)); Text("Blocklisted") }
+            OutlinedButton({}, enabled = false) { Icon(Icons.Outlined.Block, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.blocklisted)) }
         } else {
             if (canRequest && requestable(status)) {
                 Button({ onRequest(false) }) {
                     Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp))
-                    Text(if (tv && status != MediaStatus.Unknown && status != MediaStatus.Deleted) "Request more" else "Request")
+                    Text(if (tv && status != MediaStatus.Unknown && status != MediaStatus.Deleted) stringResource(R.string.request_more) else stringResource(R.string.request))
                 }
             }
             if (can4k && requestable(status4k)) {
-                FilledTonalButton({ onRequest(true) }) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp)); Text("Request 4K") }
+                FilledTonalButton({ onRequest(true) }) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.request_4k)) }
             }
         }
         trailer?.str("url")?.let { url ->
-            OutlinedButton({ onTrailer(url) }) { Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text("Trailer") }
+            OutlinedButton({ onTrailer(url) }) { Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.trailer)) }
         }
         val onList = d.bool("onUserWatchlist")
         IconButton({ if (onList) onWatchlistRemove() else onWatchlist() }) {
-            Icon(if (onList) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder, if (onList) "Remove from watchlist" else "Add to watchlist")
+            Icon(if (onList) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder, if (onList) stringResource(R.string.remove_from_watchlist) else stringResource(R.string.add_to_watchlist))
         }
         if (info != null && s.can(Perm.CREATE_ISSUES, Perm.MANAGE_ISSUES, any = true) &&
             (status == MediaStatus.Available || status == MediaStatus.Partial || status4k == MediaStatus.Available || status4k == MediaStatus.Partial)
         ) {
-            IconButton(onIssue) { Icon(Icons.Outlined.ReportProblem, "Report an issue") }
+            IconButton(onIssue) { Icon(Icons.Outlined.ReportProblem, stringResource(R.string.report_an_issue)) }
         }
         if (s.can(Perm.MANAGE_REQUESTS, Perm.MANAGE_BLOCKLIST, any = true)) {
-            IconButton(onManage) { Icon(Icons.Outlined.Build, "Manage") }
+            IconButton(onManage) { Icon(Icons.Outlined.Build, stringResource(R.string.manage)) }
         }
     }
 }
@@ -428,15 +431,15 @@ private fun DownloadRow(dl: JSONObject) {
     val left = dl.long("sizeLeft")
     val progress = if (size > 0) (1f - left.toFloat() / size).coerceIn(0f, 1f) else 0f
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
-        Text(dl.str("title") ?: "Download", style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(dl.str("title") ?: stringResource(R.string.download), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(4.dp))
         LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
         Text(
             listOfNotNull(
                 "${(progress * 100).toInt()}%",
-                if (size > 0) "${humanBytes(size - left)} of ${humanBytes(size)}" else null,
+                if (size > 0) App.str(R.string.of, humanBytes(size - left), humanBytes(size)) else null,
                 dl.str("status")?.replaceFirstChar { it.uppercase() },
-                dl.str("estimatedCompletionTime")?.let { "ETA " + com.vknxworks.seerrctrl.data.prettyDateTime(it) },
+                dl.str("estimatedCompletionTime")?.let { App.str(R.string.eta, com.vknxworks.seerrctrl.data.prettyDateTime(it) ?: "") },
             ).joinToString(" · "),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -450,9 +453,9 @@ private fun RatingsRow(d: JSONObject, ratings: JSONObject?) {
     val tmdb = d.dbl("voteAverage")
     val context = LocalContext.current
     Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (tmdb != null && tmdb > 0) RatingChip("TMDB", "${(tmdb * 10).toInt()}%") {}
-        rt?.intOrNull("criticsScore")?.let { sc -> RatingChip("🍅 Critics", "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
-        rt?.intOrNull("audienceScore")?.let { sc -> RatingChip("🍿 Audience", "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
+        if (tmdb != null && tmdb > 0) RatingChip(stringResource(R.string.tmdb), "${(tmdb * 10).toInt()}%") {}
+        rt?.intOrNull("criticsScore")?.let { sc -> RatingChip(stringResource(R.string.critics), "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
+        rt?.intOrNull("audienceScore")?.let { sc -> RatingChip(stringResource(R.string.audience), "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
         imdb?.dbl("criticsScore")?.let { sc -> RatingChip("IMDb", "%.1f".format(sc)) { imdb.str("url")?.let { openUrl(context, it) } } }
     }
 }
@@ -474,22 +477,22 @@ private fun RatingChip(label: String, value: String, onClick: () -> Unit) {
 @Composable
 private fun Facts(d: JSONObject, tv: Boolean) {
     val rows = buildList {
-        d.str("status")?.let { add("Status" to it) }
+        d.str("status")?.let { add(App.str(R.string.status) to it) }
         if (tv) {
-            prettyDate(d.str("firstAirDate"))?.let { add("First aired" to it) }
-            prettyDate(d.str("lastAirDate"))?.let { add("Last aired" to it) }
-            d.obj("nextEpisodeToAir")?.let { n -> add("Next episode" to "S${n.int("seasonNumber")}E${n.int("episodeNumber")} · ${prettyDate(n.str("airDate")) ?: "TBA"}") }
-            d.int("numberOfEpisodes").takeIf { it > 0 }?.let { add("Episodes" to "$it") }
-            d.objs("networks").mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add("Network" to it) }
-            d.arr("episodeRunTime")?.optInt(0)?.takeIf { it > 0 }?.let { add("Episode runtime" to "$it min") }
+            prettyDate(d.str("firstAirDate"))?.let { add(App.str(R.string.first_aired) to it) }
+            prettyDate(d.str("lastAirDate"))?.let { add(App.str(R.string.last_aired) to it) }
+            d.obj("nextEpisodeToAir")?.let { n -> add(App.str(R.string.next_episode) to App.str(R.string.s_e, n.int("seasonNumber"), n.int("episodeNumber"), prettyDate(n.str("airDate")) ?: "TBA")) }
+            d.int("numberOfEpisodes").takeIf { it > 0 }?.let { add(App.str(R.string.episodes) to "$it") }
+            d.objs("networks").mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add(App.str(R.string.network) to it) }
+            d.arr("episodeRunTime")?.optInt(0)?.takeIf { it > 0 }?.let { add(App.str(R.string.episode_runtime) to App.str(R.string.min, it)) }
         } else {
-            prettyDate(d.str("releaseDate"))?.let { add("Release date" to it) }
-            d.long("budget").takeIf { it > 0 }?.let { add("Budget" to "$" + "%,d".format(it)) }
-            d.long("revenue").takeIf { it > 0 }?.let { add("Revenue" to "$" + "%,d".format(it)) }
+            prettyDate(d.str("releaseDate"))?.let { add(App.str(R.string.release_date) to it) }
+            d.long("budget").takeIf { it > 0 }?.let { add(App.str(R.string.budget) to "$" + "%,d".format(it)) }
+            d.long("revenue").takeIf { it > 0 }?.let { add(App.str(R.string.revenue) to "$" + "%,d".format(it)) }
         }
-        d.str("originalLanguage")?.let { add("Original language" to java.util.Locale.forLanguageTag(it).displayLanguage.ifEmpty { it }) }
-        d.objs("productionCountries").mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add("Countries" to it) }
-        d.objs("productionCompanies").take(4).mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add("Studios" to it) }
+        d.str("originalLanguage")?.let { add(App.str(R.string.original_language) to java.util.Locale.forLanguageTag(it).displayLanguage.ifEmpty { it }) }
+        d.objs("productionCountries").mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add(App.str(R.string.countries) to it) }
+        d.objs("productionCompanies").take(4).mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null }?.let { add(App.str(R.string.studios) to it) }
     }
     if (rows.isEmpty()) return
     Card(
@@ -514,9 +517,9 @@ private fun SeasonRow(tvId: Int, season: JSONObject, info: JSONObject?) {
     val st4k = MediaStatus.of(info.intOrNull("status4k"))
     Column(Modifier.fillMaxWidth()) {
         ListItem(
-            headlineContent = { Text(season.str("name") ?: "Season $n", fontWeight = FontWeight.SemiBold) },
+            headlineContent = { Text(season.str("name") ?: stringResource(R.string.season_2, n), fontWeight = FontWeight.SemiBold) },
             supportingContent = {
-                Text(listOfNotNull("${season.int("episodeCount")} episodes", year(season.str("airDate"))).joinToString(" · "))
+                Text(listOfNotNull(pluralStringResource(R.plurals.episodes_count, season.int("episodeCount"), season.int("episodeCount")), year(season.str("airDate"))).joinToString(" · "))
             },
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -556,7 +559,7 @@ private fun Episodes(tvId: Int, season: Int) {
 @Composable
 private fun CollectionCard(c: JSONObject) {
     val nav = LocalNav.current
-    SectionHeader("Part of a collection")
+    SectionHeader(stringResource(R.string.part_of_a_collection))
     Box(
         Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(110.dp).clip(MaterialTheme.shapes.large)
             .clickable { nav.go("collection/${c.int("id")}") }
@@ -564,8 +567,8 @@ private fun CollectionCard(c: JSONObject) {
         App.session.tmdb(c.str("backdropPath"), "w780")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)))
         Column(Modifier.align(Alignment.CenterStart).padding(20.dp)) {
-            Text(c.str("name") ?: "Collection", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("View collection", color = Color.White.copy(alpha = 0.85f))
+            Text(c.str("name") ?: stringResource(R.string.collection), color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.view_collection), color = Color.White.copy(alpha = 0.85f))
         }
     }
 }
@@ -575,8 +578,8 @@ private fun IssueMini(iss: JSONObject) {
     val nav = LocalNav.current
     ListItem(
         leadingContent = { Icon(Icons.Outlined.ReportProblem, null, tint = if (iss.int("status") == 1) Status.pending else Status.available) },
-        headlineContent = { Text(com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType")) + " issue") },
-        supportingContent = { Text(if (iss.int("status") == 1) "Open" else "Resolved") },
+        headlineContent = { Text(stringResource(R.string.issue_title, com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType")))) },
+        supportingContent = { Text(if (iss.int("status") == 1) stringResource(R.string.open) else stringResource(R.string.resolved)) },
         modifier = Modifier.clickable { nav.go("issue/${iss.int("id")}") },
     )
 }

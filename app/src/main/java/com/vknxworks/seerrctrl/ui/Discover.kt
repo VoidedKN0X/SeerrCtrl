@@ -74,6 +74,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
 import java.time.LocalDate
+import androidx.compose.ui.res.stringResource
+import com.vknxworks.seerrctrl.R
 
 /** Movie/series details are fetched for many small cards (requests, recently added) — keep them around. */
 object MediaCache {
@@ -171,28 +173,28 @@ private suspend fun buildRow(slider: JSONObject): SliderRow? {
         1 -> { // recently added
             if (!App.session.can(Perm.MANAGE_REQUESTS, Perm.RECENT_VIEW, any = true)) return null
             val media = App.api.obj("/media", mapOf("filter" to "allavailable", "take" to 20, "sort" to "mediaAdded")).objs("results")
-            SliderRow.Tiles("s$id", "Recently added", tilesFor(media.map { (it.str("mediaType") ?: "movie") to it.int("tmdbId") }), null)
+            SliderRow.Tiles("s$id", App.str(R.string.recently_added), tilesFor(media.map { (it.str("mediaType") ?: "movie") to it.int("tmdbId") }), null)
         }
         2 -> SliderRow.Requests("s$id", App.api.obj("/request", mapOf("filter" to "all", "take" to 10, "sort" to "added")).objs("results"))
-        3 -> tiles("Your watchlist", "/discover/watchlist")
-        4 -> tiles("Trending", "/discover/trending")
-        5 -> tiles("Popular movies", "/discover/movies")
-        6 -> SliderRow.Genres("s$id", "Movie genres", false, App.api.arr("/discover/genreslider/movie").objects())
-        7 -> tiles("Upcoming movies", "/discover/movies", mapOf("primaryReleaseDateGte" to today))
-        8 -> SliderRow.Logos("s$id", "Studios", false, studios)
-        9 -> tiles("Popular series", "/discover/tv")
-        10 -> SliderRow.Genres("s$id", "Series genres", true, App.api.arr("/discover/genreslider/tv").objects())
-        11 -> tiles("Upcoming series", "/discover/tv", mapOf("firstAirDateGte" to today))
-        12 -> SliderRow.Logos("s$id", "Networks", true, networks)
-        13 -> tiles(title ?: "Movies", "/discover/movies", mapOf("keywords" to data))
-        14 -> tiles(title ?: "Movies", "/discover/movies", mapOf("genre" to data))
-        15 -> tiles(title ?: "Series", "/discover/tv", mapOf("keywords" to data))
-        16 -> tiles(title ?: "Series", "/discover/tv", mapOf("genre" to data))
-        17 -> tiles(title ?: "Search", "/search", mapOf("query" to data))
-        18 -> tiles(title ?: "Studio", "/discover/movies/studio/$data")
-        19 -> tiles(title ?: "Network", "/discover/tv/network/$data")
-        20 -> tiles(title ?: "Streaming", "/discover/movies", mapOf("watchRegion" to region, "watchProviders" to providers))
-        21 -> tiles(title ?: "Streaming", "/discover/tv", mapOf("watchRegion" to region, "watchProviders" to providers))
+        3 -> tiles(App.str(R.string.your_watchlist), "/discover/watchlist")
+        4 -> tiles(App.str(R.string.trending), "/discover/trending")
+        5 -> tiles(App.str(R.string.popular_movies), "/discover/movies")
+        6 -> SliderRow.Genres("s$id", App.str(R.string.movie_genres), false, App.api.arr("/discover/genreslider/movie").objects())
+        7 -> tiles(App.str(R.string.upcoming_movies), "/discover/movies", mapOf("primaryReleaseDateGte" to today))
+        8 -> SliderRow.Logos("s$id", App.str(R.string.studios), false, studios)
+        9 -> tiles(App.str(R.string.popular_series), "/discover/tv")
+        10 -> SliderRow.Genres("s$id", App.str(R.string.series_genres), true, App.api.arr("/discover/genreslider/tv").objects())
+        11 -> tiles(App.str(R.string.upcoming_series), "/discover/tv", mapOf("firstAirDateGte" to today))
+        12 -> SliderRow.Logos("s$id", App.str(R.string.networks), true, networks)
+        13 -> tiles(title ?: App.str(R.string.movies), "/discover/movies", mapOf("keywords" to data))
+        14 -> tiles(title ?: App.str(R.string.movies), "/discover/movies", mapOf("genre" to data))
+        15 -> tiles(title ?: App.str(R.string.series_2), "/discover/tv", mapOf("keywords" to data))
+        16 -> tiles(title ?: App.str(R.string.series_2), "/discover/tv", mapOf("genre" to data))
+        17 -> tiles(title ?: App.str(R.string.tab_search), "/search", mapOf("query" to data))
+        18 -> tiles(title ?: App.str(R.string.studio), "/discover/movies/studio/$data")
+        19 -> tiles(title ?: App.str(R.string.network), "/discover/tv/network/$data")
+        20 -> tiles(title ?: App.str(R.string.streaming), "/discover/movies", mapOf("watchRegion" to region, "watchProviders" to providers))
+        21 -> tiles(title ?: App.str(R.string.streaming), "/discover/tv", mapOf("watchRegion" to region, "watchProviders" to providers))
         else -> null
     }
 }
@@ -215,7 +217,7 @@ fun DiscoverTab() {
     PullToRefreshBox(isRefreshing = load.refreshing, onRefresh = { load.reload(silent = true) }, modifier = Modifier.fillMaxSize()) {
         Loaded(load) {
             LazyColumn(contentPadding = ListBottom, modifier = Modifier.fillMaxSize()) {
-                item { TabTitle("Discover") }
+                item { TabTitle(stringResource(R.string.discover)) }
                 items(rows, key = { it.key }) { row ->
                     when (row) {
                         is SliderRow.Tiles -> TileRow(row.title, row.tiles, row.more?.let { { nav.browse(it) } })
@@ -283,7 +285,7 @@ private fun LogoRow(row: SliderRow.Logos) {
 private fun RequestRow(requests: List<JSONObject>) {
     if (requests.isEmpty()) return
     val nav = LocalNav.current
-    SectionHeader("Recent requests", onMore = { MainTab.selected = MainTab.REQUESTS })
+    SectionHeader(stringResource(R.string.recent_requests), onMore = { MainTab.selected = MainTab.REQUESTS })
     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(requests, key = { it.int("id") }) { r -> RequestMiniCard(r) }
     }
@@ -309,7 +311,7 @@ fun BrowseScreen(key: String) {
     Scaffold(
         topBar = {
             BackBar(spec.title, { nav.back() }, scroll = scroll) {
-                if (canSort) IconButton({ showFilters = true }) { Icon(Icons.Outlined.Tune, "Filters") }
+                if (canSort) IconButton({ showFilters = true }) { Icon(Icons.Outlined.Tune, stringResource(R.string.filters)) }
             }
         },
         modifier = Modifier.nestedScroll(scroll.nestedScrollConnection),
@@ -372,7 +374,7 @@ fun PagedTileGrid(path: String, params: Map<String, Any?>, modifier: Modifier = 
             }
         }
         if (!loading && tiles.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) { EmptyBox(Icons.Outlined.Movie, "Nothing here") }
+            item(span = { GridItemSpan(maxLineSpan) }) { EmptyBox(Icons.Outlined.Movie, stringResource(R.string.nothing_here)) }
         }
     }
 }

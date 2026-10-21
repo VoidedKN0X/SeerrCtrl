@@ -113,6 +113,10 @@ import kotlinx.coroutines.delay
 import com.vknxworks.seerrctrl.SecureWindow
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.platform.LocalContext
+import com.vknxworks.seerrctrl.R
 
 /** Every server settings page from the web UI, as one list. */
 @Composable
@@ -120,43 +124,43 @@ fun AdminSettingsScreen() {
     SecureWindow()
     val nav = LocalNav.current
     val ms = App.session.mediaServer
-    Scaffold(topBar = { BackBar("Server settings", { nav.back() }, subtitle = App.session.appTitle) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.server_settings), { nav.back() }, subtitle = App.session.appTitle) }) { pad ->
         LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
             item {
-                SettingsSection("Server") {
-                    NavItem(Icons.Outlined.Settings, "General", "Title, URL, image cache, discover region, display options") { nav.go("admin/general") }
+                SettingsSection(stringResource(R.string.group_server)) {
+                    NavItem(Icons.Outlined.Settings, stringResource(R.string.general), stringResource(R.string.title_url_image_cache_discover)) { nav.go("admin/general") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Group, "Users", "Sign-in methods, default permissions and quotas") { nav.go("admin/users") }
+                    NavItem(Icons.Outlined.Group, stringResource(R.string.users), stringResource(R.string.sign_in_methods_default_permissions)) { nav.go("admin/users") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Lan, "Network", "Proxy, CSRF, DNS cache, timeouts") { nav.go("admin/network") }
+                    NavItem(Icons.Outlined.Lan, stringResource(R.string.network), stringResource(R.string.proxy_csrf_dns_cache_timeouts)) { nav.go("admin/network") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Info, "About", "Version, totals, paths") { nav.go("admin/about") }
+                    NavItem(Icons.Outlined.Info, stringResource(R.string.group_about), stringResource(R.string.version_totals_paths)) { nav.go("admin/about") }
                 }
             }
             item {
-                SettingsSection("Media") {
-                    NavItem(Icons.Outlined.Movie, ms.label.takeIf { ms != MediaServer.None } ?: "Media server", "Connection, libraries and scans") { nav.go("admin/mediaserver") }
+                SettingsSection(stringResource(R.string.media)) {
+                    NavItem(Icons.Outlined.Movie, ms.label.takeIf { ms != MediaServer.None } ?: stringResource(R.string.media_server), stringResource(R.string.connection_libraries_and_scans)) { nav.go("admin/mediaserver") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Dns, "Services", "Radarr and Sonarr servers") { nav.go("admin/services") }
+                    NavItem(Icons.Outlined.Dns, stringResource(R.string.services), stringResource(R.string.radarr_and_sonarr_servers)) { nav.go("admin/services") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Tune, "Metadata", "Metadata providers for movies, series and anime") { nav.go("admin/metadata") }
+                    NavItem(Icons.Outlined.Tune, stringResource(R.string.metadata), stringResource(R.string.metadata_providers_for_movies_series)) { nav.go("admin/metadata") }
                     if (ms == MediaServer.Plex) {
                         ItemDivider()
-                        NavItem(Icons.Outlined.Storage, "Tautulli", "Watch history from Tautulli") { nav.go("admin/tautulli") }
+                        NavItem(Icons.Outlined.Storage, stringResource(R.string.tautulli), stringResource(R.string.watch_history_from_tautulli)) { nav.go("admin/tautulli") }
                     }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Rule, "Override rules", "Route requests to specific servers and profiles") { nav.go("admin/overrides") }
+                    NavItem(Icons.Outlined.Rule, stringResource(R.string.override_rules), stringResource(R.string.route_requests_to_specific_servers)) { nav.go("admin/overrides") }
                 }
             }
             item {
-                SettingsSection("Behaviour") {
-                    NavItem(Icons.Outlined.Notifications, "Notifications", "Email, Discord, Telegram, webhooks and more") { nav.go("admin/notifications") }
+                SettingsSection(stringResource(R.string.behaviour)) {
+                    NavItem(Icons.Outlined.Notifications, stringResource(R.string.notifications), stringResource(R.string.email_discord_telegram_webhooks_and)) { nav.go("admin/notifications") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Explore, "Discover", "Choose and order the discover sliders") { nav.go("admin/discover") }
+                    NavItem(Icons.Outlined.Explore, stringResource(R.string.discover), stringResource(R.string.choose_and_order_the_discover)) { nav.go("admin/discover") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Schedule, "Jobs & cache", "Run scans now, change schedules, flush caches") { nav.go("admin/jobs") }
+                    NavItem(Icons.Outlined.Schedule, stringResource(R.string.jobs_cache), stringResource(R.string.run_scans_now_change_schedules_flush)) { nav.go("admin/jobs") }
                     ItemDivider()
-                    NavItem(Icons.AutoMirrored.Outlined.Article, "Logs", "Server log, filterable by level") { nav.go("admin/logs") }
+                    NavItem(Icons.AutoMirrored.Outlined.Article, stringResource(R.string.logs), stringResource(R.string.server_log_filterable_by_level)) { nav.go("admin/logs") }
                 }
             }
         }
@@ -167,12 +171,12 @@ fun AdminSettingsScreen() {
 fun AdminSectionScreen(section: String) {
     SecureWindow()
     when {
-        section == "general" -> SettingsForm("General", "/settings/main", generalSpec, hideKeys = usersKeys + setOf("defaultPermissions", "defaultQuotas"), regen = true)
+        section == "general" -> SettingsForm(stringResource(R.string.general), "/settings/main", generalSpec, hideKeys = usersKeys + setOf("defaultPermissions", "defaultQuotas"), regen = true)
         section == "users" -> UsersSettings()
-        section == "network" -> SettingsForm("Network", "/settings/network", networkSpec)
+        section == "network" -> SettingsForm(stringResource(R.string.network), "/settings/network", networkSpec)
         section == "mediaserver" -> MediaServerSettings()
-        section == "metadata" -> SettingsForm("Metadata", "/settings/metadatas", FormSpec(), method = "PUT")
-        section == "tautulli" -> SettingsForm("Tautulli", "/settings/tautulli", FormSpec(labels = mapOf("urlBase" to "URL base", "externalUrl" to "External URL")))
+        section == "metadata" -> SettingsForm(stringResource(R.string.metadata), "/settings/metadatas", FormSpec(), method = "PUT")
+        section == "tautulli" -> SettingsForm(stringResource(R.string.tautulli), "/settings/tautulli", FormSpec(labels = mapOf("urlBase" to App.str(R.string.url_base), "externalUrl" to App.str(R.string.external_url))))
         section == "services" -> ServicesScreen()
         section.startsWith("service:") -> {
             val (_, kind, id) = section.split(':').let { Triple(it[0], it.getOrElse(1) { "radarr" }, it.getOrElse(2) { "new" }) }
@@ -194,17 +198,17 @@ private val usersKeys = setOf("localLogin", "mediaServerLogin", "newPlexLogin")
 
 private val generalSpec = FormSpec(
     labels = mapOf(
-        "applicationTitle" to "Application title", "applicationUrl" to "Application URL", "cacheImages" to "Cache images locally",
-        "hideAvailable" to "Hide available media", "hideBlocklisted" to "Hide blocklisted items", "hideRequested" to "Hide requested media",
-        "discoverRegion" to "Discover region (ISO code)", "streamingRegion" to "Streaming region (ISO code)", "originalLanguage" to "Discover language (ISO codes)",
-        "partialRequestsEnabled" to "Allow partial series requests", "enableSpecialEpisodes" to "Allow special episode requests",
-        "youtubeUrl" to "YouTube URL", "versionCheck" to "Check for updates", "blocklistedTags" to "Blocklisted tags",
-        "blocklistedTagsLimit" to "Blocklisted tags limit", "blocklistRegion" to "Blocklist region", "blocklistLanguage" to "Blocklist language",
+        "applicationTitle" to App.str(R.string.application_title), "applicationUrl" to App.str(R.string.application_url), "cacheImages" to App.str(R.string.cache_images_locally),
+        "hideAvailable" to App.str(R.string.hide_available_media), "hideBlocklisted" to App.str(R.string.hide_blocklisted_items), "hideRequested" to App.str(R.string.hide_requested_media),
+        "discoverRegion" to App.str(R.string.discover_region_iso_code), "streamingRegion" to App.str(R.string.streaming_region_iso_code), "originalLanguage" to App.str(R.string.discover_language_iso_codes),
+        "partialRequestsEnabled" to App.str(R.string.allow_partial_series_requests), "enableSpecialEpisodes" to App.str(R.string.allow_special_episode_requests),
+        "youtubeUrl" to App.str(R.string.youtube_url), "versionCheck" to App.str(R.string.check_for_updates), "blocklistedTags" to App.str(R.string.blocklisted_tags),
+        "blocklistedTagsLimit" to App.str(R.string.blocklisted_tags_limit), "blocklistRegion" to App.str(R.string.blocklist_region), "blocklistLanguage" to App.str(R.string.blocklist_language),
     ),
     help = mapOf(
-        "apiKey" to "Read-only here. Use Regenerate to make a new one.",
-        "cacheImages" to "Proxy and cache TMDB images through Seerr",
-        "applicationUrl" to "Used in notifications and links",
+        "apiKey" to App.str(R.string.read_only_here_use_regenerate_to),
+        "cacheImages" to App.str(R.string.proxy_and_cache_tmdb_images_through),
+        "applicationUrl" to App.str(R.string.used_in_notifications_and_links),
     ),
     readOnly = setOf("apiKey", "mediaServerType"),
     hide = setOf("mediaServerType", "locale"),
@@ -213,11 +217,11 @@ private val generalSpec = FormSpec(
 
 private val networkSpec = FormSpec(
     labels = mapOf(
-        "csrfProtection" to "CSRF protection", "forceIpv4First" to "Force IPv4 resolution first", "trustProxy" to "Trust proxy (behind a reverse proxy)",
-        "apiRequestTimeout" to "API request timeout (ms)", "bypassFilter" to "Bypass proxy for addresses", "bypassLocalAddresses" to "Bypass proxy for local addresses",
-        "forceMinTtl" to "Minimum TTL (s)", "forceMaxTtl" to "Maximum TTL (s, -1 = off)",
+        "csrfProtection" to App.str(R.string.csrf_protection), "forceIpv4First" to App.str(R.string.force_ipv4_resolution_first), "trustProxy" to App.str(R.string.trust_proxy_behind_a_reverse_proxy),
+        "apiRequestTimeout" to App.str(R.string.api_request_timeout_ms), "bypassFilter" to App.str(R.string.bypass_proxy_for_addresses), "bypassLocalAddresses" to App.str(R.string.bypass_proxy_for_local_addresses),
+        "forceMinTtl" to App.str(R.string.minimum_ttl_s), "forceMaxTtl" to App.str(R.string.maximum_ttl_s_1_off),
     ),
-    help = mapOf("csrfProtection" to "Only turn on if you know what it does; it can lock you out of the web UI over plain HTTP."),
+    help = mapOf("csrfProtection" to App.str(R.string.only_turn_on_if_you_know_what_it)),
 )
 
 @Composable
@@ -243,17 +247,17 @@ private fun SettingsForm(
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                     if (regen) {
                         OutlinedButton({
-                            act.run("New API key generated", onOk = { load.reload(silent = true) }) { App.api.post("/settings/main/regenerate") }
-                        }) { Text("Regenerate API key") }
+                            act.run(App.str(R.string.new_api_key_generated), onOk = { load.reload(silent = true) }) { App.api.post("/settings/main/regenerate") }
+                        }) { Text(stringResource(R.string.regenerate_api_key)) }
                     }
                     Button(
                         enabled = state.dirty && !act.busy,
                         onClick = {
-                            act.run("Saved", onOk = { state.saved(); try { App.session.refresh() } catch (_: Exception) {} }) {
+                            act.run(App.str(R.string.saved), onOk = { state.saved(); try { App.session.refresh() } catch (_: Exception) {} }) {
                                 if (method == "PUT") App.api.put(path, state.obj) else App.api.post(path, state.obj)
                             }
                         },
-                    ) { Text("Save") }
+                    ) { Text(stringResource(R.string.save)) }
                 }
                 Spacer(Modifier.height(48.dp))
             }
@@ -268,7 +272,7 @@ private fun UsersSettings() {
     val nav = LocalNav.current
     val act = rememberActions()
     val load = rememberLoad("main-users") { App.api.obj("/settings/main") }
-    Scaffold(topBar = { BackBar("User settings", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.user_settings), { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { main ->
             val subset = remember(main) {
                 val q = main.obj("defaultQuotas") ?: JSONObject()
@@ -289,28 +293,28 @@ private fun UsersSettings() {
                     state,
                     FormSpec(
                         labels = mapOf(
-                            "localLogin" to "Allow email & password sign-in", "mediaServerLogin" to "Allow media server sign-in",
-                            "newPlexLogin" to "Allow new Plex users to sign in", "defaultQuotas" to "Default request limits",
-                            "movie.quotaLimit" to "Movie requests", "movie.quotaDays" to "…per days", "quotaLimit" to "Request limit", "quotaDays" to "Period (days)",
+                            "localLogin" to App.str(R.string.allow_email_password_sign_in), "mediaServerLogin" to App.str(R.string.allow_media_server_sign_in),
+                            "newPlexLogin" to App.str(R.string.allow_new_plex_users_to_sign_in), "defaultQuotas" to App.str(R.string.default_request_limits),
+                            "movie.quotaLimit" to App.str(R.string.movie_requests), "movie.quotaDays" to App.str(R.string.per_days_2), "quotaLimit" to App.str(R.string.request_limit), "quotaDays" to App.str(R.string.period_days),
                         ),
                         types = mapOf("quotaLimit" to "int", "quotaDays" to "int"),
                         hide = if (App.session.mediaServer != MediaServer.Plex) setOf("newPlexLogin") else emptySet(),
                     ),
                 )
-                SheetHeader("Default permissions for new users")
+                SheetHeader(stringResource(R.string.default_permissions_for_new_users))
                 Box(Modifier.padding(horizontal = 8.dp)) { PermissionEditor(perms) { perms = it } }
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
                     Button(
                         enabled = (state.dirty || perms != main.long("defaultPermissions")) && !act.busy,
                         onClick = {
-                            act.run("Saved", onOk = { state.saved(); load.reload(silent = true) }) {
+                            act.run(App.str(R.string.saved), onOk = { state.saved(); load.reload(silent = true) }) {
                                 val body = JSONObject(main.toString())
                                 state.obj.keys().forEach { body.put(it, state.obj.opt(it)) }
                                 body.put("defaultPermissions", perms)
                                 App.api.post("/settings/main", body)
                             }
                         },
-                    ) { Text("Save") }
+                    ) { Text(stringResource(R.string.save)) }
                 }
                 Spacer(Modifier.height(48.dp))
             }
@@ -344,27 +348,27 @@ private fun MediaServerSettings() {
         Loaded(load, Modifier.padding(pad)) { data ->
             val state = remember(data) { FormState(data) }
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
-                SheetHeader("Connection")
+                SheetHeader(stringResource(R.string.connection))
                 JsonFields(
                     state,
                     FormSpec(
                         hide = setOf("libraries", "machineId", "apiKey", "serverId"),
-                        labels = mapOf("ip" to "Hostname or IP", "useSsl" to "Use SSL", "urlBase" to "URL base", "externalHostname" to "External URL",
-                            "jellyfinForgotPasswordUrl" to "Forgot password URL", "webAppUrl" to "Web app URL"),
+                        labels = mapOf("ip" to App.str(R.string.hostname_or_ip), "useSsl" to App.str(R.string.use_ssl), "urlBase" to App.str(R.string.url_base), "externalHostname" to App.str(R.string.external_url),
+                            "jellyfinForgotPasswordUrl" to App.str(R.string.forgot_password_url), "webAppUrl" to App.str(R.string.web_app_url)),
                         readOnly = if (ms == MediaServer.Plex) emptySet() else setOf("name"),
                     ),
                 )
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.End) {
                     Button(enabled = state.dirty && !act.busy, onClick = {
-                        act.run("Saved", onOk = { state.saved() }) { App.api.post("/settings/$key", state.obj) }
-                    }) { Text("Save connection") }
+                        act.run(App.str(R.string.saved), onOk = { state.saved() }) { App.api.post("/settings/$key", state.obj) }
+                    }) { Text(stringResource(R.string.save_connection)) }
                 }
 
-                SheetHeader("Libraries")
+                SheetHeader(stringResource(R.string.libraries))
                 Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton({
-                        act.run("Libraries synced", onOk = { poll++ }) { App.api.post("/settings/$key/library/sync") }
-                    }) { Icon(Icons.Outlined.Sync, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Sync libraries") }
+                        act.run(App.str(R.string.libraries_synced), onOk = { poll++ }) { App.api.post("/settings/$key/library/sync") }
+                    }) { Icon(Icons.Outlined.Sync, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.sync_libraries)) }
                 }
                 libs.forEach { lib ->
                     ListItem(
@@ -378,22 +382,22 @@ private fun MediaServerSettings() {
                     )
                 }
 
-                SheetHeader("Full library scan")
+                SheetHeader(stringResource(R.string.full_library_scan))
                 val sc = scan
                 Card(Modifier.padding(16.dp).fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (sc?.bool("running") == true) {
                             val total = sc.int("total")
                             val prog = sc.int("progress")
-                            Text("Scanning ${sc.obj("currentLibrary").str("name") ?: ""}… $prog of $total")
+                            Text(stringResource(R.string.scanning_of, sc.obj("currentLibrary").str("name") ?: "", prog, total))
                             LinearProgressIndicator({ if (total > 0) prog.toFloat() / total else 0f }, Modifier.fillMaxWidth())
-                            OutlinedButton({ act.run("Scan cancelled", onOk = { poll++ }) { App.api.post("/settings/$key/sync", jsonOf("cancel" to true)) } }) {
-                                Icon(Icons.Outlined.Stop, null); Spacer(Modifier.width(6.dp)); Text("Cancel scan")
+                            OutlinedButton({ act.run(App.str(R.string.scan_cancelled), onOk = { poll++ }) { App.api.post("/settings/$key/sync", jsonOf("cancel" to true)) } }) {
+                                Icon(Icons.Outlined.Stop, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.cancel_scan))
                             }
                         } else {
-                            Text("Checks every enabled library for new and removed items. Recently added items are also picked up by a scheduled job.", style = MaterialTheme.typography.bodySmall)
-                            FilledTonalButton({ act.run("Scan started", onOk = { poll++ }) { App.api.post("/settings/$key/sync", jsonOf("start" to true)) } }) {
-                                Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text("Start full scan")
+                            Text(stringResource(R.string.checks_every_enabled_library_for_new), style = MaterialTheme.typography.bodySmall)
+                            FilledTonalButton({ act.run(App.str(R.string.scan_started), onOk = { poll++ }) { App.api.post("/settings/$key/sync", jsonOf("start" to true)) } }) {
+                                Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.start_full_scan))
                             }
                         }
                     }
@@ -410,25 +414,25 @@ private fun MediaServerSettings() {
 private fun ServicesScreen() {
     val nav = LocalNav.current
     val load = rememberLoad("services") { App.api.arr("/settings/radarr").objects() to App.api.arr("/settings/sonarr").objects() }
-    Scaffold(topBar = { BackBar("Services", { nav.back() }) { IconButton({ load.reload(silent = true) }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.services), { nav.back() }) { IconButton({ load.reload(silent = true) }) { Icon(Icons.Outlined.Sync, stringResource(R.string.refresh)) } } }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (radarr, sonarr) ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 for ((kind, list) in listOf("radarr" to radarr, "sonarr" to sonarr)) {
                     item {
-                        SettingsSection(if (kind == "radarr") "Radarr" else "Sonarr") {
+                        SettingsSection(if (kind == "radarr") stringResource(R.string.radarr) else stringResource(R.string.sonarr)) {
                             list.forEachIndexed { i, srv ->
                                 if (i > 0) ItemDivider()
                                 NavItem(
-                                    Icons.Outlined.Dns, srv.str("name") ?: "Server",
+                                    Icons.Outlined.Dns, srv.str("name") ?: stringResource(R.string.group_server),
                                     listOfNotNull(
                                         (if (srv.bool("useSsl")) "https://" else "http://") + srv.str("hostname") + ":" + srv.int("port") + (srv.str("baseUrl") ?: ""),
                                         if (srv.bool("is4k")) "4K" else null,
-                                        if (srv.bool("isDefault")) "Default" else null,
+                                        if (srv.bool("isDefault")) App.str(R.string.default_2) else null,
                                     ).joinToString(" · "),
                                 ) { nav.go("admin/service:$kind:${srv.int("id")}") }
                             }
                             if (list.isNotEmpty()) ItemDivider()
-                            NavItem(Icons.Outlined.Add, "Add ${if (kind == "radarr") "Radarr" else "Sonarr"} server") { nav.go("admin/service:$kind:new") }
+                            NavItem(Icons.Outlined.Add, stringResource(R.string.add_server, if (kind == "radarr") "Radarr" else "Sonarr")) { nav.go("admin/service:$kind:new") }
                         }
                     }
                 }
@@ -455,16 +459,16 @@ private fun ServiceEditor(kind: String, id: Int?) {
     val nav = LocalNav.current
     val closeScreen = rememberCloseScreen()
     val act = rememberActions()
-    val label = if (kind == "radarr") "Radarr" else "Sonarr"
+    val label = if (kind == "radarr") App.str(R.string.radarr) else App.str(R.string.sonarr)
     val load = rememberLoad(kind, id) {
-        if (id == null) newService(kind) else App.api.arr("/settings/$kind").objects().firstOrNull { it.int("id") == id } ?: error("Server not found")
+        if (id == null) newService(kind) else App.api.arr("/settings/$kind").objects().firstOrNull { it.int("id") == id } ?: error(App.str(R.string.server_not_found))
     }
     var test by remember { mutableStateOf<JSONObject?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
-        BackBar(if (id == null) "Add $label server" else "Edit $label server", { nav.back() }) {
-            if (id != null) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete") }
+        BackBar(if (id == null) stringResource(R.string.add_server, label) else stringResource(R.string.edit_server, label), { nav.back() }) {
+            if (id != null) IconButton({ confirmDelete = true }) { Icon(Icons.Outlined.Delete, stringResource(R.string.lock_delete)) }
         }
     }) { pad ->
         Loaded(load, Modifier.padding(pad)) { data ->
@@ -477,9 +481,9 @@ private fun ServiceEditor(kind: String, id: Int?) {
                 if (profiles.isNotEmpty()) { put("activeProfileId", profiles); put("activeAnimeProfileId", profiles) }
                 if (folders.isNotEmpty()) { put("activeDirectory", folders); put("activeAnimeDirectory", folders) }
                 if (langProfiles.isNotEmpty()) { put("activeLanguageProfileId", langProfiles); put("activeAnimeLanguageProfileId", langProfiles) }
-                put("minimumAvailability", listOf("announced" to "Announced", "inCinemas" to "In cinemas", "released" to "Released"))
-                put("seriesType", listOf("standard" to "Standard", "daily" to "Daily", "anime" to "Anime"))
-                put("animeSeriesType", listOf("standard" to "Standard", "daily" to "Daily", "anime" to "Anime"))
+                put("minimumAvailability", listOf("announced" to App.str(R.string.announced), "inCinemas" to App.str(R.string.in_cinemas), "released" to App.str(R.string.released)))
+                put("seriesType", listOf("standard" to App.str(R.string.standard), "daily" to App.str(R.string.daily), "anime" to App.str(R.string.anime)))
+                put("animeSeriesType", listOf("standard" to App.str(R.string.standard), "daily" to App.str(R.string.daily), "anime" to App.str(R.string.anime)))
             }
             // Keep the profile names in step with the picked ids, as the web UI does.
             LaunchedEffect(state.version, t) {
@@ -496,13 +500,13 @@ private fun ServiceEditor(kind: String, id: Int?) {
                     FormSpec(
                         hide = setOf("id", "activeProfileName", "activeAnimeProfileName"),
                         labels = mapOf(
-                            "is4k" to "4K server", "isDefault" to "Default server", "useSsl" to "Use SSL", "apiKey" to "API key", "baseUrl" to "URL base",
-                            "activeProfileId" to "Quality profile", "activeDirectory" to "Root folder", "activeAnimeProfileId" to "Anime quality profile",
-                            "activeAnimeDirectory" to "Anime root folder", "activeLanguageProfileId" to "Language profile", "activeAnimeLanguageProfileId" to "Anime language profile",
-                            "tags" to "Tag IDs", "animeTags" to "Anime tag IDs", "externalUrl" to "External URL", "syncEnabled" to "Enable scan",
-                            "preventSearch" to "Don't search on add", "tagRequests" to "Tag requests with the user", "enableSeasonFolders" to "Season folders",
+                            "is4k" to App.str(R.string.4k_server), "isDefault" to App.str(R.string.default_server), "useSsl" to App.str(R.string.use_ssl), "apiKey" to App.str(R.string.api_key), "baseUrl" to App.str(R.string.url_base),
+                            "activeProfileId" to App.str(R.string.quality_profile), "activeDirectory" to App.str(R.string.root_folder), "activeAnimeProfileId" to App.str(R.string.anime_quality_profile),
+                            "activeAnimeDirectory" to App.str(R.string.anime_root_folder), "activeLanguageProfileId" to App.str(R.string.language_profile), "activeAnimeLanguageProfileId" to App.str(R.string.anime_language_profile),
+                            "tags" to App.str(R.string.tag_ids), "animeTags" to App.str(R.string.anime_tag_ids), "externalUrl" to App.str(R.string.external_url), "syncEnabled" to App.str(R.string.enable_scan),
+                            "preventSearch" to App.str(R.string.don_t_search_on_add), "tagRequests" to App.str(R.string.tag_requests_with_the_user), "enableSeasonFolders" to App.str(R.string.season_folders),
                         ),
-                        help = mapOf("activeProfileId" to if (t == null) "Test the connection to pick from the server's profiles" else ""),
+                        help = mapOf("activeProfileId" to if (t == null) App.str(R.string.test_the_connection_to_pick_from_the) else ""),
                         types = mapOf("tags" to "intlist", "animeTags" to "intlist", "activeProfileId" to "int", "activeAnimeProfileId" to "int",
                             "activeLanguageProfileId" to "int", "activeAnimeLanguageProfileId" to "int"),
                         choices = choices,
@@ -511,23 +515,23 @@ private fun ServiceEditor(kind: String, id: Int?) {
                 )
                 t?.objs("tags")?.takeIf { it.isNotEmpty() }?.let { tags ->
                     Text(
-                        "Tags on this server: " + tags.joinToString(", ") { "${it.int("id")} = ${it.str("label")}" },
+                        stringResource(R.string.tags_on_this_server, tags.joinToString(", ") { "${it.int("id")} = ${it.str("label")}" }),
                         style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                     OutlinedButton(enabled = !act.busy, onClick = {
-                        act.run("Connected to $label") {
+                        act.run(App.str(R.string.connected_to, label)) {
                             val res = App.api.post("/settings/$kind/test", state.obj) as? JSONObject ?: JSONObject()
                             test = res
                             res.str("urlBase")?.let { if (state.get("baseUrl")?.toString().isNullOrEmpty()) state.set("baseUrl", it) }
                         }
-                    }) { Text("Test") }
+                    }) { Text(stringResource(R.string.test)) }
                     Button(enabled = !act.busy && (state.dirty || id == null), onClick = {
-                        act.run("Saved", onOk = { closeScreen() }) {
+                        act.run(App.str(R.string.saved), onOk = { closeScreen() }) {
                             if (id == null) App.api.post("/settings/$kind", state.obj) else App.api.put("/settings/$kind/$id", state.obj)
                         }
-                    }) { Text("Save") }
+                    }) { Text(stringResource(R.string.save)) }
                 }
                 Spacer(Modifier.height(48.dp))
             }
@@ -536,14 +540,14 @@ private fun ServiceEditor(kind: String, id: Int?) {
     if (confirmDelete && id != null) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this $label server?") },
+            title = { Text(stringResource(R.string.delete_this_server, label)) },
             confirmButton = {
                 TextButton({
                     confirmDelete = false
-                    act.run("Deleted", onOk = { closeScreen() }) { App.api.delete("/settings/$kind/$id") }
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                    act.run(App.str(R.string.deleted), onOk = { closeScreen() }) { App.api.delete("/settings/$kind/$id") }
+                }) { Text(stringResource(R.string.lock_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton({ confirmDelete = false }) { Text("Cancel") } },
+            dismissButton = { TextButton({ confirmDelete = false }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
@@ -551,8 +555,8 @@ private fun ServiceEditor(kind: String, id: Int?) {
 // ---------------- notifications ----------------
 
 private val agents = listOf(
-    "email" to "Email", "discord" to "Discord", "slack" to "Slack", "telegram" to "Telegram", "pushbullet" to "Pushbullet",
-    "pushover" to "Pushover", "gotify" to "Gotify", "ntfy" to "ntfy", "webhook" to "Webhook", "webpush" to "Web push",
+    "email" to App.str(R.string.email), "discord" to App.str(R.string.discord), "slack" to App.str(R.string.slack), "telegram" to App.str(R.string.telegram), "pushbullet" to App.str(R.string.pushbullet),
+    "pushover" to App.str(R.string.pushover), "gotify" to App.str(R.string.gotify), "ntfy" to "ntfy", "webhook" to App.str(R.string.webhook), "webpush" to App.str(R.string.web_push),
 )
 
 @Composable
@@ -561,15 +565,15 @@ private fun NotificationAgentsScreen() {
     val load = rememberLoad("agents") {
         agents.map { (k, l) -> Triple(k, l, try { App.api.obj("/settings/notifications/$k").bool("enabled") } catch (_: Exception) { false }) }
     }
-    Scaffold(topBar = { BackBar("Notifications", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.notifications), { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { list ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 item {
                     SettingsSection(null) {
                         list.forEachIndexed { i, (k, l, on) ->
                             if (i > 0) ItemDivider()
-                            NavItem(Icons.Outlined.Notifications, l, if (on) "On" else "Off", trailing = {
-                                if (on) Pill("On", Status.available)
+                            NavItem(Icons.Outlined.Notifications, l, if (on) stringResource(R.string.on) else stringResource(R.string.off), trailing = {
+                                if (on) Pill(stringResource(R.string.on), Status.available)
                             }) { nav.go("admin/notif:$k") }
                         }
                     }
@@ -594,20 +598,20 @@ private fun NotificationAgentScreen(agent: String) {
                     state,
                     FormSpec(
                         hide = setOf("types"),
-                        labels = mapOf("enabled" to "Enable agent", "embedPoster" to "Embed poster", "options" to "Options",
-                            "jsonPayload" to "JSON payload (base64)", "authHeader" to "Authorization header", "webhookUrl" to "Webhook URL",
-                            "botAPI" to "Bot token", "chatId" to "Chat ID", "sendSilently" to "Send silently", "smtpHost" to "SMTP host",
-                            "smtpPort" to "SMTP port", "authUser" to "SMTP user", "authPass" to "SMTP password", "emailFrom" to "Sender address",
-                            "senderName" to "Sender name", "secure" to "Use SSL", "ignoreTls" to "Ignore TLS", "requireTls" to "Require TLS",
-                            "allowSelfSigned" to "Allow self-signed certificates", "userEmailRequired" to "Require user email", "pgpPrivateKey" to "PGP private key",
-                            "pgpPassword" to "PGP password", "accessToken" to "Access token", "channelTag" to "Channel tag", "userToken" to "User key",
-                            "botUsername" to "Bot username", "botAvatarUrl" to "Bot avatar URL", "enableMentions" to "Enable mentions",
-                            "messageThreadId" to "Thread ID", "supportVariables" to "Support URL variables", "priority" to "Priority",
-                            "sound" to "Sound", "url" to "Server URL", "token" to "Application token", "topic" to "Topic"),
+                        labels = mapOf("enabled" to App.str(R.string.enable_agent), "embedPoster" to App.str(R.string.embed_poster), "options" to App.str(R.string.options),
+                            "jsonPayload" to App.str(R.string.json_payload_base64), "authHeader" to App.str(R.string.authorization_header), "webhookUrl" to App.str(R.string.webhook_url),
+                            "botAPI" to App.str(R.string.bot_token), "chatId" to App.str(R.string.chat_id), "sendSilently" to App.str(R.string.send_silently), "smtpHost" to App.str(R.string.smtp_host),
+                            "smtpPort" to App.str(R.string.smtp_port), "authUser" to App.str(R.string.smtp_user), "authPass" to App.str(R.string.smtp_password), "emailFrom" to App.str(R.string.sender_address),
+                            "senderName" to App.str(R.string.sender_name), "secure" to App.str(R.string.use_ssl), "ignoreTls" to App.str(R.string.ignore_tls), "requireTls" to App.str(R.string.require_tls),
+                            "allowSelfSigned" to App.str(R.string.allow_self_signed_certificates), "userEmailRequired" to App.str(R.string.require_user_email), "pgpPrivateKey" to App.str(R.string.pgp_private_key),
+                            "pgpPassword" to App.str(R.string.pgp_password), "accessToken" to App.str(R.string.access_token), "channelTag" to App.str(R.string.channel_tag), "userToken" to App.str(R.string.user_key),
+                            "botUsername" to App.str(R.string.bot_username), "botAvatarUrl" to App.str(R.string.bot_avatar_url), "enableMentions" to App.str(R.string.enable_mentions),
+                            "messageThreadId" to App.str(R.string.thread_id), "supportVariables" to App.str(R.string.support_url_variables), "priority" to App.str(R.string.priority),
+                            "sound" to App.str(R.string.sound), "url" to App.str(R.string.server_url), "token" to App.str(R.string.application_token), "topic" to App.str(R.string.topic)),
                         multiline = setOf("pgpPrivateKey", "jsonPayload"),
                     ),
                 )
-                SheetHeader("Send notifications for")
+                SheetHeader(stringResource(R.string.send_notifications_for))
                 state.version
                 val types = (state.get("types") as? Number)?.toLong() ?: 0L
                 NotificationTypeList.forEach { (bit, label) ->
@@ -617,8 +621,8 @@ private fun NotificationAgentScreen(agent: String) {
                     }
                 }
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
-                    OutlinedButton(enabled = !act.busy, onClick = { act.run("Test notification sent") { App.api.post("$path/test", state.obj) } }) { Text("Send test") }
-                    Button(enabled = state.dirty && !act.busy, onClick = { act.run("Saved", onOk = { state.saved() }) { App.api.post(path, state.obj) } }) { Text("Save") }
+                    OutlinedButton(enabled = !act.busy, onClick = { act.run(App.str(R.string.test_notification_sent)) { App.api.post("$path/test", state.obj) } }) { Text(stringResource(R.string.send_test)) }
+                    Button(enabled = state.dirty && !act.busy, onClick = { act.run(App.str(R.string.saved), onOk = { state.saved() }) { App.api.post(path, state.obj) } }) { Text(stringResource(R.string.save)) }
                 }
                 Spacer(Modifier.height(48.dp))
             }
@@ -629,10 +633,10 @@ private fun NotificationAgentScreen(agent: String) {
 // ---------------- discover sliders ----------------
 
 private val sliderNames = mapOf(
-    1 to "Recently added", 2 to "Recent requests", 3 to "Watchlist", 4 to "Trending", 5 to "Popular movies", 6 to "Movie genres",
-    7 to "Upcoming movies", 8 to "Studios", 9 to "Popular series", 10 to "Series genres", 11 to "Upcoming series", 12 to "Networks",
-    13 to "Movie keywords", 14 to "Movie genre", 15 to "Series keywords", 16 to "Series genre", 17 to "Search", 18 to "Studio",
-    19 to "Network", 20 to "Movie streaming services", 21 to "Series streaming services",
+    1 to App.str(R.string.recently_added), 2 to App.str(R.string.recent_requests), 3 to App.str(R.string.watchlist), 4 to App.str(R.string.trending), 5 to App.str(R.string.popular_movies), 6 to App.str(R.string.movie_genres),
+    7 to App.str(R.string.upcoming_movies), 8 to App.str(R.string.studios), 9 to App.str(R.string.popular_series), 10 to App.str(R.string.series_genres), 11 to App.str(R.string.upcoming_series), 12 to App.str(R.string.networks),
+    13 to App.str(R.string.movie_keywords), 14 to App.str(R.string.movie_genre), 15 to App.str(R.string.series_keywords), 16 to App.str(R.string.series_genre), 17 to App.str(R.string.tab_search), 18 to App.str(R.string.studio),
+    19 to App.str(R.string.network), 20 to App.str(R.string.movie_streaming_services), 21 to App.str(R.string.series_streaming_services),
 )
 
 @Composable
@@ -650,40 +654,40 @@ private fun DiscoverSlidersScreen() {
     }
     Scaffold(
         topBar = {
-            BackBar("Discover sliders", { nav.back() }) {
-                TextButton({ act.run("Sliders reset", onOk = { reload++ }) { App.api.get("/settings/discover/reset") } }) { Text("Reset") }
+            BackBar(stringResource(R.string.discover_sliders), { nav.back() }) {
+                TextButton({ act.run(App.str(R.string.sliders_reset), onOk = { reload++ }) { App.api.get("/settings/discover/reset") } }) { Text(stringResource(R.string.reset)) }
             }
         },
-        floatingActionButton = { FloatingActionButton({ add = true }) { Icon(Icons.Outlined.Add, "Add slider") } },
+        floatingActionButton = { FloatingActionButton({ add = true }) { Icon(Icons.Outlined.Add, stringResource(R.string.add_slider)) } },
     ) { pad ->
         Loaded(load, Modifier.padding(pad)) {
             LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 120.dp)) {
                 item {
                     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
                         Button(enabled = dirty && !act.busy, onClick = {
-                            act.run("Saved", onOk = { reload++ }) {
+                            act.run(App.str(R.string.saved), onOk = { reload++ }) {
                                 val arr = JSONArray()
                                 sliders.forEachIndexed { i, s -> arr.put(JSONObject(s.toString()).put("order", i)) }
                                 App.api.post("/settings/discover", arr)
                             }
-                        }) { Text("Save order") }
+                        }) { Text(stringResource(R.string.save_order)) }
                     }
                 }
                 items(sliders.size, key = { sliders[it].int("id") }) { i ->
                     val s = sliders[i]
                     ListItem(
-                        headlineContent = { Text(s.str("title") ?: sliderNames[s.int("type")] ?: "Slider") },
-                        supportingContent = { Text((if (s.bool("isBuiltIn")) "Built in" else sliderNames[s.int("type")] ?: "Custom") + (s.str("data")?.let { " · $it" } ?: "")) },
+                        headlineContent = { Text(s.str("title") ?: sliderNames[s.int("type")] ?: stringResource(R.string.slider)) },
+                        supportingContent = { Text((if (s.bool("isBuiltIn")) App.str(R.string.built_in) else sliderNames[s.int("type")] ?: App.str(R.string.custom)) + (s.str("data")?.let { " · $it" } ?: "")) },
                         leadingContent = {
                             Switch(s.bool("enabled"), { on -> sliders[i] = JSONObject(s.toString()).put("enabled", on); dirty = true })
                         },
                         trailingContent = {
                             Row {
-                                IconButton({ if (i > 0) { val x = sliders.removeAt(i); sliders.add(i - 1, x); dirty = true } }, enabled = i > 0) { Icon(Icons.Outlined.ArrowUpward, "Up") }
-                                IconButton({ if (i < sliders.lastIndex) { val x = sliders.removeAt(i); sliders.add(i + 1, x); dirty = true } }, enabled = i < sliders.lastIndex) { Icon(Icons.Outlined.ArrowDownward, "Down") }
+                                IconButton({ if (i > 0) { val x = sliders.removeAt(i); sliders.add(i - 1, x); dirty = true } }, enabled = i > 0) { Icon(Icons.Outlined.ArrowUpward, stringResource(R.string.up)) }
+                                IconButton({ if (i < sliders.lastIndex) { val x = sliders.removeAt(i); sliders.add(i + 1, x); dirty = true } }, enabled = i < sliders.lastIndex) { Icon(Icons.Outlined.ArrowDownward, stringResource(R.string.down)) }
                                 if (!s.bool("isBuiltIn")) IconButton({
-                                    act.run("Slider deleted", onOk = { reload++ }) { App.api.delete("/settings/discover/${s.int("id")}") }
-                                }) { Icon(Icons.Outlined.Delete, "Delete") }
+                                    act.run(App.str(R.string.slider_deleted), onOk = { reload++ }) { App.api.delete("/settings/discover/${s.int("id")}") }
+                                }) { Icon(Icons.Outlined.Delete, stringResource(R.string.lock_delete)) }
                             }
                         },
                     )
@@ -696,29 +700,29 @@ private fun DiscoverSlidersScreen() {
         var title by remember { mutableStateOf("") }
         var data by remember { mutableStateOf("") }
         val hints = mapOf(
-            "13" to "Keyword IDs, comma separated", "15" to "Keyword IDs, comma separated", "14" to "Genre ID", "16" to "Genre ID",
-            "17" to "Search text", "18" to "Studio ID", "19" to "Network ID", "20" to "Region,provider IDs (e.g. US,8)", "21" to "Region,provider IDs (e.g. US,8)",
+            "13" to App.str(R.string.keyword_ids_comma_separated), "15" to App.str(R.string.keyword_ids_comma_separated), "14" to App.str(R.string.genre_id), "16" to App.str(R.string.genre_id),
+            "17" to App.str(R.string.search_text), "18" to App.str(R.string.studio_id), "19" to App.str(R.string.network_id), "20" to App.str(R.string.region_provider_ids_e_g_us_8), "21" to App.str(R.string.region_provider_ids_e_g_us_8),
         )
         AlertDialog(
             onDismissRequest = { add = false },
-            title = { Text("Add slider") },
+            title = { Text(stringResource(R.string.add_slider)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    com.vknxworks.seerrctrl.ui.Dropdown("Type", (13..21).map { it.toString() to (sliderNames[it] ?: "") }, type) { type = it }
-                    OutlinedTextField(title, { title = it }, label = { Text("Title") }, singleLine = true)
-                    OutlinedTextField(data, { data = it }, label = { Text(hints[type] ?: "Value") }, singleLine = true)
-                    Text("IDs are TMDB ids; find them in the web UI's slider search or on themoviedb.org.", style = MaterialTheme.typography.bodySmall)
+                    com.vknxworks.seerrctrl.ui.Dropdown(stringResource(R.string.type), (13..21).map { it.toString() to (sliderNames[it] ?: "") }, type) { type = it }
+                    OutlinedTextField(title, { title = it }, label = { Text(stringResource(R.string.title)) }, singleLine = true)
+                    OutlinedTextField(data, { data = it }, label = { Text(hints[type] ?: stringResource(R.string.value)) }, singleLine = true)
+                    Text(stringResource(R.string.ids_are_tmdb_ids_find_them_in_the), style = MaterialTheme.typography.bodySmall)
                 }
             },
             confirmButton = {
                 TextButton({
                     add = false
-                    act.run("Slider added", onOk = { reload++ }) {
+                    act.run(App.str(R.string.slider_added), onOk = { reload++ }) {
                         App.api.post("/settings/discover/add", jsonOf("type" to type.toInt(), "title" to title, "data" to data, "enabled" to true))
                     }
-                }, enabled = title.isNotBlank() && data.isNotBlank()) { Text("Add") }
+                }, enabled = title.isNotBlank() && data.isNotBlank()) { Text(stringResource(R.string.add)) }
             },
-            dismissButton = { TextButton({ add = false }) { Text("Cancel") } },
+            dismissButton = { TextButton({ add = false }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
@@ -735,59 +739,59 @@ private fun JobsScreen() {
     LaunchedEffect(load.value) {
         if (load.value?.first?.any { it.bool("running") } == true) { delay(3000); load.reload(silent = true) }
     }
-    Scaffold(topBar = { BackBar("Jobs & cache", { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.jobs_cache), { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, stringResource(R.string.refresh)) } } }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (jobs, cache) ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
-                item { SheetHeader("Jobs") }
+                item { SheetHeader(stringResource(R.string.jobs)) }
                 items(jobs, key = { it.str("id") ?: "" }) { j ->
                     ListItem(
                         headlineContent = { Text(j.str("name") ?: j.str("id") ?: "") },
                         supportingContent = {
                             Text(
-                                if (j.bool("running")) "Running…"
-                                else "Next: ${prettyDateTime(j.str("nextExecutionTime")) ?: "—"} · ${j.str("cronSchedule") ?: ""}"
+                                if (j.bool("running")) stringResource(R.string.running)
+                                else stringResource(R.string.next, prettyDateTime(j.str("nextExecutionTime")) ?: "—", j.str("cronSchedule") ?: "")
                             )
                         },
                         trailingContent = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton({ editing = j }) { Icon(Icons.Outlined.Schedule, "Change schedule") }
+                                IconButton({ editing = j }) { Icon(Icons.Outlined.Schedule, stringResource(R.string.change_schedule)) }
                                 if (j.bool("running")) {
-                                    IconButton({ act.run("Cancelled", onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/cancel") } }) { Icon(Icons.Outlined.Stop, "Cancel") }
+                                    IconButton({ act.run(App.str(R.string.cancelled), onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/cancel") } }) { Icon(Icons.Outlined.Stop, stringResource(R.string.lock_cancel)) }
                                 } else {
-                                    IconButton({ act.run("Started ${j.str("name")}", onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/run") } }) { Icon(Icons.Outlined.PlayArrow, "Run now") }
+                                    IconButton({ act.run(App.str(R.string.started, j.str("name")), onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/run") } }) { Icon(Icons.Outlined.PlayArrow, stringResource(R.string.run_now)) }
                                 }
                             }
                         },
                     )
                 }
-                item { SheetHeader("API caches") }
+                item { SheetHeader(stringResource(R.string.api_caches)) }
                 items(cache.objs("apiCaches"), key = { "c" + it.str("id") }) { c ->
                     val st = c.obj("stats")
                     ListItem(
                         headlineContent = { Text(c.str("name") ?: c.str("id") ?: "") },
-                        supportingContent = { Text("${st.int("keys")} keys · ${st.int("hits")} hits · ${st.int("misses")} misses · ${humanBytes(st.long("ksize") + st.long("vsize"))}") },
+                        supportingContent = { Text(stringResource(R.string.keys_hits_misses, st.int("keys"), st.int("hits"), st.int("misses"), humanBytes(st.long("ksize") + st.long("vsize")))) },
                         trailingContent = {
-                            TextButton({ act.run("Cache flushed", onOk = { reload++ }) { App.api.post("/settings/cache/${c.str("id")}/flush") } }) { Text("Flush") }
+                            TextButton({ act.run(App.str(R.string.cache_flushed), onOk = { reload++ }) { App.api.post("/settings/cache/${c.str("id")}/flush") } }) { Text(stringResource(R.string.flush)) }
                         },
                     )
                 }
-                item { SheetHeader("Image cache") }
+                item { SheetHeader(stringResource(R.string.image_cache)) }
                 for (k in listOf("tmdb", "avatar")) {
                     cache.obj("imageCache").obj(k)?.let { ic ->
                         item {
                             ListItem(
-                                headlineContent = { Text(if (k == "tmdb") "TMDB images" else "Avatars") },
-                                supportingContent = { Text("${ic.int("imageCount")} images · ${humanBytes(ic.long("size"))}") },
+                                headlineContent = { Text(if (k == "tmdb") stringResource(R.string.tmdb_images) else stringResource(R.string.avatars)) },
+                                supportingContent = { Text(stringResource(R.string.images, ic.int("imageCount"), humanBytes(ic.long("size")))) },
                             )
                         }
                     }
                 }
                 cache.obj("dnsCache").obj("stats")?.let { dns ->
-                    item { SheetHeader("DNS cache") }
+                    item { SheetHeader(stringResource(R.string.dns_cache)) }
                     item {
                         ListItem(
-                            headlineContent = { Text("${dns.int("size")} entries") },
-                            supportingContent = { Text("${dns.int("hits")} hits · ${dns.int("misses")} misses") },
+                            headlineContent = { Text(stringResource(R.string.entries, dns.int("size"))) },
+                            supportingContent = { Text(stringResource(R.string.hits_misses, dns.int("hits"), dns.int("misses"))) },
                         )
                     }
                 }
@@ -798,20 +802,20 @@ private fun JobsScreen() {
         var cron by remember(j) { mutableStateOf(j.str("cronSchedule") ?: "") }
         AlertDialog(
             onDismissRequest = { editing = null },
-            title = { Text(j.str("name") ?: "Schedule") },
+            title = { Text(j.str("name") ?: stringResource(R.string.schedule)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(cron, { cron = it }, label = { Text("Cron schedule") }, singleLine = true)
-                    Text("Six fields: second minute hour day month weekday. Example: 0 */5 * * * * runs every 5 minutes.", style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(cron, { cron = it }, label = { Text(stringResource(R.string.cron_schedule)) }, singleLine = true)
+                    Text(stringResource(R.string.six_fields_second_minute_hour_day), style = MaterialTheme.typography.bodySmall)
                 }
             },
             confirmButton = {
                 TextButton({
                     editing = null
-                    act.run("Schedule updated", onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/schedule", jsonOf("schedule" to cron.trim())) }
-                }) { Text("Save") }
+                    act.run(App.str(R.string.schedule_updated), onOk = { reload++ }) { App.api.post("/settings/jobs/${j.str("id")}/schedule", jsonOf("schedule" to cron.trim())) }
+                }) { Text(stringResource(R.string.save)) }
             },
-            dismissButton = { TextButton({ editing = null }) { Text("Cancel") } },
+            dismissButton = { TextButton({ editing = null }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
@@ -829,14 +833,14 @@ private fun LogsScreen() {
         if (search.isNotEmpty()) delay(350)
         App.api.arr("/settings/logs", mapOf("take" to take, "skip" to 0, "filter" to level, "search" to search.ifBlank { null })).objects()
     }
-    Scaffold(topBar = { BackBar("Logs", { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, "Refresh") } } }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.logs), { nav.back() }) { IconButton({ reload++ }) { Icon(Icons.Outlined.Sync, stringResource(R.string.refresh)) } } }) { pad ->
         Column(Modifier.padding(pad)) {
             OutlinedTextField(
-                search, { search = it }, placeholder = { Text("Search logs") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                search, { search = it }, placeholder = { Text(stringResource(R.string.search_logs)) }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
                 singleLine = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
             )
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("debug" to "Debug", "info" to "Info", "warn" to "Warnings", "error" to "Errors").forEach { (k, l) ->
+                listOf("debug" to App.str(R.string.debug), "info" to App.str(R.string.info), "warn" to App.str(R.string.warnings), "error" to App.str(R.string.errors)).forEach { (k, l) ->
                     FilterChip(level == k, { level = k }, label = { Text(l) })
                 }
             }
@@ -861,8 +865,8 @@ private fun LogsScreen() {
                             }
                         }
                     }
-                    if (logs.isEmpty()) item { EmptyBox(Icons.AutoMirrored.Outlined.Article, "No log lines") }
-                    if (logs.size >= take) item { TextButton({ take += 200 }) { Text("Load more") } }
+                    if (logs.isEmpty()) item { EmptyBox(Icons.AutoMirrored.Outlined.Article, stringResource(R.string.no_log_lines)) }
+                    if (logs.size >= take) item { TextButton({ take += 200 }) { Text(stringResource(R.string.load_more)) } }
                 }
             }
         }
@@ -875,24 +879,24 @@ private fun LogsScreen() {
 private fun AboutScreen() {
     val nav = LocalNav.current
     val load = rememberLoad("about") { App.api.obj("/settings/about") to (try { App.api.obj("/status") } catch (_: Exception) { JSONObject() }) }
-    Scaffold(topBar = { BackBar("About", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.group_about), { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { (about, status) ->
             Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
-                SettingsSection("Server") {
-                    Fact("Version", about.str("version") ?: status.str("version") ?: "?")
-                    status.str("commitTag")?.let { Fact("Commit", it) }
-                    if (status.bool("updateAvailable")) Fact("Update", "An update is available" + (status.intOrNull("commitsBehind")?.let { " ($it commits behind)" } ?: ""))
-                    if (status.bool("restartRequired")) Fact("Restart", "A restart is required to apply settings")
-                    Fact("Media items", "${about.int("totalMediaItems")}")
-                    Fact("Requests", "${about.int("totalRequests")}")
-                    about.str("tz")?.let { Fact("Time zone", it) }
-                    about.str("appDataPath")?.let { Fact("Data folder", it) }
+                SettingsSection(stringResource(R.string.group_server)) {
+                    Fact(stringResource(R.string.version), about.str("version") ?: status.str("version") ?: "?")
+                    status.str("commitTag")?.let { Fact(stringResource(R.string.commit), it) }
+                    if (status.bool("updateAvailable")) Fact(stringResource(R.string.update), status.intOrNull("commitsBehind")?.let { pluralStringResource(R.plurals.update_available_behind, it, it) } ?: stringResource(R.string.an_update_is_available))
+                    if (status.bool("restartRequired")) Fact(stringResource(R.string.restart), stringResource(R.string.a_restart_is_required_to_apply))
+                    Fact(stringResource(R.string.media_items), "${about.int("totalMediaItems")}")
+                    Fact(stringResource(R.string.requests), "${about.int("totalRequests")}")
+                    about.str("tz")?.let { Fact(stringResource(R.string.time_zone), it) }
+                    about.str("appDataPath")?.let { Fact(stringResource(R.string.data_folder), it) }
                 }
-                SettingsSection("Links") {
+                SettingsSection(stringResource(R.string.links)) {
                     val ctx = androidx.compose.ui.platform.LocalContext.current
-                    NavItem(Icons.Outlined.Info, "Documentation", "docs.seerr.dev") { com.vknxworks.seerrctrl.ui.openUrl(ctx, "https://docs.seerr.dev") }
+                    NavItem(Icons.Outlined.Info, stringResource(R.string.documentation), "docs.seerr.dev") { com.vknxworks.seerrctrl.ui.openUrl(ctx, "https://docs.seerr.dev") }
                     ItemDivider()
-                    NavItem(Icons.Outlined.Info, "GitHub", "seerr-team/seerr") { com.vknxworks.seerrctrl.ui.openUrl(ctx, "https://github.com/seerr-team/seerr") }
+                    NavItem(Icons.Outlined.Info, stringResource(R.string.github), "seerr-team/seerr") { com.vknxworks.seerrctrl.ui.openUrl(ctx, "https://github.com/seerr-team/seerr") }
                 }
             }
         }
@@ -913,32 +917,32 @@ private fun OverrideRulesScreen() {
     var reload by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf<JSONObject?>(null) }
     val load = rememberLoad(reload) { App.api.arr("/overrideRule").objects() }
-    Scaffold(topBar = { BackBar("Override rules", { nav.back() }) }) { pad ->
+    Scaffold(topBar = { BackBar(stringResource(R.string.override_rules), { nav.back() }) }) { pad ->
         Loaded(load, Modifier.padding(pad)) { rules ->
             LazyColumn(Modifier.padding(pad), contentPadding = ListBottom) {
                 item {
                     Text(
-                        "Rules send matching requests to a specific server, profile, folder or tags. Create new rules in the web UI; you can edit and delete them here.",
+                        stringResource(R.string.rules_send_matching_requests_to_a),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp),
                     )
                 }
                 items(rules, key = { it.int("id") }) { r ->
                     val conds = listOfNotNull(
-                        r.str("users")?.let { "users $it" }, r.str("genre")?.let { "genres $it" },
-                        r.str("language")?.let { "language $it" }, r.str("keywords")?.let { "keywords $it" },
+                        r.str("users")?.let { App.str(R.string.users_3, it) }, r.str("genre")?.let { App.str(R.string.genres_2, it) },
+                        r.str("language")?.let { App.str(R.string.language, it) }, r.str("keywords")?.let { App.str(R.string.keywords_2, it) },
                     )
                     ListItem(
-                        headlineContent = { Text((r.intOrNull("radarrServiceId")?.let { "Radarr #$it" } ?: r.intOrNull("sonarrServiceId")?.let { "Sonarr #$it" } ?: "Rule") + " · rule ${r.int("id")}") },
-                        supportingContent = { Text(conds.joinToString(" · ").ifEmpty { "No conditions" }) },
+                        headlineContent = { Text(stringResource(R.string.rule_title, r.intOrNull("radarrServiceId")?.let { stringResource(R.string.radarr_2, it) } ?: r.intOrNull("sonarrServiceId")?.let { stringResource(R.string.sonarr_2, it) } ?: stringResource(R.string.rule_2), r.int("id"))) },
+                        supportingContent = { Text(conds.joinToString(" · ").ifEmpty { App.str(R.string.no_conditions) }) },
                         trailingContent = {
                             Row {
-                                IconButton({ editing = r }) { Icon(Icons.Outlined.Tune, "Edit") }
-                                IconButton({ act.run("Rule deleted", onOk = { reload++ }) { App.api.delete("/overrideRule/${r.int("id")}") } }) { Icon(Icons.Outlined.Delete, "Delete") }
+                                IconButton({ editing = r }) { Icon(Icons.Outlined.Tune, stringResource(R.string.edit)) }
+                                IconButton({ act.run(App.str(R.string.rule_deleted), onOk = { reload++ }) { App.api.delete("/overrideRule/${r.int("id")}") } }) { Icon(Icons.Outlined.Delete, stringResource(R.string.lock_delete)) }
                             }
                         },
                     )
                 }
-                if (rules.isEmpty()) item { EmptyBox(Icons.Outlined.Rule, "No override rules") }
+                if (rules.isEmpty()) item { EmptyBox(Icons.Outlined.Rule, stringResource(R.string.no_override_rules)) }
             }
         }
     }
@@ -946,7 +950,7 @@ private fun OverrideRulesScreen() {
         val state = remember(r) { FormState(r) }
         AlertDialog(
             onDismissRequest = { editing = null },
-            title = { Text("Edit rule ${r.int("id")}") },
+            title = { Text(stringResource(R.string.edit_rule, r.int("id"))) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     JsonFields(state, FormSpec(hide = setOf("id", "createdAt", "updatedAt"),
@@ -957,10 +961,10 @@ private fun OverrideRulesScreen() {
             confirmButton = {
                 TextButton({
                     editing = null
-                    act.run("Rule saved", onOk = { reload++ }) { App.api.put("/overrideRule/${r.int("id")}", state.obj) }
-                }) { Text("Save") }
+                    act.run(App.str(R.string.rule_saved), onOk = { reload++ }) { App.api.put("/overrideRule/${r.int("id")}", state.obj) }
+                }) { Text(stringResource(R.string.save)) }
             },
-            dismissButton = { TextButton({ editing = null }) { Text("Cancel") } },
+            dismissButton = { TextButton({ editing = null }) { Text(stringResource(R.string.lock_cancel)) } },
         )
     }
 }
