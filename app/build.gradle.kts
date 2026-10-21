@@ -14,8 +14,8 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 34
-        versionName = "1.6.2"
+        versionCode = 35
+        versionName = "1.6.3"
         // 64-bit ARM phones only (arm64-v8a), like every Ctrl app.
         ndk { abiFilters += listOf("arm64-v8a") }
     }
@@ -65,6 +65,13 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // F-Droid: no dependency-info block in the APK.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     lint {
         checkReleaseBuilds = false
         abortOnError = false
