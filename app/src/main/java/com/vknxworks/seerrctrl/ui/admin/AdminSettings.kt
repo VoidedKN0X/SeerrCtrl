@@ -500,7 +500,7 @@ private fun ServiceEditor(kind: String, id: Int?) {
                     FormSpec(
                         hide = setOf("id", "activeProfileName", "activeAnimeProfileName"),
                         labels = mapOf(
-                            "is4k" to App.str(R.string.4k_server), "isDefault" to App.str(R.string.default_server), "useSsl" to App.str(R.string.use_ssl), "apiKey" to App.str(R.string.api_key), "baseUrl" to App.str(R.string.url_base),
+                            "is4k" to App.str(R.string.server_4k), "isDefault" to App.str(R.string.default_server), "useSsl" to App.str(R.string.use_ssl), "apiKey" to App.str(R.string.api_key), "baseUrl" to App.str(R.string.url_base),
                             "activeProfileId" to App.str(R.string.quality_profile), "activeDirectory" to App.str(R.string.root_folder), "activeAnimeProfileId" to App.str(R.string.anime_quality_profile),
                             "activeAnimeDirectory" to App.str(R.string.anime_root_folder), "activeLanguageProfileId" to App.str(R.string.language_profile), "activeAnimeLanguageProfileId" to App.str(R.string.anime_language_profile),
                             "tags" to App.str(R.string.tag_ids), "animeTags" to App.str(R.string.anime_tag_ids), "externalUrl" to App.str(R.string.external_url), "syncEnabled" to App.str(R.string.enable_scan),

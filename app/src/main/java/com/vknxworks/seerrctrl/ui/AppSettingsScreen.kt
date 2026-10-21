@@ -207,7 +207,7 @@ private fun NotificationSection() {
             ) { s.notifyIssues = it; resched() }
             ItemDivider()
             val every = listOf(15, 30, 60)
-            ChoiceItem(Icons.Outlined.Timer, stringResource(R.string.check_every), listOf(App.str(R.string.15_min), App.str(R.string.30_min), App.str(R.string.1_hour)), every.indexOf(s.notifyEveryMinutes).coerceAtLeast(0)) {
+            ChoiceItem(Icons.Outlined.Timer, stringResource(R.string.check_every), listOf(App.str(R.string.every_15_min), App.str(R.string.every_30_min), App.str(R.string.every_1_hour)), every.indexOf(s.notifyEveryMinutes).coerceAtLeast(0)) {
                 s.notifyEveryMinutes = every[it]; resched()
             }
             ItemDivider()

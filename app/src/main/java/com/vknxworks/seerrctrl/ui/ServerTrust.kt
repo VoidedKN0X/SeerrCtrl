@@ -81,7 +81,7 @@ fun HttpWarningDialog(host: String, fallback: Boolean, onContinue: () -> Unit, o
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
-        confirmButton = { TextButton(onContinue) { Text(if (fallback) stringResource(R.string.use_http) else stringResource(R.string.continue)) } },
+        confirmButton = { TextButton(onContinue) { Text(if (fallback) stringResource(R.string.use_http) else stringResource(R.string.continue_action)) } },
         dismissButton = { TextButton(onCancel) { Text(cancelLabel) } },
     )
 }
