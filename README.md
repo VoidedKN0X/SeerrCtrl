@@ -23,7 +23,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
 - **App lock** with its own PIN and optional fingerprint unlock; your sign-in stays encrypted while the app is locked
 - **Tablet and foldable layout**
-- **Private by default:** the app is hidden from screenshots and the recent-apps screen (you can turn this off), titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on
+- **Private by default:** titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on. Two switches keep the app out of screenshots and the recent-apps view
 
 ## Screenshots
 
@@ -62,16 +62,19 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 ## App lock
 
-Turn it on in **More → App settings → Privacy and security → App lock**. It's off until you turn it on.
+Turn it on under **More > App settings > Privacy and security > App lock**. It's off until you turn it on.
 
-- **An app PIN of its own**, at least 6 digits and separate from your phone's. Very obvious PINs, like 111111 or 123456, are refused. The PIN is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a key that never leaves the phone's secure hardware, so a copy of the app's files isn't enough to guess it somewhere else.
-- **Unlock with fingerprint** (optional): strong biometrics only, checked by the phone's secure hardware. Adding a fingerprint to the phone turns it off until you turn it on again. The PIN is still needed after the phone restarts and at least every 72 hours.
-- **Wrong PINs make you wait**: 30 seconds after 5 wrong tries, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't end the wait.
-- **Your sign-in stays encrypted while SeerrCtrl is locked**, with a key that only exists in memory while the app is unlocked and is wiped the moment it locks.
-- **Lock again**: as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening a link, a trailer, the calendar or Android's settings from SeerrCtrl doesn't count as leaving, unless you're away for more than 5 minutes.
-- **Hide in screenshots and recent apps** (on by default) blocks screenshots and screen recording. The recent apps screen never shows a preview of SeerrCtrl, and sign-in, the lock and PIN screens and server settings are always hidden.
+- **Its own app PIN** of at least 6 digits, separate from your phone's screen lock. Very obvious PINs such as 111111 or 123456 are refused.
+- **Unlock with fingerprint** (optional) only accepts strong biometrics, such as the fingerprint sensor, checked by the phone's secure hardware. Face unlock that only uses the camera isn't accepted. The PIN is still needed after the phone restarts and at least every 72 hours, and adding a new fingerprint to the phone turns fingerprint unlock off until you turn it on again.
+- **Your sign-in is encrypted with the PIN while SeerrCtrl is locked.** The key only exists in memory while the app is unlocked and is wiped the moment it locks. The PIN itself is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a key held in the phone's secure hardware, so a copy of the app's files isn't enough to guess it on a computer.
+- **Wrong PINs:** after 5 tries you wait 30 seconds, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
+- **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening a link, a trailer, the calendar or Android's settings from SeerrCtrl don't count as leaving, unless you stay away for more than 5 minutes.
+- **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
+- **Forgot your PIN?** It can't be recovered, because it encrypts your sign-in. The lock screen offers to log out and delete what SeerrCtrl keeps on this phone, so you can sign in again; your Seerr server and requests aren't touched.
+- **With the app lock on**, the recent-apps screen always shows a blank card.
 - **Notifications keep working while locked**: while notifications are on, the background check needs your session when the app isn't open, so the session is then encrypted only with the Android Keystore, as without the app lock. Turn notifications off to keep it sealed with your PIN too; the App lock setting says which applies.
-- **Forgot PIN?** on the lock screen logs out and deletes what SeerrCtrl keeps on this phone, so you can sign in again. Your Seerr server and requests aren't touched.
+
+**Hide in screenshots** and **Hide in recent apps** are in the same section, work without the app lock too, and are both off by default. The first keeps SeerrCtrl out of screenshots and screen recordings; the second shows a blank card in the recent-apps view instead of the app. Sign-in, the lock screen, the PIN screens and the server settings (with their API keys and passwords) are always kept out of screenshots, whatever the switches say.
 
 ## Privacy
 
