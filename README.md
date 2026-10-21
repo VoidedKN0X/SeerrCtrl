@@ -56,13 +56,15 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 2. If your server uses a self-signed certificate, turn on **Allow self-signed certificate** and confirm its fingerprint.
 3. Sign in with any method your server offers. What you can do follows your Seerr permissions.
 
+Your profile, account settings, the server, **Settings**, log out and **About** are behind your profile picture at the top right of every tab. The **More** tab has your watchlist, the upcoming calendar and, if you manage the server, users, the blocklist and server settings.
+
 ## Tips and troubleshooting
 
-- **Late notifications on ColorOS and similar phones:** in the app go to *More → App settings → Notifications → Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
+- **Late notifications on ColorOS and similar phones:** in the app go to *tap your profile picture › Settings › Notifications › Background activity* and allow it. On ColorOS, also allow **Auto launch** for SeerrCtrl in the phone's settings.
 
 ## App lock
 
-Turn it on under **More > App settings > Privacy and security > App lock**. It's off until you turn it on.
+Turn it on: tap your profile picture › **Settings › Privacy and security › App lock**. It's off until you turn it on.
 
 - **Its own app PIN** of at least 6 digits, separate from your phone's screen lock. Very obvious PINs such as 111111 or 123456 are refused.
 - **Unlock with fingerprint** (optional) only accepts strong biometrics, such as the fingerprint sensor, checked by the phone's secure hardware. Face unlock that only uses the camera isn't accepted. The PIN is still needed after the phone restarts and at least every 72 hours, and adding a new fingerprint to the phone turns fingerprint unlock off until you turn it on again.
@@ -86,7 +88,7 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 
 - **TMDB's image server** (`image.tmdb.org`) for posters, backdrops, photos and studio logos, unless your Seerr admin turned on **Cache images locally** (Settings > General in Seerr). Then every image comes through your Seerr server instead, and TMDB never sees your phone. TMDB sees your IP address and which titles' pictures are loaded.
 - **plex.tv**, only while you sign in with Plex.
-- **Gravatar and Plex** for other people's profile pictures, only if you turn on **More > App settings > Privacy and security > Profile pictures from Gravatar and Plex**. It's off by default, and people's initials show instead.
+- **Gravatar and Plex** for other people's profile pictures, only if you turn on **Profile pictures from Gravatar and Plex** (tap your profile picture › **Settings › Privacy and security**). It's off by default, and people's initials show instead.
 - Trailers and links to sites like IMDb only open when you tap them.
 
 ## Build from source
@@ -109,7 +111,7 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** in **More > App settings**. Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
+SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** on the **You** page (tap your profile picture). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
 
 ## The Ctrl series
 

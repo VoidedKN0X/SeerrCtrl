@@ -77,6 +77,7 @@ import com.vknxworks.seerrctrl.ui.BrowseScreen
 import com.vknxworks.seerrctrl.ui.CollectionScreen
 import com.vknxworks.seerrctrl.ui.IssueScreen
 import com.vknxworks.seerrctrl.ui.LocalNav
+import com.vknxworks.seerrctrl.ui.YouScreen
 import com.vknxworks.seerrctrl.ui.LocalSnackbar
 import com.vknxworks.seerrctrl.ui.MainScreen
 import com.vknxworks.seerrctrl.ui.MediaScreen
@@ -286,7 +287,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
         }
     }
-    // Turning the lock on or off, or changing the PIN (from App settings), on top of the app.
+    // Turning the lock on or off, or changing the PIN (from Settings), on top of the app.
     val request = PinRequests.request
     if (!showLock && request != null) PinRequestScreen(request)
     if (showLock) {
@@ -391,7 +392,8 @@ private fun NavGraphBuilder.detailRoutes(logout: () -> Unit) {
     composable("calendar") { CalendarScreen() }
     composable("admin") { AdminSettingsScreen() }
     composable("admin/{section}") { AdminSectionScreen(it.arguments?.getString("section").orEmpty()) }
-    composable("appsettings") { AppSettingsScreen(onLogout = logout) }
+    composable("you") { YouScreen(onLogout = logout) }
+    composable("appsettings") { AppSettingsScreen() }
 }
 
 @Composable

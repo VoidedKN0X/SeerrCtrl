@@ -119,7 +119,7 @@ fun IssuesTab() {
     LaunchedEffect(nearEnd) { if (nearEnd && items.isNotEmpty()) more() }
 
     Column(Modifier.fillMaxSize()) {
-        Text("Issues", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, top = 8.dp))
+        TabTitle("Issues")
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("open" to "Open", "resolved" to "Resolved", "all" to "All").forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text("Recently changed", maxLines = 1) })
