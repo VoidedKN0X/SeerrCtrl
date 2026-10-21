@@ -358,7 +358,7 @@ fun LockScreen(vm: AppLockViewModel, onForgot: () -> Unit) {
     }
 }
 
-/** Turning the lock on or off, or changing the PIN, from App settings: a PIN screen on top of the app. */
+/** Turning the lock on or off, or changing the PIN, from Settings: a PIN screen on top of the app. */
 @Composable
 fun PinRequestScreen(request: PinRequest) {
     val vault = App.lock.vault

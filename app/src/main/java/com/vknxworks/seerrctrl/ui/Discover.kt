@@ -215,12 +215,7 @@ fun DiscoverTab() {
     PullToRefreshBox(isRefreshing = load.refreshing, onRefresh = { load.reload(silent = true) }, modifier = Modifier.fillMaxSize()) {
         Loaded(load) {
             LazyColumn(contentPadding = ListBottom, modifier = Modifier.fillMaxSize()) {
-                item {
-                    Text(
-                        "Discover", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-                    )
-                }
+                item { TabTitle("Discover") }
                 items(rows, key = { it.key }) { row ->
                     when (row) {
                         is SliderRow.Tiles -> TileRow(row.title, row.tiles, row.more?.let { { nav.browse(it) } })

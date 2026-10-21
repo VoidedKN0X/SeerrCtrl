@@ -2,6 +2,20 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.6.0
+
+Settings now open from your profile picture, the same way as in every other Ctrl app.
+
+### Changed
+
+- **Settings moved to your profile picture**: your profile picture now sits at the top right of every tab (Discover, Search, Requests, Issues and More). Tap it to open the new **You** page. Before, settings were under **More › App settings**, and that row is gone, so the profile picture is now the only way in.
+- **The You page** shows your picture, name, account type and email at the top, then **Profile** (your requests, quota and stats) and **Account settings** (name, region, notifications and password on your Seerr server), the **Server** you're signed in to (address, Seerr version, and **Trusted certificate** when you use a self-signed certificate), then **Settings** and **Log out**, and the **About** section with the version at the bottom. Profile, Account settings, the server details, Log out and About used to be on the More tab or at the bottom of App settings.
+- **Your profile picture** is your Seerr avatar. Pictures from Gravatar and Plex still only load when **Profile pictures from Gravatar and Plex** is on; otherwise your initial shows, on the same tinted circle as in the other Ctrl apps.
+- **App settings is now called Settings** and holds only the settings themselves, in the series order: **Appearance**, **Notifications**, **Privacy and security** and **Browsing**. Nothing in them changed.
+- **The More tab** keeps its real features: **Watchlist** and **Upcoming**, and for managers **Users**, **Blocklist** and **Server settings**. Your name and picture at its top moved to the You page.
+- **The Search tab** now has a "Search" title like the other tabs, with the profile picture next to it, above the search box.
+- **README**: Getting started says what's behind the profile picture, and every path to a setting now starts with "tap your profile picture".
+
 ## 1.5.4
 
 ### Changed

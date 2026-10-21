@@ -76,6 +76,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
+import androidx.compose.ui.res.stringResource
 import com.vknxworks.seerrctrl.data.Perm
 import com.vknxworks.seerrctrl.data.UserTypes
 import com.vknxworks.seerrctrl.data.int
@@ -181,6 +183,7 @@ fun SearchTab() {
     LaunchedEffect(query) { delay(400); debounced = query.trim() }
 
     Column(Modifier.fillMaxSize()) {
+        TabTitle(stringResource(R.string.tab_search))
         OutlinedTextField(
             value = query, onValueChange = { query = it },
             placeholder = { Text("Search movies, series and people") },
@@ -189,7 +192,7 @@ fun SearchTab() {
             singleLine = true, shape = MaterialTheme.shapes.extraLarge,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { debounced = query.trim() }),
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp),
         )
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SearchKind.entries.forEach { k -> FilterChip(kind == k, { kind = k }, label = { Text(k.label, maxLines = 1) }) }
@@ -259,37 +262,18 @@ fun Modifier.clickableRow(onClick: () -> Unit) = this.clickable(onClick = onClic
 
 // ---------------- more ----------------
 
+/** Your lists and, with the right permissions, managing the server. Account and settings are behind the profile picture. */
 @Composable
 fun MoreTab() {
     val nav = LocalNav.current
     val s = App.session
-    val me = s.me
     LazyColumn(contentPadding = ListBottom) {
+        item { TabTitle(stringResource(R.string.tab_more)) }
         item {
-            Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                Avatar(me.str("avatar"), s.displayName, 56.dp)
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(s.displayName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(
-                        listOfNotNull(UserTypes.name(me.int("userType")), me.str("email")).joinToString(" · "),
-                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(s.appTitle + " · " + App.api.baseUrl.substringAfter("://"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-        item {
-            SettingsSection("You") {
-                NavItem(Icons.Outlined.Person, "Profile", "Your requests, quota and stats") { nav.go("user/${s.userId}") }
-                ItemDivider()
+            SettingsSection(null) {
                 NavItem(Icons.Outlined.BookmarkBorder, "Watchlist", null) { nav.go("watchlist/${s.userId}") }
                 ItemDivider()
                 NavItem(Icons.Outlined.CalendarMonth, "Upcoming", "Release dates and new episodes for your requests") { nav.go("calendar") }
-                ItemDivider()
-                NavItem(Icons.Outlined.ManageAccounts, "Account settings", "Name, region, notifications, password") {
-                    nav.go("user/${s.userId}/settings")
-                }
             }
         }
         if (s.can(Perm.MANAGE_USERS, Perm.MANAGE_SETTINGS, Perm.MANAGE_BLOCKLIST, Perm.VIEW_BLOCKLIST, any = true)) {
@@ -312,11 +296,6 @@ fun MoreTab() {
                         }
                     }
                 }
-            }
-        }
-        item {
-            SettingsSection("App") {
-                NavItem(Icons.Outlined.Settings, "App settings", "Theme, app lock, server, log out") { nav.go("appsettings") }
             }
         }
     }

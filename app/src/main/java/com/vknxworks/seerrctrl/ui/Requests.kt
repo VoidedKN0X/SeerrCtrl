@@ -126,12 +126,7 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     fun changed() { reloadKey++; onChanged() }
 
     Column(Modifier.fillMaxSize()) {
-        if (userId == null) {
-            Text(
-                "Requests", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-            )
-        }
+        if (userId == null) TabTitle("Requests")
         Row(
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
