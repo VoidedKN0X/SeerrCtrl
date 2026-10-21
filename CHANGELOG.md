@@ -2,6 +2,13 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.6.2
+
+### Changed
+
+- **Tab titles match the other Ctrl apps**: the big titles on Discover, Search, Requests, Issues and More are now the same size and weight as in ProxCtrl, NaviCtrl and the rest of the series (slightly larger, regular weight instead of bold), with the same spacing around them and your profile picture in the same place.
+- **Whole sentences instead of joined pieces, ready for translations**: calendar entries ("S2E5 · episode name", "In cinemas · note"), issue notifications ("Alex: reported a problem"), who requested something and when, discover slider details, the server line on the You page and the " · " between details are now each one piece of text. The wording stays the same.
+
 ## 1.6.1
 
 ### Changed

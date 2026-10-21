@@ -105,10 +105,10 @@ fun ProfileButton() {
 @Composable
 fun TabTitle(title: String, modifier: Modifier = Modifier, trailing: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 4.dp),
+        modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text(title, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
         trailing()
         ProfileButton()
     }
@@ -140,7 +140,7 @@ fun YouScreen(onLogout: () -> Unit) {
                 Spacer(Modifier.height(14.dp))
                 Text(s.displayName, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
                 Text(
-                    listOfNotNull(UserTypes.name(me.int("userType")), me.str("email")?.takeIf { it != s.displayName }).joinToString("  ·  "),
+                    listOfNotNull(UserTypes.name(me.int("userType")), me.str("email")?.takeIf { it != s.displayName }).joinToString(App.str(R.string.list_separator_wide)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -161,8 +161,9 @@ fun YouScreen(onLogout: () -> Unit) {
             Group(stringResource(R.string.group_server)) {
                 GroupRow(
                     s.appTitle,
-                    App.api.baseUrl + (server.value?.str("version")?.let { " · v$it" } ?: "") +
-                        (if (App.api.isHttp) "\n" + stringResource(R.string.not_encrypted) else ""),
+                    (server.value?.str("version")?.let { stringResource(R.string.server_with_version, App.api.baseUrl, it) } ?: App.api.baseUrl).let { line ->
+                        if (App.api.isHttp) stringResource(R.string.two_lines, line, stringResource(R.string.not_encrypted)) else line
+                    },
                     Icons.Outlined.Dns,
                 )
                 if (App.api.pinnedFingerprint.isNotEmpty() || (App.prefs.allowInsecureTls && !App.api.isHttp)) {

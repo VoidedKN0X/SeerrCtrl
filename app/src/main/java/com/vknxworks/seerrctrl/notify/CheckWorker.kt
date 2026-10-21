@@ -196,7 +196,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 Notifier.post(
                     applicationContext, 30_000 + id, Notifier.CH_ISSUES,
                     App.str(R.string.notify_issue, IssueTypes.name(i.int("issueType")), title),
-                    "${i.obj("createdBy").str("displayName") ?: "Someone"}: ${msg ?: "reported a problem"}",
+                    App.str(R.string.notify_issue_body, i.obj("createdBy").str("displayName") ?: App.str(R.string.someone), msg ?: App.str(R.string.notify_issue_no_message)),
                     "issue/$id", poster,
                 )
             }

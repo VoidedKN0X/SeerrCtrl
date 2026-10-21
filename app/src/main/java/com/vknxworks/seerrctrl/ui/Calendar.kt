@@ -108,7 +108,7 @@ fun eventsFor(type: String, d: JSONObject, region: String): List<CalEvent> {
     if (type == "tv") {
         d.obj("nextEpisodeToAir")?.let { e ->
             parseDay(e.str("airDate"))?.let { day ->
-                out += CalEvent(day, type, id, title, poster, "S${e.int("seasonNumber")}E${e.int("episodeNumber")}" + (e.str("name")?.let { " · $it" } ?: ""), CalEvent.Kind.Episode)
+                out += CalEvent(day, type, id, title, poster, e.str("name")?.let { App.str(R.string.episode_code_name, e.int("seasonNumber"), e.int("episodeNumber"), it) } ?: App.str(R.string.episode_code, e.int("seasonNumber"), e.int("episodeNumber")), CalEvent.Kind.Episode)
             }
         }
         d.objs("seasons").filter { it.int("seasonNumber") > 0 }.forEach { s ->
@@ -130,8 +130,9 @@ fun eventsFor(type: String, d: JSONObject, region: String): List<CalEvent> {
             if (!seen.add(kind)) return@forEach
             out += CalEvent(
                 day, type, id, title, poster,
-                App.str(when (kind) { CalEvent.Kind.Cinema -> R.string.in_cinemas; CalEvent.Kind.Digital -> R.string.digital_release; else -> R.string.disc_release }) +
-                    (r.str("note")?.takeIf { it.isNotBlank() }?.let { " · $it" } ?: ""),
+                App.str(when (kind) { CalEvent.Kind.Cinema -> R.string.in_cinemas; CalEvent.Kind.Digital -> R.string.digital_release; else -> R.string.disc_release }).let { label ->
+                    r.str("note")?.takeIf { it.isNotBlank() }?.let { App.str(R.string.with_note, label, it) } ?: label
+                },
                 kind,
             )
         }
