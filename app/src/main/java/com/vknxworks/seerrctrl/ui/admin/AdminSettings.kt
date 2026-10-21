@@ -428,7 +428,7 @@ private fun ServicesScreen() {
                                         (if (srv.bool("useSsl")) "https://" else "http://") + srv.str("hostname") + ":" + srv.int("port") + (srv.str("baseUrl") ?: ""),
                                         if (srv.bool("is4k")) "4K" else null,
                                         if (srv.bool("isDefault")) App.str(R.string.default_2) else null,
-                                    ).joinToString(" · "),
+                                    ).joinToString(App.str(R.string.list_separator)),
                                 ) { nav.go("admin/service:$kind:${srv.int("id")}") }
                             }
                             if (list.isNotEmpty()) ItemDivider()
@@ -677,7 +677,7 @@ private fun DiscoverSlidersScreen() {
                     val s = sliders[i]
                     ListItem(
                         headlineContent = { Text(s.str("title") ?: sliderNames[s.int("type")] ?: stringResource(R.string.slider)) },
-                        supportingContent = { Text((if (s.bool("isBuiltIn")) App.str(R.string.built_in) else sliderNames[s.int("type")] ?: App.str(R.string.custom)) + (s.str("data")?.let { " · $it" } ?: "")) },
+                        supportingContent = { Text((if (s.bool("isBuiltIn")) App.str(R.string.built_in) else sliderNames[s.int("type")] ?: App.str(R.string.custom)).let { kind -> s.str("data")?.let { App.str(R.string.with_note, kind, it) } ?: kind }) },
                         leadingContent = {
                             Switch(s.bool("enabled"), { on -> sliders[i] = JSONObject(s.toString()).put("enabled", on); dirty = true })
                         },
@@ -933,7 +933,7 @@ private fun OverrideRulesScreen() {
                     )
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.rule_title, r.intOrNull("radarrServiceId")?.let { stringResource(R.string.radarr_2, it) } ?: r.intOrNull("sonarrServiceId")?.let { stringResource(R.string.sonarr_2, it) } ?: stringResource(R.string.rule_2), r.int("id"))) },
-                        supportingContent = { Text(conds.joinToString(" · ").ifEmpty { App.str(R.string.no_conditions) }) },
+                        supportingContent = { Text(conds.joinToString(App.str(R.string.list_separator)).ifEmpty { App.str(R.string.no_conditions) }) },
                         trailingContent = {
                             Row {
                                 IconButton({ editing = r }) { Icon(Icons.Outlined.Tune, stringResource(R.string.edit)) }

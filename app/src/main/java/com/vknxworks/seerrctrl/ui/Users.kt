@@ -124,7 +124,7 @@ fun ProfileScreen(id: Int) {
                     Column {
                         Text(u.str("displayName") ?: "", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                         Text(
-                            listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u)).joinToString(" · "),
+                            listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u)).joinToString(App.str(R.string.list_separator)),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         u.str("email")?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
@@ -217,7 +217,7 @@ fun BlocklistScreen() {
                                     b.obj("user").str("displayName")?.let { App.str(R.string.by_2, it) },
                                     prettyDate(b.str("createdAt")),
                                     b.str("blocklistedTags")?.let { App.str(R.string.tags_2, it) },
-                                ).joinToString(" · "))
+                                ).joinToString(App.str(R.string.list_separator)))
                             },
                             trailingContent = if (App.session.can(Perm.MANAGE_BLOCKLIST)) ({
                                 IconButton({
@@ -321,7 +321,7 @@ fun UsersScreen() {
                         },
                         headlineContent = { Text(u.str("displayName") ?: u.str("email") ?: stringResource(R.string.user_2, id)) },
                         supportingContent = {
-                            Text(listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u), pluralStringResource(R.plurals.requests_count, u.int("requestCount"), u.int("requestCount"))).joinToString(" · "))
+                            Text(listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u), pluralStringResource(R.plurals.requests_count, u.int("requestCount"), u.int("requestCount"))).joinToString(App.str(R.string.list_separator)))
                         },
                         colors = ListItemDefaults.colors(containerColor = if (sel) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
                         modifier = Modifier.combinedClickable(

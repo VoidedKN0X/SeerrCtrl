@@ -916,4 +916,18 @@
     <string name="error_plex_https">Plex sign-in needs https</string>
     <string name="error_https_only_cert">Only https addresses have a certificate</string>
     <string name="calendar_from_app">From SeerrCtrl</string>
+
+    <!-- Whole sentences instead of joined pieces -->
+    <string name="list_separator">" · "</string>
+    <string name="list_separator_wide">"  ·  "</string>
+    <string name="notify_issue_body">%1$s: %2$s</string>
+    <string name="notify_issue_no_message">reported a problem</string>
+    <string name="episode_code">S%1$dE%2$d</string>
+    <string name="episode_code_name">S%1$dE%2$d · %3$s</string>
+    <string name="with_note">%1$s · %2$s</string>
+    <string name="requested_by_time">%1$s · %2$s</string>
+
+    <!-- Whole sentences instead of joined pieces -->
+    <string name="server_with_version">%1$s · v%2$s</string>
+    <string name="two_lines">%1$s\n%2$s</string>
 </resources>

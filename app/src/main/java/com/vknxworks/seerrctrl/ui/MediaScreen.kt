@@ -177,7 +177,7 @@ fun MediaScreen(type: String, tmdbId: Int) {
                                         else runtime(d.int("runtime")),
                                         d.objs("genres").take(3).mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null },
                                     )
-                                    Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(facts.joinToString(App.str(R.string.list_separator)), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -440,7 +440,7 @@ private fun DownloadRow(dl: JSONObject) {
                 if (size > 0) App.str(R.string.of, humanBytes(size - left), humanBytes(size)) else null,
                 dl.str("status")?.replaceFirstChar { it.uppercase() },
                 dl.str("estimatedCompletionTime")?.let { App.str(R.string.eta, com.vknxworks.seerrctrl.data.prettyDateTime(it) ?: "") },
-            ).joinToString(" · "),
+            ).joinToString(App.str(R.string.list_separator)),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -519,7 +519,7 @@ private fun SeasonRow(tvId: Int, season: JSONObject, info: JSONObject?) {
         ListItem(
             headlineContent = { Text(season.str("name") ?: stringResource(R.string.season_2, n), fontWeight = FontWeight.SemiBold) },
             supportingContent = {
-                Text(listOfNotNull(pluralStringResource(R.plurals.episodes_count, season.int("episodeCount"), season.int("episodeCount")), year(season.str("airDate"))).joinToString(" · "))
+                Text(listOfNotNull(pluralStringResource(R.plurals.episodes_count, season.int("episodeCount"), season.int("episodeCount")), year(season.str("airDate"))).joinToString(App.str(R.string.list_separator)))
             },
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {

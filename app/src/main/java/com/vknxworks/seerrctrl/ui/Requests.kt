@@ -220,7 +220,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                     fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    listOfNotNull(year(d.str("releaseDate") ?: d.str("firstAirDate")), if (type == "tv") App.str(R.string.series_2) else App.str(R.string.movie_2)).joinToString(" · "),
+                    listOfNotNull(year(d.str("releaseDate") ?: d.str("firstAirDate")), if (type == "tv") App.str(R.string.series_2) else App.str(R.string.movie_2)).joinToString(App.str(R.string.list_separator)),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -239,7 +239,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                     Avatar(by.str("avatar"), by.str("displayName") ?: "?", 20.dp)
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "${by.str("displayName") ?: "Someone"} · ${timeAgo(r.str("createdAt")) ?: ""}",
+                        stringResource(R.string.requested_by_time, by.str("displayName") ?: stringResource(R.string.someone), timeAgo(r.str("createdAt")).orEmpty()),
                         style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.clickable { nav.go("user/${by.int("id")}") },
                     )
