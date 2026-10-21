@@ -218,7 +218,7 @@ fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                         }
                         ErrorText(error)
                         Button(::connect, enabled = !busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                            if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.continue))
+                            if (busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.continue_action))
                         }
                         Text(
                             stringResource(R.string.works_with_seerr_jellyseerr_and),

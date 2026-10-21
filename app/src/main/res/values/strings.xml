@@ -240,9 +240,9 @@
     <string name="new_issues_and_replies_on_issues_you">New issues, and replies on issues you reported</string>
     <string name="replies_and_fixes_on_issues_you">Replies and fixes on issues you reported</string>
     <string name="check_every">Check every</string>
-    <string name="15_min">15 min</string>
-    <string name="30_min">30 min</string>
-    <string name="1_hour">1 hour</string>
+    <string name="every_15_min">15 min</string>
+    <string name="every_30_min">30 min</string>
+    <string name="every_1_hour">1 hour</string>
     <string name="background_activity">Background activity</string>
     <string name="unrestricted_so_checks_run_on_time">Unrestricted, so checks run on time</string>
     <string name="restricted_coloros_and_other_phones">Restricted. ColorOS and other phones may delay or skip checks; tap to allow</string>
@@ -453,7 +453,7 @@
         <item quantity="one">Request %1$d movie in 4K?</item>
         <item quantity="other">Request %1$d movies in 4K?</item>
     </plurals>
-    <plurals name="request_movies">
+    <plurals name="request_movies_confirm">
         <item quantity="one">Request %1$d movie?</item>
         <item quantity="other">Request %1$d movies?</item>
     </plurals>
@@ -504,7 +504,7 @@
     <string name="trust_this_certificate">Trust this certificate?</string>
     <string name="trust">Trust</string>
     <string name="use_http">Use http</string>
-    <string name="continue">Continue</string>
+    <string name="continue_action">Continue</string>
     <string name="not_now">Not now</string>
     <string name="media_server">Media server</string>
     <string name="seerr_account">Seerr account</string>
@@ -592,7 +592,7 @@
     <string name="password_blank_email_them_one">Password (blank = email them one)</string>
     <string name="create">Create</string>
     <string name="no_users_to_import">No users to import</string>
-    <string name="import">Import %1$s</string>
+    <string name="import_count">Import %1$s</string>
     <string name="general">General</string>
     <string name="permissions">Permissions</string>
     <string name="user_settings">User settings</string>
@@ -738,7 +738,7 @@
     <string name="standard">Standard</string>
     <string name="daily">Daily</string>
     <string name="anime">Anime</string>
-    <string name="4k_server">4K server</string>
+    <string name="server_4k">4K server</string>
     <string name="default_server">Default server</string>
     <string name="api_key">API key</string>
     <string name="anime_quality_profile">Anime quality profile</string>

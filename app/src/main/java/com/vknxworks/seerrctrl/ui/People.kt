@@ -185,7 +185,7 @@ fun CollectionScreen(id: Int) {
                 val list = if (fourK) missing4k else missing
                 AlertDialog(
                     onDismissRequest = { confirm = null },
-                    title = { Text(if (fourK) pluralStringResource(R.plurals.request_movies_4k, list.size, list.size) else pluralStringResource(R.plurals.request_movies, list.size, list.size)) },
+                    title = { Text(if (fourK) pluralStringResource(R.plurals.request_movies_4k, list.size, list.size) else pluralStringResource(R.plurals.request_movies_confirm, list.size, list.size)) },
                     text = { Text(list.joinToString("\n") { "• " + it.title + (it.year?.let { y -> " ($y)" } ?: "") }) },
                     confirmButton = {
                         TextButton({

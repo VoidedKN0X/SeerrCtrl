@@ -434,7 +434,7 @@ private fun ImportUsersDialog(plex: Boolean, onDismiss: () -> Unit, onDone: () -
                         onDone()
                     } catch (e: Exception) { error = e.message }
                 }
-            }, enabled = picked.isNotEmpty()) { Text(stringResource(R.string.import, picked.size)) }
+            }, enabled = picked.isNotEmpty()) { Text(stringResource(R.string.import_count, picked.size)) }
         },
         dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.lock_cancel)) } },
     )
