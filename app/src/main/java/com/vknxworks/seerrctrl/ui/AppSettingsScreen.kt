@@ -157,7 +157,7 @@ fun AppSettingsScreen(onLogout: () -> Unit) {
                 }
                 ToggleItem(
                     Icons.Outlined.VisibilityOff, "Hide in screenshots and recent apps",
-                    "Blocks screenshots and screen recording. The recent apps screen never shows SeerrCtrl, and server settings are always hidden",
+                    "Blocks screenshots and screen recording. The recent apps screen never shows SeerrCtrl, and sign-in, the lock screen and server settings are always hidden",
                     lock.hideContent,
                 ) { lock.hideContent = it }
                 ToggleItem(

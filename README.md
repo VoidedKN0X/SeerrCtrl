@@ -69,7 +69,7 @@ Turn it on in **More → App settings → Privacy and security → App lock**. I
 - **Wrong PINs make you wait**: 30 seconds after 5 wrong tries, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't end the wait.
 - **Your sign-in stays encrypted while SeerrCtrl is locked**, with a key that only exists in memory while the app is unlocked and is wiped the moment it locks.
 - **Lock again**: as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Opening a link, a trailer, the calendar or Android's settings from SeerrCtrl doesn't count as leaving, unless you're away for more than 5 minutes.
-- **Hide in screenshots and recent apps** (on by default) blocks screenshots and screen recording. The recent apps screen never shows a preview of SeerrCtrl, and server settings are always hidden.
+- **Hide in screenshots and recent apps** (on by default) blocks screenshots and screen recording. The recent apps screen never shows a preview of SeerrCtrl, and sign-in, the lock and PIN screens and server settings are always hidden.
 - **Notifications keep working while locked**: while notifications are on, the background check needs your session when the app isn't open, so the session is then encrypted only with the Android Keystore, as without the app lock. Turn notifications off to keep it sealed with your PIN too; the App lock setting says which applies.
 - **Forgot PIN?** on the lock screen logs out and deletes what SeerrCtrl keeps on this phone, so you can sign in again. Your Seerr server and requests aren't touched.
 

@@ -299,6 +299,8 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
                 dismissOnClickOutside = false,
                 usePlatformDefaultWidth = false,
                 decorFitsSystemWindows = false,
+                // Its own window, so it needs its own FLAG_SECURE: never in screenshots or recordings.
+                securePolicy = androidx.compose.ui.window.SecureFlagPolicy.SecureOn,
             ),
         ) {
             LockScreen(vm = lockVm, onForgot = { forgetPin(lockVm, ::logout) })

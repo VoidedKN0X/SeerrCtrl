@@ -82,6 +82,8 @@ private enum class Method(val label: String) { MediaServer("Media server"), Plex
  */
 @Composable
 fun SetupScreen(onDone: () -> Unit, onCancel: (() -> Unit)?) {
+    // Passwords and Quick Connect codes are typed here: never in screenshots, recordings or casting.
+    com.vknxworks.seerrctrl.SecureWindow()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var url by remember { mutableStateOf(App.prefs.baseUrl) }
