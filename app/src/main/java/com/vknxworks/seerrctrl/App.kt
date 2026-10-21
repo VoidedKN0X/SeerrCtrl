@@ -25,10 +25,10 @@ object App {
     private lateinit var appContext: Context
 
     /** Text from strings.xml for code that has no Context of its own (data layer, background checks, actions). */
-    fun str(@StringRes id: Int, vararg args: Any): String = appContext.getString(id, *args)
+    fun str(@StringRes id: Int, vararg args: Any?): String = appContext.getString(id, *args)
 
     /** A plural from strings.xml, for code that has no Context of its own. */
-    fun plural(@PluralsRes id: Int, count: Int, vararg args: Any): String = appContext.resources.getQuantityString(id, count, *args)
+    fun plural(@PluralsRes id: Int, count: Int, vararg args: Any?): String = appContext.resources.getQuantityString(id, count, *args)
 
     fun init(ctx: Context) {
         if (::prefs.isInitialized) return
