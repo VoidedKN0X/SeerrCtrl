@@ -248,12 +248,16 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
         }
     }
 
-    // Ask once for permission to post notifications (Android 13+).
+    // Ask once for permission to post notifications (Android 13+), when the app's own screens are first shown:
+    // signed in, unlocked and no PIN screen on top, so the dialog isn't hidden behind (or dropped by) the lock.
+    // Settings → Notifications can ask again or open Android's settings afterwards.
     val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) Notifier.schedule(activity)
     }
-    LaunchedEffect(signedIn) {
-        if (signedIn && !App.settings.askedNotificationPermission && !Notifier.canPost(activity)) {
+    LaunchedEffect(signedIn, lockVm.locked, PinRequests.request) {
+        if (signedIn && !lockVm.locked && PinRequests.request == null && App.settings.notifyEnabled &&
+            !App.settings.askedNotificationPermission && !Notifier.hasPermission(activity)
+        ) {
             App.settings.askedNotificationPermission = true
             expectReturn()
             permLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)

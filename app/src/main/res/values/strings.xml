@@ -234,6 +234,9 @@
     <string name="trailers_and_external_pages_open_in">Trailers and external pages open in an in-app browser tab</string>
     <string name="notifications">Notifications</string>
     <string name="android_isn_t_allowing_notifications">Android isn\'t allowing notifications for SeerrCtrl yet</string>
+    <string name="notifications_are_blocked">Notifications are blocked</string>
+    <string name="notifications_are_blocked_summary">Android isn\'t letting SeerrCtrl show notifications, so request and issue updates can\'t reach you. Tap Allow to turn them on.</string>
+    <string name="allow">Allow</string>
     <string name="checks_your_server_in_the_background">Checks your server in the background</string>
     <string name="approved_declined_failed_now">Approved, declined, failed, now available</string>
     <string name="new_requests_with_approve_and">New requests, with Approve and Decline buttons</string>
