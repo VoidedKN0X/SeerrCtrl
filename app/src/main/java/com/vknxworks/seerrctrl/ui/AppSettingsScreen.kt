@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Refresh
 import com.vknxworks.seerrctrl.data.Perm
 import com.vknxworks.seerrctrl.notify.Notifier
@@ -40,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -171,25 +173,33 @@ private fun NotificationSection() {
     val ctx = LocalContext.current
     val s = App.settings
     val session = App.session
-    var canPost by remember { mutableStateOf(Notifier.canPost(ctx)) }
     val pm = remember { ctx.getSystemService(PowerManager::class.java) }
     var unrestricted by remember { mutableStateOf(pm.isIgnoringBatteryOptimizations(ctx.packageName)) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        canPost = ok
-        if (ok) { s.notifyEnabled = true; App.prefs.resealCookie(); Notifier.schedule(ctx) }
+    // Checked again whenever the app comes back, so allowing (or blocking) them in Android's settings shows here.
+    val access = rememberNotificationAccess {
+        s.notifyEnabled = true; App.prefs.resealCookie(); Notifier.schedule(ctx)
     }
+    val canPost = access.granted
     val batteryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         unrestricted = pm.isIgnoringBatteryOptimizations(ctx.packageName)
     }
     fun resched() = Notifier.schedule(ctx)
 
     SettingsSection(stringResource(R.string.notifications)) {
+        if (s.notifyEnabled && !canPost) {
+            NavItem(
+                Icons.Outlined.NotificationsOff, stringResource(R.string.notifications_are_blocked),
+                stringResource(R.string.notifications_are_blocked_summary),
+                trailing = { TextButton(onClick = { access.request() }) { Text(stringResource(R.string.allow)) } },
+            ) { access.request() }
+            ItemDivider()
+        }
         ToggleItem(
             Icons.Outlined.Notifications, stringResource(R.string.notifications),
             if (!canPost) stringResource(R.string.android_isn_t_allowing_notifications) else stringResource(R.string.checks_your_server_in_the_background),
             s.notifyEnabled && canPost,
         ) { on ->
-            if (on && !canPost) { expectReturn(); launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
+            if (on && !canPost) access.request()
             else { s.notifyEnabled = on; App.prefs.resealCookie(); resched() }
         }
         if (s.notifyEnabled && canPost) {

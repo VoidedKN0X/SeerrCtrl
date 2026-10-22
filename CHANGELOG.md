@@ -2,6 +2,14 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.6.5
+
+### Fixed
+
+- **SeerrCtrl asks for notification permission at the right time.** On a new install, Android's "Allow notifications?" question now comes up once SeerrCtrl's own screens are on show: after you've signed in, unlocked the app and finished setting a PIN. Before, it could be asked while the lock screen or a PIN screen was showing, where the question could be hidden or dropped, and then never came back, so request and issue notifications were silently never shown. It's still only asked automatically once, and not at all if you've turned notifications off in SeerrCtrl.
+- **Settings shows when notifications are blocked.** If Android isn't letting SeerrCtrl show notifications (you tapped "Don't allow", or turned them off in Android's settings), **Settings → Notifications** now shows a **Notifications are blocked** row with an **Allow** button, and the Notifications switch shows as off instead of looking on. Tapping **Allow** (or the switch) asks Android again, or, once Android won't ask any more, opens SeerrCtrl's notification settings so you can turn them on there. Coming back to the app updates the row straight away, without leaving and reopening Settings.
+- **Notifications switched off in Android's settings are recognised.** SeerrCtrl used to count notifications as allowed when the permission was granted even if you had turned all of its notifications off in Android's settings. Both are now checked.
+
 ## 1.6.4
 
 ### Fixed

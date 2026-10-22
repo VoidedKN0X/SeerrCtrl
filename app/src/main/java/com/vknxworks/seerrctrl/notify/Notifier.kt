@@ -118,8 +118,13 @@ object Notifier {
         return token != null && current != null && MessageDigest.isEqual(token.toByteArray(), current.toByteArray())
     }
 
-    fun canPost(ctx: Context): Boolean =
+    /** Android 13+ asks for this at runtime; without it nothing the app posts is shown. */
+    fun hasPermission(ctx: Context): Boolean =
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    /** Notifications can actually be shown: permission granted and not switched off in Android's settings. */
+    fun canPost(ctx: Context): Boolean =
+        hasPermission(ctx) && NotificationManagerCompat.from(ctx).areNotificationsEnabled()
 
     /** Random per-install secret that notification taps carry, so other apps can't drive navigation. */
     private fun routeToken(ctx: Context): String {
