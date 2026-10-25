@@ -91,9 +91,13 @@ fun Group(
  * Each row draws a 1 dp divider along its top edge. On the first row of a group it falls on the group's
  * border, which is the same colour, so dividers only show between rows.
  */
-private fun Modifier.topDivider(): Modifier = drawWithContent {
-    drawContent()
-    drawRect(CtrlColors.Outline, topLeft = Offset.Zero, size = Size(size.width, 1.dp.toPx()))
+@Composable
+private fun Modifier.topDivider(): Modifier {
+    val color = CtrlColors.Outline
+    return drawWithContent {
+        drawContent()
+        drawRect(color, topLeft = Offset.Zero, size = Size(size.width, 1.dp.toPx()))
+    }
 }
 
 @Composable

@@ -413,19 +413,20 @@ fun SwipeToDecide(
             val dir = state.dismissDirection
             val approve = dir == SwipeToDismissBoxValue.StartToEnd
             val color = when (dir) {
-                SwipeToDismissBoxValue.StartToEnd -> Status.available
-                SwipeToDismissBoxValue.EndToStart -> Status.declined
+                SwipeToDismissBoxValue.StartToEnd -> CtrlColors.Accent
+                SwipeToDismissBoxValue.EndToStart -> CtrlColors.Error
                 else -> Color.Transparent
             }
+            val onColor = if (approve) CtrlColors.OnAccent else CtrlColors.OnError
             Box(
                 Modifier.fillMaxSize().clip(CtrlShapes.Card).background(color).padding(horizontal = 24.dp),
                 contentAlignment = if (approve) Alignment.CenterStart else Alignment.CenterEnd,
             ) {
                 if (dir != SwipeToDismissBoxValue.Settled) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = CtrlColors.OnAccent)
+                        Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = onColor)
                         Spacer(Modifier.width(8.dp))
-                        Text((if (approve) stringResource(R.string.approve) else stringResource(R.string.decline)).uppercase(), style = CtrlType.LabelStrong, color = CtrlColors.OnAccent)
+                        Text((if (approve) stringResource(R.string.approve) else stringResource(R.string.decline)).uppercase(), style = CtrlType.LabelStrong, color = onColor)
                     }
                 }
             }

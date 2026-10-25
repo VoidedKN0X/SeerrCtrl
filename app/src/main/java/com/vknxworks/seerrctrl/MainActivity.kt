@@ -84,6 +84,7 @@ import com.vknxworks.seerrctrl.ui.MediaScreen
 import com.vknxworks.seerrctrl.ui.PersonScreen
 import com.vknxworks.seerrctrl.ui.ProfileScreen
 import com.vknxworks.seerrctrl.ui.SeerrTheme
+import com.vknxworks.seerrctrl.ui.isAppInDarkTheme
 import com.vknxworks.seerrctrl.ui.ServerTrustPrompts
 import com.vknxworks.seerrctrl.ui.SetupScreen
 import com.vknxworks.seerrctrl.ui.UserSettingsScreen
@@ -142,12 +143,15 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         App.init(this)
         takeRoute(intent)
-        enableEdgeToEdge(SystemBarStyle.dark(Color.TRANSPARENT), SystemBarStyle.dark(Color.TRANSPARENT))
+        enableEdgeToEdge()
         setContent {
             SeerrTheme {
-                // Dark only: edge to edge with light system bar icons over the app's background.
-                LaunchedEffect(Unit) {
-                    val style = SystemBarStyle.dark(Color.TRANSPARENT)
+                // Follows the device theme: edge to edge over the app's background, with light bar icons in dark
+                // mode and dark ones in light mode.
+                val dark = isAppInDarkTheme()
+                LaunchedEffect(dark) {
+                    val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT)
+                    else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
                     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                     window.isNavigationBarContrastEnforced = false
                 }
@@ -294,7 +298,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
                     shape = com.vknxworks.seerrctrl.ui.theme.CtrlShapes.Control,
                     containerColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Raised,
                     contentColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Text,
-                    actionColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Accent,
+                    actionColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.AccentText,
                     modifier = Modifier.padding(horizontal = 20.dp),
                 )
             }

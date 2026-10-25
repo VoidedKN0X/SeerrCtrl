@@ -313,7 +313,7 @@ fun PinPadScreen(
                     .semantics { contentDescription = "${pin.length} / $dots" },
                 contentAlignment = Alignment.Center,
             ) {
-                if (checking) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = CtrlColors.Accent)
+                if (checking) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = CtrlColors.AccentText)
                 else Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     repeat(dots) { i ->
                         val cell = Modifier.size(14.dp).clip(RoundedCornerShape(5.dp))
@@ -340,10 +340,10 @@ fun PinPadScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (onFingerprint != null) {
                         PadKey(
-                            Modifier.weight(1f).border(1.dp, CtrlColors.Accent, KeyShape),
+                            Modifier.weight(1f).border(1.dp, CtrlColors.AccentText, KeyShape),
                             enabled = true, onClick = onFingerprint,
                             label = stringResource(R.string.lock_use_fingerprint),
-                        ) { Icon(Icons.Outlined.Fingerprint, null, Modifier.size(26.dp), tint = CtrlColors.Accent) }
+                        ) { Icon(Icons.Outlined.Fingerprint, null, Modifier.size(26.dp), tint = CtrlColors.AccentText) }
                     } else {
                         Spacer(Modifier.weight(1f))
                     }
