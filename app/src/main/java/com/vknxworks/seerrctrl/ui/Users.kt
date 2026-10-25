@@ -30,8 +30,8 @@ import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,7 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.vknxworks.seerrctrl.ui.components.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -323,7 +323,7 @@ fun UsersScreen() {
                         supportingContent = {
                             Text(listOfNotNull(UserTypes.name(u.int("userType")), roleOf(u), pluralStringResource(R.plurals.requests_count, u.int("requestCount"), u.int("requestCount"))).joinToString(App.str(R.string.list_separator)))
                         },
-                        colors = ListItemDefaults.colors(containerColor = if (sel) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent),
+                        colors = ListItemDefaults.colors(containerColor = if (sel) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent),
                         modifier = Modifier.combinedClickable(
                             onClick = {
                                 if (selected.isNotEmpty()) { if (sel) selected.remove(id) else selected.add(id) }
@@ -505,7 +505,7 @@ fun UserSettingsScreen(id: Int) {
 @Composable
 private fun SaveBar(state: FormState, busy: Boolean, onSave: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-        androidx.compose.material3.Button(onSave, enabled = state.dirty && !busy) {
+        com.vknxworks.seerrctrl.ui.components.Button(onSave, enabled = state.dirty && !busy) {
             if (busy) CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.save_changes))
         }
     }
@@ -588,7 +588,7 @@ private fun PasswordSettings(id: Int, self: Boolean) {
             OutlinedTextField(new1, { new1 = it }, label = { Text(stringResource(R.string.new_password_8_characters)) }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(new2, { new2 = it }, label = { Text(stringResource(R.string.repeat_new_password)) }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = PasswordKeyboard, modifier = Modifier.fillMaxWidth(),
                 isError = new2.isNotEmpty() && new1 != new2)
-            androidx.compose.material3.Button(
+            com.vknxworks.seerrctrl.ui.components.Button(
                 enabled = new1.length >= 8 && new1 == new2 && !act.busy,
                 onClick = {
                     act.run(App.str(R.string.password_saved), onOk = { current = ""; new1 = ""; new2 = "" }) {
@@ -680,7 +680,7 @@ private fun PermissionSettings(id: Int, readOnly: Boolean) {
             PermissionEditor(perms, enabled = !readOnly) { perms = it }
             if (!readOnly) {
                 Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.End) {
-                    androidx.compose.material3.Button(
+                    com.vknxworks.seerrctrl.ui.components.Button(
                         enabled = perms != initial && !act.busy,
                         onClick = { act.run(App.str(R.string.permissions_saved), onOk = { load.reload(silent = true) }) { App.api.post("/user/$id/settings/permissions", jsonOf("permissions" to perms)) } },
                     ) { Text(stringResource(R.string.save_permissions)) }

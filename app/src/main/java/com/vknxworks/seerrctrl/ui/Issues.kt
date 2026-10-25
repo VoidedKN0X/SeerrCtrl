@@ -29,21 +29,21 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.ReportProblem
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
+import com.vknxworks.seerrctrl.ui.components.FilledTonalButton
+import com.vknxworks.seerrctrl.ui.components.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import com.vknxworks.seerrctrl.ui.components.OutlinedButton
+import com.vknxworks.seerrctrl.ui.components.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -83,6 +83,9 @@ import org.json.JSONObject
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
 import com.vknxworks.seerrctrl.R
+import com.vknxworks.seerrctrl.ui.components.CtrlBottomBarClearance
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
 
 private fun issueWhere(i: JSONObject): String? {
     val s = i.int("problemSeason")
@@ -123,12 +126,12 @@ fun IssuesTab() {
 
     Column(Modifier.fillMaxSize()) {
         TabTitle(stringResource(R.string.issues))
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("open" to App.str(R.string.open), "resolved" to App.str(R.string.resolved), "all" to App.str(R.string.all)).forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text(stringResource(R.string.recently_changed), maxLines = 1) })
         }
         PullToRefreshBox(false, { reloadKey++ }, Modifier.fillMaxSize()) {
-            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(state = list, contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 10.dp, bottom = CtrlBottomBarClearance), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(items, key = { it.int("id") }) { i -> IssueCard(i) }
                 if (loading) item { Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) { CircularProgressIndicator() } }
                 if (!loading && items.isEmpty()) {
@@ -154,15 +157,15 @@ private fun IssueCard(i: JSONObject) {
         modifier = Modifier.fillMaxWidth().clickable { nav.go("issue/${i.int("id")}") },
     ) {
         Row(Modifier.padding(12.dp)) {
-            Box(Modifier.width(64.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            Box(Modifier.width(64.dp).aspectRatio(2f / 3f).clip(CtrlShapes.Poster).background(CtrlColors.Raised)) {
                 App.session.tmdb(d.str("posterPath"), "w154")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(d.str("title") ?: d.str("name") ?: "…", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Pill(IssueTypes.name(i.int("issueType")), MaterialTheme.colorScheme.secondary)
-                    Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) Status.pending else Status.available)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Pill(IssueTypes.name(i.int("issueType")), CtrlColors.Muted)
+                    Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.Accent else CtrlColors.Inactive)
                 }
                 issueWhere(i)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 i.objs("comments").firstOrNull()?.str("message")?.let {

@@ -30,16 +30,16 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Theaters
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
+import com.vknxworks.seerrctrl.ui.components.FilledTonalButton
+import com.vknxworks.seerrctrl.ui.components.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vknxworks.seerrctrl.ui.components.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -85,6 +85,10 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import androidx.compose.ui.res.stringResource
 import com.vknxworks.seerrctrl.R
+import com.vknxworks.seerrctrl.ui.components.CtrlBottomBarClearance
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
+import com.vknxworks.seerrctrl.ui.theme.CtrlType
 
 private val requestFilters = listOf(
     "all" to App.str(R.string.all), "pending" to App.str(R.string.pending), "approved" to App.str(R.string.approved), "processing" to App.str(R.string.processing),
@@ -130,19 +134,19 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     Column(Modifier.fillMaxSize()) {
         if (userId == null) TabTitle(stringResource(R.string.requests))
         Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp),
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             requestFilters.forEach { (k, l) -> FilterChip(filter == k, { filter = k }, label = { Text(l, maxLines = 1) }) }
         }
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("all" to App.str(R.string.movies_series), "movie" to App.str(R.string.movies), "tv" to App.str(R.string.series_2)).forEach { (k, l) ->
                 FilterChip(mediaType == k, { mediaType = k }, label = { Text(l, maxLines = 1) })
             }
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text(stringResource(R.string.recently_changed), maxLines = 1) })
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
-            LazyColumn(state = list, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(state = list, contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 10.dp, bottom = CtrlBottomBarClearance), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
                     item(key = "hint") {
                         Text(
@@ -210,7 +214,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
         modifier = Modifier.fillMaxWidth().clickable { nav.openMedia(type, tmdbId) },
     ) {
         Row(Modifier.padding(12.dp)) {
-            Box(Modifier.width(76.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            Box(Modifier.width(76.dp).aspectRatio(2f / 3f).clip(CtrlShapes.Poster).background(CtrlColors.Raised)) {
                 s.tmdb(d.str("posterPath"), "w185")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
             }
             Spacer(Modifier.width(12.dp))
@@ -221,9 +225,9 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
                 )
                 Text(
                     listOfNotNull(year(d.str("releaseDate") ?: d.str("firstAirDate")), if (type == "tv") App.str(R.string.series_2) else App.str(R.string.movie_2)).joinToString(App.str(R.string.list_separator)),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     if (is4k) Pill("4K", MaterialTheme.colorScheme.tertiary)
                     RequestPill(status)
                     if (status == RequestStatus.Approved || status == RequestStatus.Completed) MediaStatusPill(avail)
@@ -362,13 +366,13 @@ fun RequestMiniCard(r: JSONObject) {
         modifier = Modifier.width(280.dp).pressScale(src).clickable(src, null) { nav.openMedia(type, media.int("tmdbId")) },
     ) {
         Row(Modifier.padding(10.dp)) {
-            Box(Modifier.width(56.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            Box(Modifier.width(56.dp).aspectRatio(2f / 3f).clip(CtrlShapes.Chip).background(CtrlColors.Raised)) {
                 App.session.tmdb(d.str("posterPath"), "w154")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
             }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(d.str("title") ?: d.str("name") ?: "…", fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(by.str("displayName") ?: "", style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                Text(by.str("displayName") ?: "", style = CtrlType.Data, color = CtrlColors.Muted, maxLines = 1)
                 RequestPill(RequestStatus.of(r.int("status")))
             }
         }
@@ -414,14 +418,14 @@ fun SwipeToDecide(
                 else -> Color.Transparent
             }
             Box(
-                Modifier.fillMaxSize().clip(CardDefaults.shape).background(color).padding(horizontal = 24.dp),
+                Modifier.fillMaxSize().clip(CtrlShapes.Card).background(color).padding(horizontal = 24.dp),
                 contentAlignment = if (approve) Alignment.CenterStart else Alignment.CenterEnd,
             ) {
                 if (dir != SwipeToDismissBoxValue.Settled) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = Color.White)
+                        Icon(if (approve) Icons.Outlined.Check else Icons.Outlined.Close, null, tint = CtrlColors.OnAccent)
                         Spacer(Modifier.width(8.dp))
-                        Text(if (approve) stringResource(R.string.approve) else stringResource(R.string.decline), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text((if (approve) stringResource(R.string.approve) else stringResource(R.string.decline)).uppercase(), style = CtrlType.LabelStrong, color = CtrlColors.OnAccent)
                     }
                 }
             }

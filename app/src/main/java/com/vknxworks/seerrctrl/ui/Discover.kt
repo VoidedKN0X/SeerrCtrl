@@ -59,11 +59,20 @@ import coil3.compose.AsyncImage
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.data.MediaStatus
 import com.vknxworks.seerrctrl.data.Perm
+import androidx.compose.foundation.border
+import androidx.compose.ui.res.pluralStringResource
+import com.vknxworks.seerrctrl.notify.Notifier
+import com.vknxworks.seerrctrl.ui.components.CtrlBottomBarClearance
+import com.vknxworks.seerrctrl.ui.components.CtrlHeroCard
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
+import com.vknxworks.seerrctrl.ui.theme.CtrlType
 import com.vknxworks.seerrctrl.data.Tile
 import com.vknxworks.seerrctrl.data.arr
 import com.vknxworks.seerrctrl.data.bool
 import com.vknxworks.seerrctrl.data.int
 import com.vknxworks.seerrctrl.data.intOrNull
+import com.vknxworks.seerrctrl.data.obj
 import com.vknxworks.seerrctrl.data.objects
 import com.vknxworks.seerrctrl.data.objs
 import com.vknxworks.seerrctrl.data.str
@@ -214,10 +223,35 @@ fun DiscoverTab() {
         built
     }
 
-    PullToRefreshBox(isRefreshing = load.refreshing, onRefresh = { load.reload(silent = true) }, modifier = Modifier.fillMaxSize()) {
+    // The hero card: requests waiting for approval for managers, your own requests for everyone else.
+    val s = App.session
+    val manager = s.can(Perm.MANAGE_REQUESTS)
+    val hero = rememberLoad("hero", s.me, Notifier.version) {
+        if (s.me == null) null
+        else if (manager) App.api.obj("/request/count").int("pending")
+        else App.api.obj("/request", mapOf("take" to 1, "skip" to 0, "filter" to "all", "requestedBy" to s.userId)).obj("pageInfo").int("results")
+    }
+
+    PullToRefreshBox(isRefreshing = load.refreshing, onRefresh = { load.reload(silent = true); hero.reload(silent = true) }, modifier = Modifier.fillMaxSize()) {
         Loaded(load) {
             LazyColumn(contentPadding = ListBottom, modifier = Modifier.fillMaxSize()) {
                 item { TabTitle(stringResource(R.string.discover)) }
+                hero.value?.let { n ->
+                    item(key = "hero") {
+                        CtrlHeroCard(
+                            label = stringResource(if (manager) R.string.hero_pending_label else R.string.hero_yours_label),
+                            trailingLabel = s.appTitle,
+                            value = "%02d".format(n),
+                            onClick = { MainTab.selected = MainTab.REQUESTS },
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                if (manager) pluralStringResource(R.plurals.hero_pending_line, n, n) else pluralStringResource(R.plurals.hero_yours_line, n, n),
+                                style = CtrlType.Data, color = CtrlColors.OnAccent,
+                            )
+                        }
+                    }
+                }
                 items(rows, key = { it.key }) { row ->
                     when (row) {
                         is SliderRow.Tiles -> TileRow(row.title, row.tiles, row.more?.let { { nav.browse(it) } })
@@ -236,13 +270,14 @@ private fun GenreRow(row: SliderRow.Genres) {
     if (row.genres.isEmpty()) return
     val nav = LocalNav.current
     SectionHeader(row.title)
-    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         items(row.genres, key = { it.int("id") }) { g ->
             val name = g.str("name") ?: ""
             val src = remember { MutableInteractionSource() }
             Box(
-                Modifier.width(180.dp).height(96.dp).pressScale(src).clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                Modifier.width(180.dp).height(96.dp).pressScale(src).clip(CtrlShapes.Poster)
+                    .background(CtrlColors.Surface)
+                    .border(1.dp, CtrlColors.Outline, CtrlShapes.Poster)
                     .clickable(src, null) {
                         nav.browse(BrowseSpec(name, if (row.tv) "/discover/tv" else "/discover/movies", mapOf("genre" to g.int("id"))))
                     },
@@ -250,9 +285,9 @@ private fun GenreRow(row: SliderRow.Genres) {
             ) {
                 App.session.tmdb(g.arr("backdrops").strings().firstOrNull(), "w780")?.let {
                     AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
+                    Box(Modifier.fillMaxSize().background(CtrlColors.Background.copy(alpha = 0.62f)))
                 }
-                Text(name, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                Text(name, color = CtrlColors.Text, style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -262,12 +297,13 @@ private fun GenreRow(row: SliderRow.Genres) {
 private fun LogoRow(row: SliderRow.Logos) {
     val nav = LocalNav.current
     SectionHeader(row.title)
-    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         items(row.items, key = { it.id }) { s ->
             val src = remember { MutableInteractionSource() }
             Box(
-                Modifier.width(150.dp).height(80.dp).pressScale(src).clip(MaterialTheme.shapes.medium)
-                    .background(Brush.linearGradient(listOf(Color(0xFF1F2937), Color(0xFF374151))))
+                Modifier.width(150.dp).height(80.dp).pressScale(src).clip(CtrlShapes.Poster)
+                    .background(CtrlColors.Surface)
+                    .border(1.dp, CtrlColors.Outline, CtrlShapes.Poster)
                     .clickable(src, null) {
                         nav.browse(BrowseSpec(s.name, if (row.tv) "/discover/tv/network/${s.id}" else "/discover/movies/studio/${s.id}"))
                     }
@@ -286,7 +322,7 @@ private fun RequestRow(requests: List<JSONObject>) {
     if (requests.isEmpty()) return
     val nav = LocalNav.current
     SectionHeader(stringResource(R.string.recent_requests), onMore = { MainTab.selected = MainTab.REQUESTS })
-    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(requests, key = { it.int("id") }) { r -> RequestMiniCard(r) }
     }
 }
@@ -361,7 +397,7 @@ fun PagedTileGrid(path: String, params: Map<String, Any?>, modifier: Modifier = 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(posterWidth()),
         state = state,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 128.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = CtrlBottomBarClearance),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier.fillMaxSize(),

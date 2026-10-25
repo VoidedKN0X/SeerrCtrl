@@ -6,8 +6,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
+import androidx.compose.material3.NavigationRailItemDefaults
+import com.vknxworks.seerrctrl.ui.components.CtrlBottomBar
+import com.vknxworks.seerrctrl.ui.components.CtrlTab
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +51,7 @@ import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.vknxworks.seerrctrl.ui.components.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -59,7 +62,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.foundation.layout.navigationBarsPadding
 import com.vknxworks.seerrctrl.notify.Notifier
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedTextField
+import com.vknxworks.seerrctrl.ui.components.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -134,7 +137,10 @@ fun MainScreen() {
 
     if (MainTab.rail) {
         Row(Modifier.fillMaxSize()) {
-            NavigationRail(Modifier.statusBarsPadding()) {
+            NavigationRail(
+                Modifier.statusBarsPadding(),
+                containerColor = MaterialTheme.colorScheme.background,
+            ) {
                 Spacer(Modifier.height(8.dp))
                 tabs.forEach { t ->
                     NavigationRailItem(
@@ -142,20 +148,25 @@ fun MainScreen() {
                         onClick = { MainTab.selected = t.index },
                         icon = { TabIcon(t) },
                         label = { Text(t.label, maxLines = 1) },
+                        colors = NavigationRailItemDefaults.colors(
+                            selectedIconColor = CtrlColors.OnAccent,
+                            selectedTextColor = CtrlColors.Accent,
+                            indicatorColor = CtrlColors.Accent,
+                            unselectedIconColor = CtrlColors.Muted,
+                            unselectedTextColor = CtrlColors.Muted,
+                        ),
                     )
                 }
             }
             Box(Modifier.weight(1f).fillMaxSize().statusBarsPadding().navigationBarsPadding()) { content() }
         }
     } else {
-        // Content runs edge to edge under the floating island, which blurs it.
-        val haze = remember { HazeState() }
+        // Content runs edge to edge under the floating tab bar.
         Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().hazeSource(haze).statusBarsPadding()) { content() }
-            TabIsland(
-                tabs = tabs.map { IslandTab(it.index, it.icon, it.label, it.badge) },
+            Box(Modifier.fillMaxSize().statusBarsPadding()) { content() }
+            CtrlBottomBar(
+                tabs = tabs.map { CtrlTab(it.index, it.icon, it.label, it.badge) },
                 selected = MainTab.selected,
-                hazeState = haze,
                 onSelect = { MainTab.selected = it },
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
@@ -189,12 +200,12 @@ fun SearchTab() {
             placeholder = { Text(stringResource(R.string.search_movies_series_and_people)) },
             leadingIcon = { Icon(Icons.Outlined.Search, null) },
             trailingIcon = { if (query.isNotEmpty()) IconButton({ query = "" }) { Icon(Icons.Outlined.Close, stringResource(R.string.clear)) } },
-            singleLine = true, shape = MaterialTheme.shapes.extraLarge,
+            singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { debounced = query.trim() }),
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 4.dp),
         )
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SearchKind.entries.forEach { k -> FilterChip(kind == k, { kind = k }, label = { Text(k.label, maxLines = 1) }) }
         }
         if (debounced.isEmpty()) {
@@ -211,15 +222,17 @@ fun SearchTab() {
                     LazyColumn(contentPadding = ListBottom) {
                         items(list, key = { it.int("id") }) { r ->
                             val name = r.str("name") ?: ""
-                            ListItem(
-                                leadingContent = { Icon(kind.icon, null) },
-                                headlineContent = { Text(name) },
-                                supportingContent = r.str("origin_country")?.let { { Text(it) } },
-                                modifier = Modifier.clickableRow {
-                                    if (kind == SearchKind.Keyword) nav.browse(BrowseSpec(name, "/discover/movies", mapOf("keywords" to r.int("id"))))
-                                    else nav.browse(BrowseSpec(name, "/discover/movies/studio/${r.int("id")}"))
+                            SignalRow(
+                                lead = "#${r.int("id")}",
+                                title = name,
+                                trailing = r.str("origin_country")?.let { c ->
+                                    @Composable { Text(c.uppercase(), style = com.vknxworks.seerrctrl.ui.theme.CtrlType.Status, color = CtrlColors.Muted) }
                                 },
-                            )
+                                icon = kind.icon,
+                            ) {
+                                if (kind == SearchKind.Keyword) nav.browse(BrowseSpec(name, "/discover/movies", mapOf("keywords" to r.int("id"))))
+                                else nav.browse(BrowseSpec(name, "/discover/movies/studio/${r.int("id")}"))
+                            }
                         }
                         if (list.isEmpty()) item { EmptyBox(Icons.Outlined.Search, stringResource(R.string.no_matches)) }
                     }

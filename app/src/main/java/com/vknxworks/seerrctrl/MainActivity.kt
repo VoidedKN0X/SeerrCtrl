@@ -91,7 +91,6 @@ import com.vknxworks.seerrctrl.ui.UsersScreen
 import com.vknxworks.seerrctrl.ui.WatchlistScreen
 import com.vknxworks.seerrctrl.ui.admin.AdminSettingsScreen
 import com.vknxworks.seerrctrl.ui.admin.AdminSectionScreen
-import com.vknxworks.seerrctrl.ui.isAppInDarkTheme
 import com.vknxworks.seerrctrl.ui.lock.AppLockViewModel
 import com.vknxworks.seerrctrl.ui.lock.LockScreen
 import com.vknxworks.seerrctrl.ui.lock.PinRequestScreen
@@ -143,14 +142,14 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         App.init(this)
         takeRoute(intent)
-        enableEdgeToEdge()
+        enableEdgeToEdge(SystemBarStyle.dark(Color.TRANSPARENT), SystemBarStyle.dark(Color.TRANSPARENT))
         setContent {
             SeerrTheme {
-                val dark = isAppInDarkTheme()
-                LaunchedEffect(dark) {
-                    val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT)
-                    else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                // Dark only: edge to edge with light system bar icons over the app's background.
+                LaunchedEffect(Unit) {
+                    val style = SystemBarStyle.dark(Color.TRANSPARENT)
                     enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                    window.isNavigationBarContrastEnforced = false
                 }
                 // "Hide in screenshots"; sign-in, the lock and PIN screens and admin settings (API keys, passwords)
                 // are always protected.
@@ -289,7 +288,16 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
                 AdaptiveShell(activity, ::logout)
                 ServerTrustPrompts(onLogout = ::logout)
             }
-            SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 92.dp))
+            SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 104.dp)) { data ->
+                androidx.compose.material3.Snackbar(
+                    data,
+                    shape = com.vknxworks.seerrctrl.ui.theme.CtrlShapes.Control,
+                    containerColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Raised,
+                    contentColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Text,
+                    actionColor = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Accent,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+            }
         }
     }
     // Turning the lock on or off, or changing the PIN (from Settings), on top of the app.
@@ -404,7 +412,7 @@ private fun NavGraphBuilder.detailRoutes(logout: () -> Unit) {
 @Composable
 private fun EmptyPane() {
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Outlined.Movie, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.outline)
+        Icon(Icons.Outlined.Movie, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         Text(stringResource(R.string.pick_something_on_the_left), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
