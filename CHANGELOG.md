@@ -22,6 +22,10 @@ Instant notifications through ntfy, set up from the app, and an "Open in ArrCtrl
 - **Only ntfy can talk to SeerrCtrl's push receiver.** Every message must carry the secret token of SeerrCtrl's registration, and on Android 14 and newer a sender that identifies as any other app is ignored.
 - **Signing out drops the push address.** The registration with ntfy is removed, so a webhook left on that server can never wake the app again. Pick ntfy again after signing in for a new address.
 
+### Fixed
+
+- **Build fix before release:** the first 1.9.0 build failed because some new push texts had apostrophes Android's resource compiler doesn't accept unescaped. They are now escaped (commit 70acade); the released 1.9.0 APK already contains this fix, so nothing changes for you.
+
 ## 1.8.0
 
 Light mode that follows the device theme: SeerrCtrl is now light when your phone is in light mode and dark when it's in dark mode, switching straight away when you change it.
