@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -171,6 +172,14 @@ private fun NotificationSection() {
         unrestricted = pm.isIgnoringBatteryOptimizations(ctx.packageName)
     }
     fun resched() = Notifier.schedule(ctx)
+    // Bumped whenever the app comes back (after installing ntfy or changing its battery setting), so the push rows update.
+    var tick by remember { mutableIntStateOf(0) }
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(owner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, e -> if (e == androidx.lifecycle.Lifecycle.Event.ON_RESUME) tick++ }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
 
     SettingsSection(stringResource(R.string.notifications)) {
         if (s.notifyEnabled && !canPost) {
@@ -222,6 +231,8 @@ private fun NotificationSection() {
                     batteryLauncher.launch(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                 }
             }
+            ItemDivider()
+            PushRows(tick)
             ItemDivider()
             NavItem(Icons.Outlined.Refresh, stringResource(R.string.check_now), stringResource(R.string.run_a_check_straight_away)) { Notifier.checkNow(ctx) }
         }

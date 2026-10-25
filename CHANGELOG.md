@@ -2,6 +2,26 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.0
+
+Instant notifications through ntfy, set up from the app, and an "Open in ArrCtrl" button on movie and series pages.
+
+### New
+
+- **Instant notifications with ntfy.** In **Settings › Notifications** (tap your profile picture), **Instant notifications** lets you pick **ntfy** instead of **Off (background checks only)**. SeerrCtrl then registers with the ntfy app (UnifiedPush) and gets its own push address on your ntfy server. Seerr's Webhook agent posts to that address the moment something happens, ntfy wakes SeerrCtrl, and SeerrCtrl asks your Seerr server for the details and shows the same notifications as the background check: your request approved, declined, failed or available, new requests waiting for approval with **Approve** and **Decline** buttons, new issues, replies on issues and issues resolved or reopened. ntfy is the only push app SeerrCtrl uses; nothing goes through Google.
+- **Background checks stay on as the fallback.** The checks every 15, 30 or 60 minutes keep running with push on. Pushes and checks share what was already notified, so each event is only shown once, whichever arrives first, and nothing is missed if a push gets lost.
+- **Push status line.** Shows whether push is off, waiting for ntfy, on (with when the last push arrived), whether ntfy's server can't be reached for now, or why ntfy refused to register SeerrCtrl. If ntfy isn't installed there's an **Install** button (F-Droid), and if ntfy is battery-restricted a row opens its App info so you can set Battery to Unrestricted.
+- **Set up Seerr's webhook.** A new page shows exactly what to enter in Seerr's Webhook agent: the webhook URL (your push address), an empty Authorization header, the JSON payload to paste, and which notification types to tick. The URL and payload copy with one tap and are kept out of clipboard previews, because anyone with the push address can wake the app.
+- **Set up automatically.** If your account may change Seerr's settings, **Set up Seerr's webhook for me** turns on Seerr's Webhook agent with your push address, the payload and every request and issue type, after you confirm. If the agent already posted somewhere else, the confirmation names that address, since Seerr's webhook can only post to one.
+- **Send a test push.** Posts to your push address like Seerr will; when it comes back through ntfy, a "Push works" notification shows. A test sent from Seerr's own Webhook page shows the same notification.
+- **Open in ArrCtrl.** Movie and series pages get a button that opens the title in ArrCtrl (Radarr or Sonarr), with the TMDB id for movies and the TVDB and TMDB ids for series. It only shows when ArrCtrl is installed; an older ArrCtrl without the link just opens.
+
+### Privacy and security
+
+- **Pushes carry no titles or names.** The payload only says what kind of event happened and the request or issue number, so no titles, usernames or comments pass through your ntfy server. SeerrCtrl looks those up on your Seerr server itself, so a forged push can at most make the app check your server early.
+- **Only ntfy can talk to SeerrCtrl's push receiver.** Every message must carry the secret token of SeerrCtrl's registration, and on Android 14 and newer a sender that identifies as any other app is ignored.
+- **Signing out drops the push address.** The registration with ntfy is removed, so a webhook left on that server can never wake the app again. Pick ntfy again after signing in for a new address.
+
 ## 1.8.0
 
 Light mode that follows the device theme: SeerrCtrl is now light when your phone is in light mode and dark when it's in dark mode, switching straight away when you change it.

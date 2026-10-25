@@ -40,6 +40,28 @@
         <receiver
             android:name=".notify.ActionReceiver"
             android:exported="false" />
+        <!-- Push through ntfy (UnifiedPush). Exported because ntfy is another app; every broadcast must carry the secret
+             token of SeerrCtrl's registration or it's ignored, and a push only makes the app check your Seerr server. -->
+        <receiver
+            android:name=".notify.PushReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.connector.MESSAGE" />
+                <action android:name="org.unifiedpush.android.connector.UNREGISTERED" />
+                <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
+                <action android:name="org.unifiedpush.android.connector.REGISTRATION_FAILED" />
+                <action android:name="org.unifiedpush.android.connector.TEMP_UNAVAILABLE" />
+            </intent-filter>
+        </receiver>
+        <!-- ntfy binds to this for a few seconds before a push, so SeerrCtrl can check your server at once. -->
+        <service
+            android:name=".notify.RaiseToForegroundService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.connector.RAISE_TO_FOREGROUND" />
+            </intent-filter>
+        </service>
         <!-- No downloadable emoji font: androidx.emoji2 doesn't look for one at start-up, and emoji
              are drawn with the phone's own emoji font. -->
         <provider
@@ -53,7 +75,17 @@
         </provider>
     </application>
 
+    <!-- ntfy, the only push app SeerrCtrl uses, and ArrCtrl for "Open in ArrCtrl". -->
     <queries>
+        <package android:name="io.heckel.ntfy" />
+        <package android:name="com.vknxworks.arrctrl" />
+        <intent>
+            <action android:name="org.unifiedpush.android.distributor.REGISTER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="arrctrl" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.INSERT" />
             <data android:mimeType="vnd.android.cursor.dir/event" />

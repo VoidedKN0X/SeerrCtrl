@@ -103,6 +103,18 @@ class Settings(context: Context) {
         get() = _nEvery.intValue
         set(v) { _nEvery.intValue = v; sp.edit().putInt("notify_every", v).apply() }
 
+    /** Instant notifications through ntfy (UnifiedPush): Seerr's webhook wakes the app. Background checks keep running. */
+    private val _push = bool("push_enabled", false)
+    var pushEnabled: Boolean
+        get() = _push.value
+        set(v) { _push.value = v; sp.edit().putBoolean("push_enabled", v).apply() }
+
+    /** The push address on your ntfy server that Seerr's webhook posts to; given by ntfy. */
+    private val _pushEndpoint = mutableStateOf(sp.getString("push_endpoint", null))
+    var pushEndpoint: String?
+        get() = _pushEndpoint.value
+        set(v) { _pushEndpoint.value = v; sp.edit().apply { if (v != null) putString("push_endpoint", v) else remove("push_endpoint") }.apply() }
+
     var askedNotificationPermission: Boolean
         get() = sp.getBoolean("asked_notif_perm", false)
         set(v) { sp.edit().putBoolean("asked_notif_perm", v).apply() }

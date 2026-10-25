@@ -220,6 +220,7 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             App.prefs.clearSession()
             App.session.clear()
             App.api.reload()
+            Notifier.dropPush(activity)
             forgetAccountData(activity)
             MainTab.selected = MainTab.DISCOVER
             signedIn = false
@@ -411,6 +412,7 @@ private fun NavGraphBuilder.detailRoutes(logout: () -> Unit) {
     composable("admin/{section}") { AdminSectionScreen(it.arguments?.getString("section").orEmpty()) }
     composable("you") { YouScreen(onLogout = logout) }
     composable("appsettings") { AppSettingsScreen() }
+    composable("pushsetup") { com.vknxworks.seerrctrl.ui.PushSetupScreen() }
 }
 
 @Composable

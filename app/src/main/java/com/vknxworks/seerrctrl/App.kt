@@ -41,6 +41,7 @@ object App {
         prefs.sealWanted = { lock.vault.enabled && !settings.notifyEnabled }
         api = SeerrApi(prefs)
         session = Session(api)
+        com.vknxworks.seerrctrl.notify.UnifiedPush.load(appContext)
     }
 
     /** The app locked: wipe the lock's key from memory, and the session cookie if it's sealed. */
