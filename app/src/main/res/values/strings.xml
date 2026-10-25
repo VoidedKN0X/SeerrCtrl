@@ -947,4 +947,57 @@
         <item quantity="one">%d request made from your account</item>
         <item quantity="other">%d requests made from your account</item>
     </plurals>
+
+    <!-- Instant notifications through ntfy (UnifiedPush) -->
+    <string name="push_distributor">Instant notifications</string>
+    <string name="push_distributor_off">Off (background checks only)</string>
+    <string name="push_distributor_ntfy">ntfy</string>
+    <string name="push_distributor_footer">With ntfy, Seerr's webhook wakes SeerrCtrl the moment something happens. ntfy is the only push app SeerrCtrl uses, and background checks keep running as a fallback.</string>
+    <string name="push_status">Push status</string>
+    <string name="push_status_off">Off. Background checks only</string>
+    <string name="push_status_failed">ntfy couldn't register SeerrCtrl (%1$s). Open ntfy once, then pick it again.</string>
+    <string name="push_status_no_ntfy">ntfy was uninstalled. Background checks keep running</string>
+    <string name="push_status_unavailable">ntfy's server can't be reached right now. Your push address stays the same, and background checks keep running.</string>
+    <string name="push_status_waiting">Waiting for ntfy to give a push address…</string>
+    <string name="push_status_on">On. Nothing pushed yet: set up Seerr's webhook below</string>
+    <string name="push_status_on_last">On. Last push %1$s</string>
+    <string name="push_ntfy_missing">ntfy isn't installed</string>
+    <string name="push_ntfy_missing_body">Instant notifications come only through the ntfy app. Install it, then pick ntfy above. Background checks work without it.</string>
+    <string name="push_ntfy_install">Install</string>
+    <string name="push_ntfy_battery">ntfy is battery-restricted</string>
+    <string name="push_ntfy_battery_body">Android can cut ntfy's connection while the phone sleeps, so pushes arrive late. Tap to open ntfy's App info and set Battery to Unrestricted.</string>
+    <string name="push_setup">Set up Seerr's webhook</string>
+    <string name="push_setup_body">The webhook address and JSON payload to give Seerr</string>
+    <string name="push_test">Send a test push</string>
+    <string name="push_test_body">Posts to your push address, like Seerr will, and shows a test notification when it arrives</string>
+    <string name="push_test_sent">Sent. A test notification shows when it arrives.</string>
+    <string name="push_test_failed">Couldn't reach the push address. Is your ntfy server reachable from this phone?</string>
+    <string name="push_test_title">Push works</string>
+    <string name="push_test_text">Seerr's webhook can now wake SeerrCtrl through ntfy.</string>
+    <string name="push_copied">Copied</string>
+    <string name="push_copy">Copy</string>
+    <string name="push_setup_intro">Seerr sends events to SeerrCtrl through its Webhook notification agent. It posts to your push address on your ntfy server, and ntfy wakes SeerrCtrl, which then asks your Seerr server for the details and shows the notification. The payload holds only the kind of event and numbers, no titles or names.</string>
+    <string name="push_auto">Automatic</string>
+    <string name="push_auto_button">Set up Seerr's webhook for me</string>
+    <string name="push_auto_body">Turns on Seerr's Webhook agent with your push address and payload</string>
+    <string name="push_auto_footer">This changes a server setting for everyone: Seerr's Webhook agent can only post to one address. Your Seerr server must be able to reach your ntfy server.</string>
+    <string name="push_auto_confirm_title">Change Seerr's webhook?</string>
+    <string name="push_auto_confirm_body">Seerr's Webhook agent will be turned on and post request and issue events to your push address on your ntfy server.</string>
+    <string name="push_auto_confirm_replace">Seerr's Webhook agent already posts to %1$s. That address will be replaced by your push address, so whatever used it stops getting events from Seerr.</string>
+    <string name="push_auto_confirm">Set up</string>
+    <string name="push_auto_done">Seerr's webhook is set up. Send a test from Seerr or make a request to try it.</string>
+    <string name="push_manual">By hand</string>
+    <string name="push_manual_footer">Background checks keep running whatever you set here, so nothing is missed if a push doesn't arrive.</string>
+    <string name="push_step_agent">1. Open the Webhook agent</string>
+    <string name="push_step_agent_body">In Seerr: Settings › Notifications › Webhook (or in SeerrCtrl: More › Server settings › Notifications › Webhook), and turn on Enable agent.</string>
+    <string name="push_webhook_url">2. Webhook URL</string>
+    <string name="push_step_auth">3. Authorization header</string>
+    <string name="push_step_auth_body">Leave it empty, unless your ntfy server needs a login to publish.</string>
+    <string name="push_payload">4. JSON payload</string>
+    <string name="push_payload_body">Tap to copy, then replace Seerr's payload with it:</string>
+    <string name="push_step_types">5. Notification types</string>
+    <string name="push_step_types_body">Tick every request and issue type, then Save.</string>
+
+    <!-- Open in ArrCtrl -->
+    <string name="open_in_arrctrl">Open in ArrCtrl</string>
 </resources>

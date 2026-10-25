@@ -103,6 +103,7 @@ import com.vknxworks.seerrctrl.data.year
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
+import com.vknxworks.seerrctrl.ui.lock.expectReturn
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
 import com.vknxworks.seerrctrl.R
@@ -438,6 +439,44 @@ private fun ActionRow(
         if (s.can(Perm.MANAGE_REQUESTS, Perm.MANAGE_BLOCKLIST, any = true)) {
             CtrlSquareButton(Icons.Outlined.Build, stringResource(R.string.manage), onManage)
         }
+        // "Open in ArrCtrl", only when ArrCtrl is installed: the title in Radarr or Sonarr.
+        val context = LocalContext.current
+        val arrLink = remember(d) { ArrCtrl.link(d, tv) }
+        val arrInstalled = remember { ArrCtrl.installed(context) }
+        if (arrLink != null && arrInstalled) {
+            CtrlSquareButton(Icons.Outlined.OpenInNew, stringResource(R.string.open_in_arrctrl), { ArrCtrl.open(context, arrLink) })
+        }
+    }
+}
+
+/** Hand-off to ArrCtrl, the Ctrl app for Radarr and Sonarr. */
+private object ArrCtrl {
+    private const val PKG = "com.vknxworks.arrctrl"
+
+    fun installed(context: android.content.Context): Boolean =
+        runCatching { context.packageManager.getPackageInfo(PKG, 0); true }.getOrDefault(false)
+
+    /** arrctrl://movie?tmdb=… or arrctrl://series?tvdb=…&tmdb=…, with the ids Seerr knows. */
+    fun link(d: JSONObject, tv: Boolean): android.net.Uri? {
+        val tmdb = d.intOrNull("id")?.takeIf { it > 0 } ?: d.obj("mediaInfo").intOrNull("tmdbId")?.takeIf { it > 0 }
+        val b = android.net.Uri.Builder().scheme("arrctrl").authority(if (tv) "series" else "movie")
+        if (tv) {
+            val tvdb = d.obj("externalIds").intOrNull("tvdbId")?.takeIf { it > 0 } ?: d.obj("mediaInfo").intOrNull("tvdbId")?.takeIf { it > 0 }
+            if (tvdb == null && tmdb == null) return null
+            tvdb?.let { b.appendQueryParameter("tvdb", it.toString()) }
+        } else if (tmdb == null) return null
+        tmdb?.let { b.appendQueryParameter("tmdb", it.toString()) }
+        return b.build()
+    }
+
+    /** Opens the title in ArrCtrl; an ArrCtrl too old for the link just opens. */
+    fun open(context: android.content.Context, link: android.net.Uri) {
+        val view = android.content.Intent(android.content.Intent.ACTION_VIEW, link).setPackage(PKG).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        val intent = if (view.resolveActivity(context.packageManager) != null) view
+        else context.packageManager.getLaunchIntentForPackage(PKG)?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK) ?: return
+        // Opening ArrCtrl isn't leaving the app: coming straight back doesn't ask for the PIN again.
+        expectReturn()
+        runCatching { context.startActivity(intent) }
     }
 }
 

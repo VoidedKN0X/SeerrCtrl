@@ -21,6 +21,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.workDataOf
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.vknxworks.seerrctrl.App
@@ -68,6 +70,21 @@ object Notifier {
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .build()
         WorkManager.getInstance(ctx).enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.UPDATE, req)
+        // Registering again at start-up recovers from a reinstalled ntfy; with the same token ntfy keeps the address.
+        if (s.pushEnabled) runCatching { UnifiedPush.register(ctx, App.str(R.string.app_name)) }
+    }
+
+    /** A push from Seerr's webhook arrived: check now, only the part it's about. Pushes queue up rather than cancel each other. */
+    fun checkNow(ctx: Context, event: PushEvent) {
+        channels(ctx)
+        WorkManager.getInstance(ctx).enqueueUniqueWork(
+            "$WORK-push", ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequestBuilder<CheckWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setInputData(workDataOf(CheckWorker.KEY_PUSH_TYPE to event.type))
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                .build(),
+        )
     }
 
     fun checkNow(ctx: Context) {
@@ -92,10 +109,23 @@ object Notifier {
         val wm = WorkManager.getInstance(ctx)
         wm.cancelUniqueWork(WORK)
         wm.cancelUniqueWork("$WORK-now")
+        wm.cancelUniqueWork("$WORK-push")
         NotificationManagerCompat.from(ctx).cancelAll()
         ctx.getSharedPreferences("notify_state", Context.MODE_PRIVATE).edit().clear().apply()
         // Approve/Decline buttons handed out for this sign-in stop working, even if another app kept a copy.
         ctx.getSharedPreferences("notify_state_token", Context.MODE_PRIVATE).edit().remove(KEY_ACTION).commit()
+    }
+
+    /**
+     * You signed out: drop the registration with ntfy, so a webhook left on that server can never wake the app
+     * again. Kept when only the session ended, because you'll sign in to the same server again.
+     */
+    fun dropPush(ctx: Context) {
+        if (App.settings.pushEnabled || UnifiedPush.token(ctx) != null) {
+            UnifiedPush.unregister(ctx)
+            App.settings.pushEnabled = false
+            App.settings.pushEndpoint = null
+        }
     }
 
     private const val KEY_ACTION = "action"

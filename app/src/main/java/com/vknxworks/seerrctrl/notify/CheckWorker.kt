@@ -26,22 +26,33 @@ import com.vknxworks.seerrctrl.data.obj
 import com.vknxworks.seerrctrl.data.objs
 import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.ui.MediaCache
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 
 /**
- * Runs every 15+ minutes. Compares what the server says now with what it said last time and notifies about
- * the differences. The first run only records the current state, so you don't get a flood of old news.
+ * Runs every 15+ minutes, and straight away when a push from Seerr's webhook arrives through ntfy. Compares what
+ * the server says now with what it said last time and notifies about the differences. The first run only records
+ * the current state, so you don't get a flood of old news. Pushes and the periodic check share this state, so
+ * an event is only ever notified once, whichever of the two sees it first.
  */
 class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
     private val store = ctx.getSharedPreferences("notify_state", Context.MODE_PRIVATE)
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = RUN.withLock { check() }
+
+    private suspend fun check(): Result {
         App.init(applicationContext)
+        val pushType = inputData.getString(KEY_PUSH_TYPE)
+        // A push arrives the moment Seerr acts; give it a moment to finish writing the request or issue.
+        if (pushType != null) delay(2_000)
+        val event = pushType?.let { PushEvent(it, 0, 0) }
         if (!App.prefs.isConfigured || !App.settings.notifyEnabled) return Result.success()
         val me = try { App.api.obj("/auth/me") } catch (e: ApiException) {
-            return if (e.code == 401 || e.code == 403) Result.success() else Result.retry()
-        } catch (_: Exception) { return Result.retry() }
+            return if (e.code == 401 || e.code == 403 || pushType != null) Result.success() else Result.retry()
+        } catch (_: Exception) { return if (pushType != null) Result.success() else Result.retry() }
 
         // The server's public settings (whether TMDB images go through Seerr's cache), when the app itself
         // hasn't loaded them in this process: otherwise notification posters would always come straight from TMDB.
@@ -53,17 +64,28 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
         val who = App.api.baseUrl + "#" + myId
         if (store.getString("who", null) != who) store.edit().clear().putString("who", who).apply()
         val first = !store.getBoolean("primed", false)
+        // A push about a request only needs the request lists, one about an issue only the issue lists. The very
+        // first run always reads everything, so it records the current state of all of them.
+        val requests = first || event == null || !event.aboutIssue
+        val issueLists = first || event == null || !event.aboutRequest
 
         try {
-            if (App.settings.notifyMine) myRequests(myId, first)
-            if (App.settings.notifyPending && Perm.has(perms, Perm.MANAGE_REQUESTS)) pendingRequests(myId, first)
-            if (App.settings.notifyIssues) issues(myId, Perm.has(perms, Perm.MANAGE_ISSUES), first)
+            if (requests && App.settings.notifyMine) myRequests(myId, first)
+            if (requests && App.settings.notifyPending && Perm.has(perms, Perm.MANAGE_REQUESTS)) pendingRequests(myId, first)
+            if (issueLists && App.settings.notifyIssues) issues(myId, Perm.has(perms, Perm.MANAGE_ISSUES), first)
         } catch (_: Exception) {
-            return Result.retry()
+            // A push isn't retried in a loop; the periodic check catches up.
+            return if (pushType != null) Result.success() else Result.retry()
         }
         store.edit().putBoolean("primed", true).apply()
         Notifier.bump()
         return Result.success()
+    }
+
+    companion object {
+        const val KEY_PUSH_TYPE = "push_type"
+        /** One check at a time (periodic, push or Check now), so the same news is never posted twice. */
+        private val RUN = Mutex()
     }
 
     // ---------- state helpers ----------

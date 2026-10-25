@@ -18,6 +18,8 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Request** movies and series, in 4K too, with season picking and advanced options
 - **Requests list**: swipe right to approve, left to decline
 - **Notifications** when your requests are approved, declined, failed or available and when issues get replies; managers also get new requests with Approve/Decline buttons, and new issues
+- **Instant notifications with ntfy** (UnifiedPush): Seerr's webhook wakes the app straight away, set up for you or by hand from the app, with background checks as the fallback
+- **Open in ArrCtrl** from movie and series pages, when ArrCtrl is installed
 - **Upcoming calendar** for your requests and watchlist, plus your **Watchlist** and **Profile** (your requests, quota and stats)
 - **Issues**: report, comment and resolve
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
