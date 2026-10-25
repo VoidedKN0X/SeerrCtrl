@@ -165,7 +165,7 @@ private fun IssueCard(i: JSONObject) {
                 Text(d.str("title") ?: d.str("name") ?: "…", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Pill(IssueTypes.name(i.int("issueType")), CtrlColors.Muted)
-                    Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.Accent else CtrlColors.Inactive)
+                    Pill(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.AccentText else CtrlColors.Inactive)
                 }
                 issueWhere(i)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 i.objs("comments").firstOrNull()?.str("message")?.let {

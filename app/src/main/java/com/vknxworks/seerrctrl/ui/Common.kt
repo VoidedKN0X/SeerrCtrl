@@ -399,9 +399,9 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, onMore: (() -> U
         Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (onMore != null) {
             TextButton(onMore) {
-                Text(stringResource(R.string.see_all).uppercase(), style = CtrlType.Status, color = CtrlColors.Accent)
+                Text(stringResource(R.string.see_all).uppercase(), style = CtrlType.Status, color = CtrlColors.AccentText)
                 Spacer(Modifier.width(4.dp))
-                Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(14.dp), tint = CtrlColors.Accent)
+                Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(14.dp), tint = CtrlColors.AccentText)
             }
         }
     }

@@ -301,9 +301,10 @@ private fun LogoRow(row: SliderRow.Logos) {
         items(row.items, key = { it.id }) { s ->
             val src = remember { MutableInteractionSource() }
             Box(
+                // The logos are white, so their tiles stay dark in light mode too.
                 Modifier.width(150.dp).height(80.dp).pressScale(src).clip(CtrlShapes.Poster)
-                    .background(CtrlColors.Surface)
-                    .border(1.dp, CtrlColors.Outline, CtrlShapes.Poster)
+                    .background(CtrlColors.Dark.surface)
+                    .border(1.dp, CtrlColors.Dark.outline, CtrlShapes.Poster)
                     .clickable(src, null) {
                         nav.browse(BrowseSpec(s.name, if (row.tv) "/discover/tv/network/${s.id}" else "/discover/movies/studio/${s.id}"))
                     }

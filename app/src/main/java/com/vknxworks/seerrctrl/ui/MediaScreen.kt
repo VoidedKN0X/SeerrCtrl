@@ -428,7 +428,7 @@ private fun ActionRow(
             if (onList) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
             if (onList) stringResource(R.string.remove_from_watchlist) else stringResource(R.string.add_to_watchlist),
             { if (onList) onWatchlistRemove() else onWatchlist() },
-            tint = if (onList) CtrlColors.Accent else CtrlColors.Text,
+            tint = if (onList) CtrlColors.AccentText else CtrlColors.Text,
         )
         if (info != null && s.can(Perm.CREATE_ISSUES, Perm.MANAGE_ISSUES, any = true) &&
             (status == MediaStatus.Available || status == MediaStatus.Partial || status4k == MediaStatus.Available || status4k == MediaStatus.Partial)
@@ -588,7 +588,7 @@ private fun CollectionCard(c: JSONObject) {
         Box(Modifier.fillMaxSize().background(CtrlColors.Background.copy(alpha = 0.6f)))
         Column(Modifier.align(Alignment.CenterStart).padding(20.dp)) {
             Text(c.str("name") ?: stringResource(R.string.collection), color = CtrlColors.Text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            CtrlLabel(stringResource(R.string.view_collection), color = CtrlColors.Accent)
+            CtrlLabel(stringResource(R.string.view_collection), color = CtrlColors.AccentText)
         }
     }
 }
@@ -600,7 +600,7 @@ private fun IssueMini(iss: JSONObject) {
     SignalRow(
         lead = "#${iss.int("id")}",
         title = stringResource(R.string.issue_title, com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType"))),
-        trailing = { CtrlStatus(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.Accent else CtrlColors.Inactive) },
+        trailing = { CtrlStatus(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.AccentText else CtrlColors.Inactive) },
         onClick = { nav.go("issue/${iss.int("id")}") },
     )
 }

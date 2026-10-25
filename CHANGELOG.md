@@ -2,6 +2,22 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.8.0
+
+Light mode that follows the device theme: SeerrCtrl is now light when your phone is in light mode and dark when it's in dark mode, switching straight away when you change it.
+
+### New
+
+- **Light mode that follows the device theme.** SeerrCtrl follows Android's dark theme setting, including scheduled switching (sunset to sunrise, bedtime). There's still no theme setting in the app, and still no wallpaper colours: it simply matches your phone. Switching while the app is open changes it right away, without restarting the app or losing what's on screen.
+- **Signal Light palette.** In light mode the background is a warm off-white (#F5F5F1), cards, sheets and dialogs are white with a thin light grey border, text is near-black, and secondary text is a mid grey. The dark mode from 1.7.0 is unchanged.
+- **Same violet accent, readable on white.** Filled accent areas keep the light violet (#B48CFF) with dark content in both modes: the Discover hero card, the Request, Play and other main buttons, the selected tab, switches that are on, selected filter chips, the profile picture on the You page and the PIN cells. Accent text and icons on a light background (the slash in SEERR/CTRL, "See all", ■ AVAILABLE and ■ OPEN status words, the watchlist icon when a title is on your list, the outline of a text field you're typing in, the fingerprint key on the lock screen) use a deeper violet (#6A3BDB) in light mode so they stay easy to read.
+
+### Changed
+
+- **Status and navigation bars** match the background in both modes, with light icons in dark mode and dark icons in light mode. Before the app has drawn, the window is already the right colour, so there's no dark flash in light mode or light flash in dark mode.
+- **Every screen and part works in both modes:** the tabs and the floating tab bar (white at about 92 % with a light border in light mode), movie and series pages, request and issue lists, swipe to approve or decline, settings and the You page, dialogs and bottom sheets, text fields, switches (light grey track with a grey knob when off), progress bars (light track with a near-black fill), the calendar, the lock screen and the PIN pad (white keys with a light border, light grey empty PIN cells). Errors use a deeper red (#D93636) on light backgrounds.
+- **Studio and network logos** on Discover stay on dark tiles in light mode too, because the logos themselves are white.
+
 ## 1.7.0
 
 SeerrCtrl gets the new Ctrl / Signal look shared by the whole Ctrl series: near-black, one violet accent, Space Grotesk and JetBrains Mono. Everything works as before; only the look changed.

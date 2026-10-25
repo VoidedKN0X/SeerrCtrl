@@ -150,7 +150,7 @@ fun MainScreen() {
                         label = { Text(t.label, maxLines = 1) },
                         colors = NavigationRailItemDefaults.colors(
                             selectedIconColor = CtrlColors.OnAccent,
-                            selectedTextColor = CtrlColors.Accent,
+                            selectedTextColor = CtrlColors.AccentText,
                             indicatorColor = CtrlColors.Accent,
                             unselectedIconColor = CtrlColors.Muted,
                             unselectedTextColor = CtrlColors.Muted,
