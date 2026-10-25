@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SeerrCtrl</string>
+    <!-- Ctrl / Signal look: the wordmark reads SEERR/CTRL; the brand lines aren't translated. -->
+    <string name="wordmark_name" translatable="false">Seerr</string>
+    <string name="ctrl_footer" translatable="false">GOOGLE-FREE · TELEMETRY-FREE · ARM64</string>
+    <string name="lock_brand" translatable="false">VKNXWORKS · CTRL</string>
+    <string name="lock_locked">Locked</string>
+    <string name="hero_pending_label">Waiting for approval</string>
+    <string name="hero_yours_label">Your requests</string>
     <string name="support_title">Support SeerrCtrl</string>
     <string name="support_subtitle">SeerrCtrl is free and open source. Sponsor development on GitHub</string>
     <string name="group_about">About</string>
@@ -67,7 +74,6 @@
     <string name="theme_black">Pure black</string>
     <string name="dynamic_colour">Use wallpaper colours</string>
     <string name="dynamic_colour_subtitle">Replaces the default colours with ones from your wallpaper</string>
-    <string name="lock_title">SeerrCtrl is locked</string>
     <string name="lock_fingerprint_title">Unlock SeerrCtrl</string>
     <string name="lock_fingerprint_subtitle">Confirm it\'s you to see your requests</string>
     <string name="lock_forgot_body">The PIN can\'t be recovered, because it encrypts your sign-in. SeerrCtrl will log out, delete what it keeps on this phone and turn the app lock off. Your Seerr server and requests aren\'t touched.</string>
@@ -933,4 +939,12 @@
     <!-- Whole sentences instead of joined pieces -->
     <string name="server_with_version">%1$s · v%2$s</string>
     <string name="two_lines">%1$s\n%2$s</string>
+    <plurals name="hero_pending_line">
+        <item quantity="one">%d request to approve or decline</item>
+        <item quantity="other">%d requests to approve or decline</item>
+    </plurals>
+    <plurals name="hero_yours_line">
+        <item quantity="one">%d request made from your account</item>
+        <item quantity="other">%d requests made from your account</item>
+    </plurals>
 </resources>

@@ -14,8 +14,8 @@ android {
         targetSdk = 35
         // CI passes the run number so every build installs over the previous one.
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 37
-        versionName = "1.6.5"
+        versionCode = 38
+        versionName = "1.7.0"
         // 64-bit ARM phones only (arm64-v8a), like every Ctrl app.
         ndk { abiFilters += listOf("arm64-v8a") }
     }
@@ -97,8 +97,6 @@ dependencies {
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.window:window:1.3.0")
-    // Backdrop blur behind the floating tab bar.
-    implementation("dev.chrisbanes.haze:haze:1.6.0")
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 

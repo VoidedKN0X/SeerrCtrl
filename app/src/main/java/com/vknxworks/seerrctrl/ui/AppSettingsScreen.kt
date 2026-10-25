@@ -24,21 +24,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Contrast
-import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.vknxworks.seerrctrl.ui.components.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.R
-import com.vknxworks.seerrctrl.data.ThemeMode
 import com.vknxworks.seerrctrl.data.LockAgain
 import com.vknxworks.seerrctrl.data.LockSettings
 import com.vknxworks.seerrctrl.ui.lock.PinRequest
@@ -71,8 +66,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** In the same order as every Ctrl app. */
-private val THEMES = listOf(ThemeMode.System, ThemeMode.Dark, ThemeMode.Light, ThemeMode.Black)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,14 +80,8 @@ fun AppSettingsScreen() {
 
     Scaffold(topBar = { BackBar(stringResource(R.string.settings), { nav.back() }) }) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+            // The Ctrl / Signal look is dark only: the theme and wallpaper-colour choices are gone.
             SettingsSection(stringResource(R.string.group_appearance)) {
-                ChoiceItem(
-                    Icons.Outlined.DarkMode,
-                    stringResource(R.string.theme),
-                    THEMES.map { stringResource(it.label) },
-                    THEMES.indexOf(s.theme).coerceAtLeast(0),
-                ) { s.theme = THEMES[it] }
-                ToggleItem(Icons.Outlined.Palette, stringResource(R.string.dynamic_colour), stringResource(R.string.dynamic_colour_subtitle), s.dynamicColor) { s.dynamicColor = it }
                 ChoiceItem(Icons.Outlined.GridView, stringResource(R.string.poster_size), listOf(App.str(R.string.small), App.str(R.string.medium), App.str(R.string.large)), s.posterSize) { s.posterSize = it }
             }
 

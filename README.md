@@ -140,4 +140,6 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 
 SeerrCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
 
+Fonts: [Space Grotesk](https://github.com/floriankarsten/space-grotesk) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), both under the SIL Open Font License 1.1 (licence texts in `app/src/main/assets/licenses/`). They're bundled in the app, so nothing is downloaded at runtime.
+
 SeerrCtrl is an unofficial app and is not affiliated with the Seerr, Jellyseerr or Overseerr projects. Movie and series data comes from TMDB through your server.

@@ -2,6 +2,32 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.7.0
+
+SeerrCtrl gets the new Ctrl / Signal look shared by the whole Ctrl series: near-black, one violet accent, Space Grotesk and JetBrains Mono. Everything works as before; only the look changed.
+
+### Changed
+
+- **New dark look, everywhere.** The app now uses one fixed dark palette: a near-black background (#08080A), dark grey cards and sheets (#141417) with a thin border, light text (#F4F4F2), muted grey for secondary text, and one violet accent (#B48CFF) for what matters most (the selected tab, the main button, switches that are on, available titles). The status and navigation bars match the background, edge to edge, with light icons.
+- **New fonts, built into the app.** All text is set in Space Grotesk; numbers, dates, server addresses, section labels and the SEERR/CTRL name use JetBrains Mono. Both fonts are bundled (SIL Open Font License 1.1, licence texts included in the app), so nothing is fetched from Google or anywhere else.
+- **Top of every tab.** Discover, Search, Requests, Issues and More now show the **SEERR/CTRL** wordmark at the top left (the slash in the accent colour) and your profile picture at the top right as a 44 dp rounded square with your initials or Seerr avatar. A small accent square on its corner shows you're signed in. The tab's name sits underneath as a large bold headline. Tapping the picture still opens the You page, which is still the only way into Settings.
+- **Discover hero card.** The top of Discover has a big accent card with one number: requests waiting for approval if you manage requests, or the number of requests made from your account otherwise. Tap it to open the Requests tab. Pull to refresh updates it too.
+- **Posters and rows.** Posters have 14 dp rounded corners and a thin border. The Movie/Series tag is a small dark mono label and availability is a square accent dot in the corner. Row titles are plain semibold text, "See all" is a small mono accent link, and genre, studio and network tiles use the dark card style.
+- **Status in words, not coloured pills.** Request, availability and issue states are now shown as mono capitals with a small square dot ("■ AVAILABLE", "■ PENDING"): accent for available and open, light for approved and processing, grey for pending and resolved, red for declined and failed.
+- **Movie and series pages.** The back button is a 44 dp rounded square. **Request** and **Play** are large accent buttons, the 4K request, trailer and other actions are dark outlined buttons, and the watchlist, report and manage actions are square buttons. Ratings, the facts table (with mono labels), seasons (as plain rows with "S01"-style numbers), downloads (thin 6 dp progress bars), issues and keywords all follow the new style.
+- **Request and issue lists.** Cards use the new dark card style with 22 dp corners and a thin border. Swiping a pending request shows "APPROVE" or "DECLINE" in mono capitals. Filter chips are rounded rectangles with the accent fill when selected.
+- **Floating tab bar.** The bottom bar is a dark rounded bar floating above the navigation bar. The selected tab is an accent block with its icon and name; the other tabs show only their icon. The frosted blur behind the old bar is gone, and lists get enough room at the bottom so nothing hides behind the bar. On tablets and unfolded phones, the side rail uses the same accent selection.
+- **Detail screens.** Every screen opened from a tab has a square back button and its title in Space Grotesk, without a coloured app bar.
+- **Switches.** All switches are rounded rectangles: an accent track with a dark knob when on, a dark grey track with a grey knob when off. TalkBack still reads them as switches.
+- **Lock screen.** The lock screen shows an accent rounded square with a lock, "VKNXWORKS · CTRL", **Locked** in large type, square PIN cells (filled in the accent colour as you type) and a three-column keypad with large rounded keys in JetBrains Mono. Fingerprint unlock is the accent-outlined key at the bottom left of the keypad (it replaces the "Use fingerprint" button under it), and delete is the key at the bottom right. "Forgot PIN?" stays under the keypad. The same keypad is used to set, change or turn off the PIN. How the lock works hasn't changed.
+- **You page.** Your picture is a 68 dp accent rounded square with your initials, next to your name and the address of your Seerr server in mono type. Settings, Server and About are grouped in dark cards with mono section labels and thin dividers between rows. **Support SeerrCtrl** is now a large accent button at the bottom, above the version line and "GOOGLE-FREE · TELEMETRY-FREE · ARM64".
+- **Settings.** Groups have mono section labels ("PRIVACY AND SECURITY", "NOTIFICATIONS") and dark cards with thin dividers; row icons are plain outlined icons instead of tinted circles. The settings themselves (app lock, Hide in screenshots, Hide in recent apps, notifications and the rest) are unchanged.
+- **Dialogs, sheets and text fields.** Dialogs and bottom sheets are dark cards with 26 dp corners and a thin border. Text fields are dark with a thin border and 16 dp corners, and get an accent border and cursor while you type. Messages at the bottom of the screen use a dark rounded box.
+
+### Removed
+
+- **Theme choice and wallpaper colours.** The Signal look is dark only, so **Settings › Appearance › Theme** (Follow system, Light, Dark, Pure black) and **Use wallpaper colours** are gone. Whatever you had picked before, SeerrCtrl now always uses the new dark look. Poster size stays.
+
 ## 1.6.5
 
 ### Fixed

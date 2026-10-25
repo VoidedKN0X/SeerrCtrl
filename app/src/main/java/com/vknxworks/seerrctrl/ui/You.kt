@@ -16,17 +16,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,55 +56,109 @@ import com.vknxworks.seerrctrl.data.str
 import com.vknxworks.seerrctrl.ui.settings.Group
 import com.vknxworks.seerrctrl.ui.settings.GroupRow
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
+import com.vknxworks.seerrctrl.ui.components.Button
+import com.vknxworks.seerrctrl.ui.components.CtrlTopBar
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlType
 
 private const val SPONSOR_URL = "https://github.com/sponsors/VoidedKN0X"
 private const val REPO_URL = "https://github.com/VoidedKN0X/SeerrCtrl"
 private const val ISSUES_URL = "https://github.com/VoidedKN0X/SeerrCtrl/issues"
 private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
+/** Up to two initials of a name ("Axel Smith" → "AS", "axel" → "AX"). */
+fun initialsOf(name: String): String {
+    val words = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        words.isEmpty() -> ""
+        words.size == 1 -> words[0].take(2)
+        else -> "${words[0].first()}${words[1].first()}"
+    }.uppercase()
+}
+
 /**
  * Your own picture, as in every Ctrl app: your Seerr avatar when there is one (pictures from Gravatar and Plex
- * only when that's turned on), otherwise your initial on a tinted circle.
+ * only when that's turned on), otherwise your initials on a rounded square. [accent] gives the accent fill
+ * of the You page; otherwise it's the surface fill with a thin border of the top bar.
  */
 @Composable
-fun ProfileAvatar(size: Dp, initialStyle: androidx.compose.ui.text.TextStyle) {
+fun ProfileAvatar(size: Dp, initialStyle: androidx.compose.ui.text.TextStyle, accent: Boolean = false) {
     val s = App.session
     val name = s.displayName
     val url = s.avatar(s.me.str("avatar"))
+    val shape = RoundedCornerShape(if (accent) size * 0.32f else size * 0.318f)
     Box(
-        Modifier.size(size).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+        Modifier.size(size).clip(shape)
+            .background(if (accent) CtrlColors.Accent else CtrlColors.Surface)
+            .then(if (accent) Modifier else Modifier.border(1.dp, CtrlColors.ControlOutline, shape)),
         contentAlignment = Alignment.Center,
     ) {
-        val initial = name.trim().take(1).uppercase()
-        if (initial.isEmpty()) {
-            Icon(Icons.Filled.AccountCircle, null, tint = MaterialTheme.colorScheme.primary)
+        val initials = initialsOf(name)
+        val fg = if (accent) CtrlColors.OnAccent else CtrlColors.Text
+        if (initials.isEmpty()) {
+            Icon(Icons.Outlined.Person, null, tint = fg)
         } else {
-            Text(initial, style = initialStyle, color = MaterialTheme.colorScheme.primary)
+            Text(initials, style = initialStyle, color = fg)
         }
         if (url != null) AsyncImage(url, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
     }
 }
 
-/** The profile picture at the top right of every tab; tapping it opens the You page (there's no settings tab). */
+/**
+ * The 44 dp profile picture at the top right of every tab; tapping it opens the You page (there's no
+ * settings tab). A small accent square at its corner shows you're connected to your server.
+ */
 @Composable
 fun ProfileButton() {
     val nav = LocalNav.current
     val label = stringResource(R.string.you_title)
-    IconButton(onClick = { nav.go("you") }, modifier = Modifier.semantics { contentDescription = label }) {
-        ProfileAvatar(34.dp, MaterialTheme.typography.titleMedium)
+    val src = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    Box(
+        Modifier
+            .size(48.dp)
+            .semantics(mergeDescendants = true) { contentDescription = label }
+            .pressScale(src, 0.92f)
+            .clickable(src, indication = null, role = Role.Button) { nav.go("you") },
+        contentAlignment = Alignment.Center,
+    ) {
+        ProfileAvatar(44.dp, MaterialTheme.typography.labelLarge)
+        if (App.session.me != null) {
+            Box(
+                Modifier.align(Alignment.BottomEnd).size(14.dp).clip(RoundedCornerShape(5.dp))
+                    .background(CtrlColors.Background).padding(2.dp).clip(RoundedCornerShape(3.dp)).background(CtrlColors.Accent)
+            )
+        }
     }
 }
 
-/** Big left-aligned title for the main tabs, with the profile picture at the end. */
+/**
+ * Header of the main tabs in the Signal look: the SEERR/CTRL wordmark and the profile picture on top, then
+ * the tab's name as a big headline.
+ */
 @Composable
 fun TabTitle(title: String, modifier: Modifier = Modifier, trailing: @Composable RowScope.() -> Unit = {}) {
-    Row(
-        modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(title, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
-        trailing()
-        ProfileButton()
+    Column(modifier.fillMaxWidth()) {
+        CtrlTopBar(stringResource(R.string.wordmark_name)) {
+            trailing()
+            ProfileButton()
+        }
+        Text(
+            title, style = CtrlType.Headline,
+            maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 10.dp),
+        )
     }
 }
 
@@ -132,19 +180,26 @@ fun YouScreen(onLogout: () -> Unit) {
 
     Scaffold(topBar = { BackBar(stringResource(R.string.you_title), { nav.back() }) }) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-            Column(
-                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Row(
+                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                ProfileAvatar(96.dp, MaterialTheme.typography.displaySmall)
-                Spacer(Modifier.height(14.dp))
-                Text(s.displayName, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
-                Text(
-                    listOfNotNull(UserTypes.name(me.int("userType")), me.str("email")?.takeIf { it != s.displayName }).joinToString(App.str(R.string.list_separator_wide)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                ProfileAvatar(68.dp, MaterialTheme.typography.headlineSmall, accent = true)
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(s.displayName, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        App.api.baseUrl.substringAfter("://").trimEnd('/'),
+                        style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        listOfNotNull(UserTypes.name(me.int("userType")), me.str("email")?.takeIf { it != s.displayName }).joinToString(App.str(R.string.list_separator_wide)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
 
             Group {
@@ -186,7 +241,7 @@ fun YouScreen(onLogout: () -> Unit) {
             Group {
                 GroupRow(
                     stringResource(R.string.settings), stringResource(R.string.settings_subtitle),
-                    Icons.Filled.Settings, showChevron = true, onClick = { nav.go("appsettings") },
+                    Icons.Outlined.Tune, showChevron = true, onClick = { nav.go("appsettings") },
                 )
                 GroupRow(
                     stringResource(R.string.log_out),
@@ -198,16 +253,31 @@ fun YouScreen(onLogout: () -> Unit) {
             }
 
             Group(stringResource(R.string.group_about)) {
-                GroupRow(stringResource(R.string.support_title), stringResource(R.string.support_subtitle), Icons.Filled.Favorite, showChevron = true, onClick = { openUrl(ctx, SPONSOR_URL) })
-                GroupRow(stringResource(R.string.bugs_title), stringResource(R.string.bugs_subtitle), Icons.Filled.BugReport, showChevron = true, onClick = { openUrl(ctx, ISSUES_URL) })
-                GroupRow(stringResource(R.string.source_title), stringResource(R.string.source_subtitle), Icons.Filled.Code, showChevron = true, onClick = { openUrl(ctx, REPO_URL) })
-                GroupRow(stringResource(R.string.licence_title), stringResource(R.string.licence_subtitle), Icons.Filled.Gavel, showChevron = true, onClick = { openUrl(ctx, LICENCE_URL) })
+                GroupRow(stringResource(R.string.bugs_title), stringResource(R.string.bugs_subtitle), Icons.Outlined.BugReport, showChevron = true, onClick = { openUrl(ctx, ISSUES_URL) })
+                GroupRow(stringResource(R.string.source_title), stringResource(R.string.source_subtitle), Icons.Outlined.Code, showChevron = true, onClick = { openUrl(ctx, REPO_URL) })
+                GroupRow(stringResource(R.string.licence_title), stringResource(R.string.licence_subtitle), Icons.Outlined.Gavel, showChevron = true, onClick = { openUrl(ctx, LICENCE_URL) })
+            }
+            // Support VKNXWorks: the accent button at the bottom, as in every Ctrl app.
+            Button(
+                onClick = { openUrl(ctx, SPONSOR_URL) },
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp).height(56.dp),
+            ) {
+                Icon(Icons.Outlined.FavoriteBorder, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text(stringResource(R.string.support_title), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             }
             Text(
                 stringResource(R.string.about_footer, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.bodySmall,
+                style = CtrlType.Data,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                stringResource(R.string.ctrl_footer),
+                style = CtrlType.Label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 8.dp),
                 textAlign = TextAlign.Center,
             )
         }

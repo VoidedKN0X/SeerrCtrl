@@ -23,14 +23,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Block
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.Button
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilterChip
+import com.vknxworks.seerrctrl.ui.components.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vknxworks.seerrctrl.ui.components.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -65,11 +65,11 @@ import com.vknxworks.seerrctrl.R
 @Composable
 private fun FloatingBack() {
     val nav = LocalNav.current
-    FilledIconButton(
-        onClick = { nav.back() },
-        colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
-        modifier = Modifier.statusBarsPadding().padding(8.dp),
-    ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
+    com.vknxworks.seerrctrl.ui.components.CtrlSquareButton(
+        Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), { nav.back() },
+        modifier = Modifier.statusBarsPadding().padding(start = 16.dp, top = 8.dp),
+        background = com.vknxworks.seerrctrl.ui.theme.CtrlColors.Surface.copy(alpha = 0.88f),
+    )
 }
 
 @Composable
@@ -102,7 +102,7 @@ fun PersonScreen(id: Int) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
                         Row {
-                            Box(Modifier.width(110.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                            Box(Modifier.width(110.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
                                 App.session.tmdb(p.str("profilePath"), "w342")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
                             }
                             Spacer(Modifier.width(14.dp))

@@ -27,10 +27,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
+import com.vknxworks.seerrctrl.ui.components.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -382,7 +382,7 @@ fun LockScreen(vm: AppLockViewModel, onForgot: () -> Unit) {
     val savedLength = vm.settings.pinLength
 
     PinPadScreen(
-        title = stringResource(R.string.lock_title),
+        title = stringResource(R.string.lock_locked),
         message = when {
             vm.lockoutRemaining > 0 -> lockoutText(vm.lockoutRemaining)
             vm.pinError != null -> stringResource(vm.pinError!!)
@@ -408,7 +408,8 @@ fun LockScreen(vm: AppLockViewModel, onForgot: () -> Unit) {
         onConfirm = { if (pin.length >= minEntry) vm.submitPin(pin, wrong) },
         showConfirm = pin.length >= minEntry && pin.length != savedLength,
         minDots = maxOf(minEntry, if (vm.settings.legacyPin) savedLength else PIN_MIN),
-        bottom = { LockScreenButtons(showFingerprint = canBio, onFingerprint = askBiometric, onForgot = { confirmForgot = true }) },
+        onFingerprint = if (canBio) askBiometric else null,
+        bottom = { LockScreenButtons(onForgot = { confirmForgot = true }) },
     )
     if (confirmForgot) {
         ForgotPinDialog(

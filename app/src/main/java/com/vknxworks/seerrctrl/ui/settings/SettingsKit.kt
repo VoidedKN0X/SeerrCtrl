@@ -4,7 +4,6 @@ package com.vknxworks.seerrctrl.ui.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,15 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import com.vknxworks.seerrctrl.ui.components.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,12 +37,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.border
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import com.vknxworks.seerrctrl.ui.components.CtrlLabel
+import com.vknxworks.seerrctrl.ui.components.CtrlSwitch
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
 import androidx.compose.ui.res.stringResource
 import com.vknxworks.seerrctrl.R
 
-// The grouped settings rows every Ctrl app uses (as in MemoCtrl, ProxCtrl and TrueCtrl).
+// The grouped settings rows every Ctrl app uses, in the Ctrl / Signal look.
 
-/** A rounded block of related rows, with an optional heading above it and a note below. */
+/**
+ * A block of related rows in a surface card with 1 dp dividers between them, with an optional mono label
+ * above it and a note below (the Signal look shared by every Ctrl app).
+ */
 @Composable
 fun Group(
     title: String? = null,
@@ -57,20 +67,15 @@ fun Group(
 ) {
     Column(modifier.fillMaxWidth().padding(horizontal = gutter, vertical = 8.dp)) {
         if (title != null) {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
-            )
+            CtrlLabel(title, Modifier.padding(start = 4.dp, bottom = 8.dp))
         }
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(Modifier.padding(vertical = 6.dp), content = content)
-        }
+        Column(
+            Modifier.fillMaxWidth()
+                .clip(CtrlShapes.Card)
+                .background(CtrlColors.Surface)
+                .border(1.dp, CtrlColors.Outline, CtrlShapes.Card),
+            content = content,
+        )
         if (footer != null) {
             Text(
                 footer,
@@ -82,36 +87,44 @@ fun Group(
     }
 }
 
+/**
+ * Each row draws a 1 dp divider along its top edge. On the first row of a group it falls on the group's
+ * border, which is the same colour, so dividers only show between rows.
+ */
+private fun Modifier.topDivider(): Modifier = drawWithContent {
+    drawContent()
+    drawRect(CtrlColors.Outline, topLeft = Offset.Zero, size = Size(size.width, 1.dp.toPx()))
+}
+
 @Composable
 fun GroupRow(
     title: String,
     subtitle: String? = null,
     icon: ImageVector? = null,
-    iconTint: Color = MaterialTheme.colorScheme.primary,
+    iconTint: Color = CtrlColors.Muted,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     showChevron: Boolean = false,
     enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
+    modifier: Modifier? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val alpha = if (enabled) 1f else 0.5f
     Row(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .then(if (onClick != null && enabled) Modifier.clickable(onClick = onClick) else Modifier)
+            .topDivider()
+            .heightIn(min = 60.dp)
+            .then(modifier ?: if (onClick != null && enabled) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
-            Box(
-                Modifier.size(36.dp).clip(CircleShape).background(iconTint.copy(alpha = 0.14f * alpha)),
-                contentAlignment = Alignment.Center,
-            ) { Icon(icon, null, Modifier.size(20.dp), tint = iconTint.copy(alpha = alpha)) }
+            Icon(icon, null, Modifier.size(21.dp), tint = iconTint.copy(alpha = alpha))
             Spacer(Modifier.width(14.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = titleColor.copy(alpha = alpha), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = titleColor.copy(alpha = alpha), maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (!subtitle.isNullOrBlank()) {
                 Text(
                     subtitle,
@@ -138,8 +151,12 @@ fun GroupSwitch(
     enabled: Boolean = true,
     onChange: (Boolean) -> Unit,
 ) {
-    GroupRow(title, subtitle, icon, enabled = enabled, onClick = { onChange(!checked) }) {
-        Switch(checked, onCheckedChange = onChange, enabled = enabled)
+    GroupRow(
+        title, subtitle, icon, enabled = enabled, onClick = { onChange(!checked) },
+        modifier = Modifier.toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange),
+    ) {
+        // The whole row toggles; the switch itself only shows the state (TalkBack reads the row as a switch).
+        CtrlSwitch(checked, onCheckedChange = null, enabled = enabled)
     }
 }
 
@@ -170,7 +187,7 @@ fun <T> ChoiceSheet(
     onDismiss: () -> Unit,
     onPick: (T) -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
         LazyColumn(Modifier.navigationBarsPadding(), contentPadding = PaddingValues(bottom = 16.dp)) {
             items(options, key = { it.second }) { (value, label) ->

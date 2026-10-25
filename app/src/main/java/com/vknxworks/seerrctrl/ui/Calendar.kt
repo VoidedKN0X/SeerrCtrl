@@ -27,7 +27,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.EventAvailable
 import androidx.compose.material.icons.outlined.EventNote
-import androidx.compose.material3.FilterChip
+import com.vknxworks.seerrctrl.ui.components.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -265,11 +265,11 @@ private fun MonthGrid(
                             val has = byDay[day].orEmpty()
                             val isSel = day == selected
                             Column(
-                                Modifier.fillMaxSize().clip(CircleShape)
+                                Modifier.fillMaxSize().clip(com.vknxworks.seerrctrl.ui.theme.CtrlShapes.Chip)
                                     .background(
                                         when {
                                             isSel -> MaterialTheme.colorScheme.primary
-                                            day == today -> MaterialTheme.colorScheme.secondaryContainer
+                                            day == today -> MaterialTheme.colorScheme.surfaceContainerHigh
                                             else -> androidx.compose.ui.graphics.Color.Transparent
                                         }
                                     )
@@ -287,7 +287,7 @@ private fun MonthGrid(
                                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                                         has.take(3).forEach { e ->
                                             Box(
-                                                Modifier.size(5.dp).clip(CircleShape).background(
+                                                Modifier.size(5.dp).clip(com.vknxworks.seerrctrl.ui.theme.CtrlShapes.Dot).background(
                                                     if (isSel) MaterialTheme.colorScheme.onPrimary
                                                     else if (e.kind == CalEvent.Kind.Episode || e.kind == CalEvent.Kind.Premiere) Status.processing else Status.available
                                                 )

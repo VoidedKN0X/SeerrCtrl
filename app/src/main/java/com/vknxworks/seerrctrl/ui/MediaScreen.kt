@@ -42,23 +42,23 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.ReportProblem
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material3.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.vknxworks.seerrctrl.ui.components.Button
+import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
+import com.vknxworks.seerrctrl.ui.components.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
+import com.vknxworks.seerrctrl.ui.components.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vknxworks.seerrctrl.ui.components.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -106,6 +106,15 @@ import org.json.JSONObject
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
 import com.vknxworks.seerrctrl.R
+import androidx.compose.foundation.border
+import androidx.compose.ui.unit.sp
+import com.vknxworks.seerrctrl.ui.components.CtrlBottomBarClearance
+import com.vknxworks.seerrctrl.ui.components.CtrlLabel
+import com.vknxworks.seerrctrl.ui.components.CtrlSquareButton
+import com.vknxworks.seerrctrl.ui.components.CtrlStatus
+import com.vknxworks.seerrctrl.ui.theme.CtrlColors
+import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
+import com.vknxworks.seerrctrl.ui.theme.CtrlType
 
 private class MediaPage(
     val d: JSONObject,
@@ -149,17 +158,18 @@ fun MediaScreen(type: String, tmdbId: Int) {
                 val status4k = MediaStatus.of(info.intOrNull("status4k"))
                 val requests = info.objs("requests")
 
-                LazyColumn(contentPadding = PaddingValues(bottom = 128.dp)) {
+                LazyColumn(contentPadding = PaddingValues(bottom = CtrlBottomBarClearance)) {
                     item {
                         Box {
                             Backdrop(d.str("backdropPath"), 300.dp)
                             Row(
-                                Modifier.padding(start = 16.dp, end = 16.dp, top = 170.dp),
+                                Modifier.padding(start = 20.dp, end = 20.dp, top = 170.dp),
                                 verticalAlignment = Alignment.Bottom,
                             ) {
                                 Box(
-                                    Modifier.width(120.dp).aspectRatio(2f / 3f).clip(MaterialTheme.shapes.medium)
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    Modifier.width(120.dp).aspectRatio(2f / 3f).clip(CtrlShapes.Poster)
+                                        .background(CtrlColors.Surface)
+                                        .border(1.dp, CtrlColors.Outline, CtrlShapes.Poster)
                                 ) {
                                     s.tmdb(d.str("posterPath"), "w342")?.let { AsyncImage(it, title, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
                                 }
@@ -170,14 +180,14 @@ fun MediaScreen(type: String, tmdbId: Int) {
                                         if (s.movie4k && !tv || s.series4k && tv) MediaStatusPill(status4k, is4k = true)
                                     }
                                     Spacer(Modifier.height(6.dp))
-                                    Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                    Text(title, style = MaterialTheme.typography.headlineMedium)
                                     val facts = listOfNotNull(
                                         year(d.str("releaseDate") ?: d.str("firstAirDate")),
                                         if (tv) d.int("numberOfSeasons").takeIf { it > 0 }?.let { App.plural(R.plurals.seasons_count, it, it) }
                                         else runtime(d.int("runtime")),
                                         d.objs("genres").take(3).mapNotNull { it.str("name") }.joinToString(", ").ifEmpty { null },
                                     )
-                                    Text(facts.joinToString(App.str(R.string.list_separator)), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(facts.joinToString(App.str(R.string.list_separator)), style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -209,14 +219,14 @@ fun MediaScreen(type: String, tmdbId: Int) {
                         item {
                             Text(
                                 tag, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
                             )
                         }
                     }
                     item {
                         Text(
                             d.str("overview") ?: stringResource(R.string.no_overview_available),
-                            style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.bodyLarge, color = CtrlColors.Muted, modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
                         )
                     }
 
@@ -249,11 +259,11 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     if (streams.isNotEmpty()) {
                         item { SectionHeader(stringResource(R.string.streaming_in, region)) }
                         item {
-                            LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 items(streams) { p ->
                                     AsyncImage(
                                         s.tmdb(p.str("logoPath"), "w92"), p.str("name"),
-                                        Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
+                                        Modifier.size(48.dp).clip(CtrlShapes.Control)
                                             .clickable { providers.str("link")?.let { openUrl(context, it) } },
                                     )
                                 }
@@ -302,9 +312,12 @@ fun MediaScreen(type: String, tmdbId: Int) {
                     if (keywords.isNotEmpty()) {
                         item { SectionHeader(stringResource(R.string.keywords)) }
                         item {
-                            FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 keywords.forEach { k ->
                                     AssistChip(
+                                        shape = CtrlShapes.Chip,
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, CtrlColors.ControlOutline),
+                                        colors = androidx.compose.material3.AssistChipDefaults.assistChipColors(containerColor = CtrlColors.Surface, labelColor = CtrlColors.Text),
                                         onClick = {
                                             nav.browse(BrowseSpec(k.str("name") ?: "", if (tv) "/discover/tv" else "/discover/movies", mapOf("keywords" to k.int("id"))))
                                         },
@@ -344,11 +357,11 @@ fun MediaScreen(type: String, tmdbId: Int) {
                 }
             }
         }
-        FilledIconButton(
-            onClick = { nav.back() },
-            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color.Black.copy(alpha = 0.45f), contentColor = Color.White),
-            modifier = Modifier.statusBarsPadding().padding(8.dp),
-        ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
+        CtrlSquareButton(
+            Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), { nav.back() },
+            modifier = Modifier.statusBarsPadding().padding(start = 16.dp, top = 8.dp),
+            background = CtrlColors.Surface.copy(alpha = 0.88f),
+        )
     }
 }
 
@@ -381,12 +394,12 @@ private fun ActionRow(
     var more by remember { mutableStateOf(false) }
 
     FlowRow(
-        Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (playUrl != null && (status == MediaStatus.Available || status == MediaStatus.Partial)) {
-            Button({ onPlay(playUrl) }) {
+            Button({ onPlay(playUrl) }, Modifier.height(52.dp)) {
                 Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.play_on, s.mediaServer.label))
             }
@@ -398,7 +411,7 @@ private fun ActionRow(
             OutlinedButton({}, enabled = false) { Icon(Icons.Outlined.Block, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.blocklisted)) }
         } else {
             if (canRequest && requestable(status)) {
-                Button({ onRequest(false) }) {
+                Button({ onRequest(false) }, Modifier.height(52.dp)) {
                     Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(6.dp))
                     Text(if (tv && status != MediaStatus.Unknown && status != MediaStatus.Deleted) stringResource(R.string.request_more) else stringResource(R.string.request))
                 }
@@ -411,16 +424,19 @@ private fun ActionRow(
             OutlinedButton({ onTrailer(url) }) { Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.trailer)) }
         }
         val onList = d.bool("onUserWatchlist")
-        IconButton({ if (onList) onWatchlistRemove() else onWatchlist() }) {
-            Icon(if (onList) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder, if (onList) stringResource(R.string.remove_from_watchlist) else stringResource(R.string.add_to_watchlist))
-        }
+        CtrlSquareButton(
+            if (onList) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
+            if (onList) stringResource(R.string.remove_from_watchlist) else stringResource(R.string.add_to_watchlist),
+            { if (onList) onWatchlistRemove() else onWatchlist() },
+            tint = if (onList) CtrlColors.Accent else CtrlColors.Text,
+        )
         if (info != null && s.can(Perm.CREATE_ISSUES, Perm.MANAGE_ISSUES, any = true) &&
             (status == MediaStatus.Available || status == MediaStatus.Partial || status4k == MediaStatus.Available || status4k == MediaStatus.Partial)
         ) {
-            IconButton(onIssue) { Icon(Icons.Outlined.ReportProblem, stringResource(R.string.report_an_issue)) }
+            CtrlSquareButton(Icons.Outlined.ReportProblem, stringResource(R.string.report_an_issue), onIssue)
         }
         if (s.can(Perm.MANAGE_REQUESTS, Perm.MANAGE_BLOCKLIST, any = true)) {
-            IconButton(onManage) { Icon(Icons.Outlined.Build, stringResource(R.string.manage)) }
+            CtrlSquareButton(Icons.Outlined.Build, stringResource(R.string.manage), onManage)
         }
     }
 }
@@ -430,10 +446,11 @@ private fun DownloadRow(dl: JSONObject) {
     val size = dl.long("size")
     val left = dl.long("sizeLeft")
     val progress = if (size > 0) (1f - left.toFloat() / size).coerceIn(0f, 1f) else 0f
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 6.dp)) {
         Text(dl.str("title") ?: stringResource(R.string.download), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
         LinearProgressIndicator({ progress }, Modifier.fillMaxWidth())
+        Spacer(Modifier.height(4.dp))
         Text(
             listOfNotNull(
                 "${(progress * 100).toInt()}%",
@@ -441,7 +458,7 @@ private fun DownloadRow(dl: JSONObject) {
                 dl.str("status")?.replaceFirstChar { it.uppercase() },
                 dl.str("estimatedCompletionTime")?.let { App.str(R.string.eta, com.vknxworks.seerrctrl.data.prettyDateTime(it) ?: "") },
             ).joinToString(App.str(R.string.list_separator)),
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -452,7 +469,7 @@ private fun RatingsRow(d: JSONObject, ratings: JSONObject?) {
     val imdb = ratings.obj("imdb")
     val tmdb = d.dbl("voteAverage")
     val context = LocalContext.current
-    Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Row(Modifier.padding(horizontal = 20.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         if (tmdb != null && tmdb > 0) RatingChip(stringResource(R.string.tmdb), "${(tmdb * 10).toInt()}%") {}
         rt?.intOrNull("criticsScore")?.let { sc -> RatingChip(stringResource(R.string.critics), "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
         rt?.intOrNull("audienceScore")?.let { sc -> RatingChip(stringResource(R.string.audience), "$sc%") { rt.str("url")?.let { openUrl(context, it) } } }
@@ -462,13 +479,16 @@ private fun RatingsRow(d: JSONObject, ratings: JSONObject?) {
 
 @Composable
 private fun RatingChip(label: String, value: String, onClick: () -> Unit) {
-    Surface(shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.surfaceContainerHigh, onClick = onClick) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Surface(
+        shape = CtrlShapes.Control, color = CtrlColors.Surface, onClick = onClick,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CtrlColors.Outline),
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            CtrlLabel(label)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Star, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(4.dp))
-                Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text(value, style = CtrlType.Data.copy(fontSize = 16.sp), fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -496,13 +516,12 @@ private fun Facts(d: JSONObject, tv: Boolean) {
     }
     if (rows.isEmpty()) return
     Card(
-        Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        Modifier.padding(horizontal = 20.dp, vertical = 8.dp).fillMaxWidth(),
     ) {
         rows.forEachIndexed { i, (k, v) ->
-            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-            Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-                Text(k, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(0.45f))
+            if (i > 0) HorizontalDivider(color = CtrlColors.Outline)
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                CtrlLabel(k, Modifier.weight(0.45f))
                 Text(v, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.55f))
             }
         }
@@ -516,19 +535,18 @@ private fun SeasonRow(tvId: Int, season: JSONObject, info: JSONObject?) {
     val st = MediaStatus.of(info.intOrNull("status"))
     val st4k = MediaStatus.of(info.intOrNull("status4k"))
     Column(Modifier.fillMaxWidth()) {
-        ListItem(
-            headlineContent = { Text(season.str("name") ?: stringResource(R.string.season_2, n), fontWeight = FontWeight.SemiBold) },
-            supportingContent = {
-                Text(listOfNotNull(pluralStringResource(R.plurals.episodes_count, season.int("episodeCount"), season.int("episodeCount")), year(season.str("airDate"))).joinToString(App.str(R.string.list_separator)))
-            },
-            trailingContent = {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        SignalRow(
+            lead = "S%02d".format(n),
+            title = season.str("name") ?: stringResource(R.string.season_2, n),
+            subtitle = listOfNotNull(pluralStringResource(R.plurals.episodes_count, season.int("episodeCount"), season.int("episodeCount")), year(season.str("airDate"))).joinToString(App.str(R.string.list_separator)),
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MediaStatusPill(st)
                     if (App.session.series4k) MediaStatusPill(st4k, is4k = true)
-                    Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
+                    Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null, Modifier.size(20.dp), tint = CtrlColors.Muted)
                 }
             },
-            modifier = Modifier.clickable { open = !open },
+            onClick = { open = !open },
         )
         AnimatedVisibility(open) { Episodes(tvId, n) }
     }
@@ -538,16 +556,16 @@ private fun SeasonRow(tvId: Int, season: JSONObject, info: JSONObject?) {
 private fun Episodes(tvId: Int, season: Int) {
     val load = rememberLoad(tvId, season) { App.api.obj("/tv/$tvId/season/$season").objs("episodes") }
     Loaded(load, Modifier.height(80.dp)) { eps ->
-        Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             eps.forEach { e ->
                 Row {
-                    Box(Modifier.width(120.dp).aspectRatio(16f / 9f).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                    Box(Modifier.width(120.dp).aspectRatio(16f / 9f).clip(CtrlShapes.Chip).background(CtrlColors.Surface)) {
                         App.session.tmdb(e.str("stillPath"), "w300")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
                     }
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text("${e.int("episodeNumber")}. ${e.str("name") ?: ""}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                        prettyDate(e.str("airDate"))?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        prettyDate(e.str("airDate"))?.let { Text(it, style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         e.str("overview")?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis) }
                     }
                 }
@@ -561,14 +579,16 @@ private fun CollectionCard(c: JSONObject) {
     val nav = LocalNav.current
     SectionHeader(stringResource(R.string.part_of_a_collection))
     Box(
-        Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(110.dp).clip(MaterialTheme.shapes.large)
+        Modifier.padding(horizontal = 20.dp).fillMaxWidth().height(110.dp).clip(CtrlShapes.Card)
+            .background(CtrlColors.Surface)
+            .border(1.dp, CtrlColors.Outline, CtrlShapes.Card)
             .clickable { nav.go("collection/${c.int("id")}") }
     ) {
         App.session.tmdb(c.str("backdropPath"), "w780")?.let { AsyncImage(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
-        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)))
+        Box(Modifier.fillMaxSize().background(CtrlColors.Background.copy(alpha = 0.6f)))
         Column(Modifier.align(Alignment.CenterStart).padding(20.dp)) {
-            Text(c.str("name") ?: stringResource(R.string.collection), color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(stringResource(R.string.view_collection), color = Color.White.copy(alpha = 0.85f))
+            Text(c.str("name") ?: stringResource(R.string.collection), color = CtrlColors.Text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            CtrlLabel(stringResource(R.string.view_collection), color = CtrlColors.Accent)
         }
     }
 }
@@ -576,10 +596,11 @@ private fun CollectionCard(c: JSONObject) {
 @Composable
 private fun IssueMini(iss: JSONObject) {
     val nav = LocalNav.current
-    ListItem(
-        leadingContent = { Icon(Icons.Outlined.ReportProblem, null, tint = if (iss.int("status") == 1) Status.pending else Status.available) },
-        headlineContent = { Text(stringResource(R.string.issue_title, com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType")))) },
-        supportingContent = { Text(if (iss.int("status") == 1) stringResource(R.string.open) else stringResource(R.string.resolved)) },
-        modifier = Modifier.clickable { nav.go("issue/${iss.int("id")}") },
+    val open = iss.int("status") == 1
+    SignalRow(
+        lead = "#${iss.int("id")}",
+        title = stringResource(R.string.issue_title, com.vknxworks.seerrctrl.data.IssueTypes.name(iss.int("issueType"))),
+        trailing = { CtrlStatus(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.Accent else CtrlColors.Inactive) },
+        onClick = { nav.go("issue/${iss.int("id")}") },
     )
 }

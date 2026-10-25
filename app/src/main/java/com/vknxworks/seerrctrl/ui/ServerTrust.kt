@@ -6,7 +6,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GppMaybe
 import androidx.compose.material.icons.outlined.NoEncryption
-import androidx.compose.material3.AlertDialog
+import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
