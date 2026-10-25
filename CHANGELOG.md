@@ -2,6 +2,28 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.1
+
+Fixes for crashes around closing the app and from other apps, and a few privacy tightenings.
+
+### Fixed
+
+- **No crash when the app closes while it locks.** With the app lock set to lock as soon as you leave, closing SeerrCtrl (Back on the first screen, or swiping it away in recent apps) could try to open the lock screen on a window that was already going away, and Android stopped the app. The lock screen is now only shown while the app is still open; it still locks, and the next start always opens on the lock screen.
+- **No crash when the fingerprint prompt can't open in Settings.** Turning on **Unlock with fingerprint** while the app was leaving the screen could make Android refuse the prompt and close the app. You now see "couldn't set up fingerprint unlock" and can try again.
+- **No crash from a broken push or link.** A push from ntfy or a link from another app with unreadable contents is now ignored instead of stopping SeerrCtrl. The background check still picks up whatever a lost push was about.
+- **No crash in rows that list the same title twice.** Cast, crew, recommendations and other poster rows could crash a movie or series page when TMDB listed a title or person twice. Each one now shows once.
+- **Copying the push address or payload** no longer crashes on phones that briefly refuse clipboard access; it simply doesn't copy.
+
+### Security
+
+- **Stricter check of pushes from ntfy.** The secret token of SeerrCtrl's push registration is compared in constant time, and nothing is accepted before a registration exists.
+- **One less component open to other apps.** WorkManager's diagnostics receiver (only used for developer dumps over USB) is removed from the app.
+
+### Changed
+
+- **Privacy section of the README** now lists your ntfy server (only with Instant notifications on) among the servers SeerrCtrl can reach.
+- Internal cleanup: removed unused texts left over from the old theme settings.
+
 ## 1.9.0
 
 Instant notifications through ntfy, set up from the app, and an "Open in ArrCtrl" button on movie and series pages.

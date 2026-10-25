@@ -62,6 +62,10 @@
                 <action android:name="org.unifiedpush.android.connector.RAISE_TO_FOREGROUND" />
             </intent-filter>
         </service>
+        <!-- WorkManager's diagnostics hook (only for adb dumps) isn't needed in the app. -->
+        <receiver
+            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+            tools:node="remove" />
         <!-- No downloadable emoji font: androidx.emoji2 doesn't look for one at start-up, and emoji
              are drawn with the phone's own emoji font. -->
         <provider

@@ -81,7 +81,8 @@ private fun copySensitive(context: Context, text: String) {
     val clip = ClipData.newPlainText(context.getString(R.string.app_name), text).apply {
         description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
     }
-    context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
+    // Some phones refuse clipboard access now and then; that must not crash the app.
+    if (runCatching { context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(clip) }.isFailure) return
     Toast.makeText(context, context.getString(R.string.push_copied), Toast.LENGTH_SHORT).show()
 }
 
