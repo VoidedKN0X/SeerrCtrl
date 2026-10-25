@@ -413,7 +413,8 @@ fun TileRow(title: String, tiles: List<Tile>, onMore: (() -> Unit)? = null) {
     val nav = LocalNav.current
     SectionHeader(title, onMore = onMore)
     LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(tiles, key = { it.type + it.id }) { t -> PosterCard(t, posterWidth(), { nav.openTile(t) }) }
+        // TMDB lists sometimes name the same title twice; a repeated key would crash the row.
+        items(tiles.distinctBy { it.type + it.id }, key = { it.type + it.id }) { t -> PosterCard(t, posterWidth(), { nav.openTile(t) }) }
     }
 }
 

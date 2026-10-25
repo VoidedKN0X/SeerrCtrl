@@ -114,6 +114,11 @@ class MainActivity : FragmentActivity() {
      * the launcher), so only routes carrying this install's secret token are taken, and only a few route shapes.
      */
     private fun takeRoute(intent: android.content.Intent?) {
+        // Exported: an intent from another app with extras that can't be read must not crash the app.
+        try { readRoute(intent) } catch (_: Exception) {}
+    }
+
+    private fun readRoute(intent: android.content.Intent?) {
         // seerrctrl://movie/{tmdbId} and seerrctrl://tv/{tmdbId}, from the other Ctrl apps (e.g. ArrCtrl's
         // "Open in SeerrCtrl"). They only open a movie or series page, so they need no token, but only those
         // two shapes with a plain number are accepted.
@@ -313,7 +318,9 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
         Surface(Modifier.fillMaxSize().clearAndSetSemantics { }, color = MaterialTheme.colorScheme.background) {}
         // The lock itself is a full-screen window of its own. Dialogs, menus and sheets that were open when the
         // app locked are separate windows above the app's window, so the lock has to be one too to cover them.
-        Dialog(
+        // Not while the activity is closing (swiped away from recent apps, for example): a new window for an
+        // activity that's going away can't be added.
+        if (!activity.isFinishing && !activity.isDestroyed) Dialog(
             onDismissRequest = {},
             properties = DialogProperties(
                 dismissOnBackPress = false,

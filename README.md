@@ -91,7 +91,8 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 - **TMDB's image server** (`image.tmdb.org`) for posters, backdrops, photos and studio logos, unless your Seerr admin turned on **Cache images locally** (Settings > General in Seerr). Then every image comes through your Seerr server instead, and TMDB never sees your phone. TMDB sees your IP address and which titles' pictures are loaded.
 - **plex.tv**, only while you sign in with Plex.
 - **Gravatar and Plex** for other people's profile pictures, only if you turn on **Profile pictures from Gravatar and Plex** (tap your profile picture › **Settings › Privacy and security**). It's off by default, and people's initials show instead.
-- Trailers and links to sites like IMDb only open when you tap them.
+- **Your ntfy server**, only if you turn on **Instant notifications**. The ntfy app keeps the connection; SeerrCtrl itself only posts to its push address when you tap **Send a test push**. Pushes carry no titles or names.
+- Trailers and links to sites like IMDb (and F-Droid's ntfy page and ArrCtrl) only open when you tap them.
 
 ## Build from source
 

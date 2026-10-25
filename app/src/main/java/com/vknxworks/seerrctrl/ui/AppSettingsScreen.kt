@@ -109,8 +109,13 @@ fun AppSettingsScreen() {
                         if (on && act != null) {
                             val cipher = lock.vault.biometricEnrolCipher()
                             if (cipher == null) scope.launch { snack.showSnackbar(ctx.getString(R.string.lock_fingerprint_setup_failed)) }
-                            else showBiometricPrompt(act, ctx.getString(R.string.lock_fingerprint_enable_title), cipher, subtitle = ctx.getString(R.string.lock_fingerprint_enable_subtitle)) { c ->
-                                if (!lock.vault.finishBiometricEnrol(c)) scope.launch { snack.showSnackbar(ctx.getString(R.string.lock_fingerprint_setup_failed)) }
+                            else try {
+                                showBiometricPrompt(act, ctx.getString(R.string.lock_fingerprint_enable_title), cipher, subtitle = ctx.getString(R.string.lock_fingerprint_enable_subtitle)) { c ->
+                                    if (!lock.vault.finishBiometricEnrol(c)) scope.launch { snack.showSnackbar(ctx.getString(R.string.lock_fingerprint_setup_failed)) }
+                                }
+                            } catch (_: Exception) {
+                                // The phone refused to show the prompt (for example while the app is leaving the screen).
+                                scope.launch { snack.showSnackbar(ctx.getString(R.string.lock_fingerprint_setup_failed)) }
                             }
                         } else if (!on) {
                             lock.vault.disableBiometric()

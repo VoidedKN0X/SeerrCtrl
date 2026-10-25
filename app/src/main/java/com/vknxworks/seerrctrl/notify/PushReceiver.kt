@@ -25,8 +25,15 @@ import org.json.JSONObject
  */
 class PushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // Exported: a broadcast from another app with broken extras (or a failure scheduling the check) must never
+        // crash SeerrCtrl. The periodic check catches up on anything missed.
+        try { handle(context, intent) } catch (_: Exception) {}
+    }
+
+    private fun handle(context: Context, intent: Intent) {
         val token = intent.getStringExtra(UnifiedPush.EXTRA_TOKEN) ?: return
-        if (token != UnifiedPush.token(context)) return
+        val ours = UnifiedPush.token(context) ?: return
+        if (!java.security.MessageDigest.isEqual(token.toByteArray(), ours.toByteArray())) return
         if (Build.VERSION.SDK_INT >= 34) {
             val sender = sentFromPackage
             if (sender != null && sender != UnifiedPush.NTFY) return
