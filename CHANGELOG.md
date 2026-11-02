@@ -2,6 +2,21 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.4
+
+The app lock now also covers the Approve and Decline buttons on notifications, plus a safer push setup screen.
+
+### Security
+
+- **Approve and Decline on notifications respect the app lock.** Until now, a request could be approved or declined from a notification after unlocking the phone, without SeerrCtrl's own PIN. With the app lock on, new-request notifications no longer have these buttons: tap the notification to open SeerrCtrl, unlock it and decide there. Buttons on notifications posted before you turned the lock on only work while SeerrCtrl is unlocked; otherwise the notification asks you to open and unlock the app. Without the app lock nothing changes: the buttons are there and need the phone unlocked, as before.
+- **The push setup screen is kept out of screenshots.** It shows your ntfy push address, which can wake SeerrCtrl, so it's now always hidden from screenshots and screen recordings, like sign-in and the server settings.
+
+### Project
+
+- New **SECURITY.md** explaining how to report a security problem privately, and how releases are built and signed.
+- Bug reports and feature requests now use short forms on GitHub, with a reminder to leave out server addresses, passwords and API keys.
+- README: clearer install steps for people new to GitHub, a new **Is it safe to install?** section with the signing fingerprint and what each permission is for, a **How SeerrCtrl is made** section, the full Ctrl series list, and the empty Screenshots section removed.
+
 ## 1.9.3
 
 ### Fixed

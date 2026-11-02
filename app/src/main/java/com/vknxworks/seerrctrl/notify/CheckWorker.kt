@@ -176,7 +176,8 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             val nid = 20_000 + id
             Notifier.post(
                 applicationContext, nid, Notifier.CH_PENDING, title, text, mediaRoute(type, tmdbId), poster,
-                actions = listOf(
+                // With the app lock on there are no buttons: tapping the notification opens the app (and its lock).
+                actions = if (App.lock.pinSet) emptyList() else listOf(
                     action(nid, id, ActionReceiver.APPROVE, App.str(R.string.approve), title),
                     action(nid, id, ActionReceiver.DECLINE, App.str(R.string.decline), title),
                 ),

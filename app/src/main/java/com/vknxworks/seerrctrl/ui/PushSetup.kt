@@ -195,6 +195,8 @@ fun PushRows(tick: Int) {
  */
 @Composable
 fun PushSetupScreen() {
+    // Shows the push address: anyone with it can wake SeerrCtrl, so it's kept out of screenshots.
+    com.vknxworks.seerrctrl.SecureWindow()
     val nav = LocalNav.current
     val ctx = LocalContext.current
     val act = rememberActions()

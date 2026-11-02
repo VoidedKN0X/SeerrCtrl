@@ -889,6 +889,7 @@
     <string name="edit_rule">Edit rule %1$s</string>
     <string name="rule_saved">Rule saved</string>
     <string name="selected_2">Selected</string>
+    <string name="notify_unlock_first">Open SeerrCtrl and unlock it to approve or decline</string>
     <string name="notify_approve_failed">Couldn\'t approve — open the app</string>
     <string name="notify_decline_failed">Couldn\'t decline — open the app</string>
     <string name="title_in_4k">%1$s in 4K</string>

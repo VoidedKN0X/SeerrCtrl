@@ -25,6 +25,12 @@ class ActionReceiver : BroadcastReceiver() {
             androidx.core.app.NotificationManagerCompat.from(context).cancel(nid)
             return
         }
+        // With the app lock on, a request is only changed while SeerrCtrl is unlocked: the phone's own unlock
+        // isn't enough. Buttons posted before the lock was turned on end up here too.
+        if (App.lock.pinSet && !App.lock.vault.isOpen) {
+            Notifier.replace(context, nid, Notifier.CH_PENDING, title, App.str(R.string.notify_unlock_first))
+            return
+        }
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {

@@ -25,11 +25,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
 - **App lock** with its own PIN and optional fingerprint unlock; your sign-in stays encrypted while the app is locked
 - **Tablet and foldable layout**
-- **Private by default:** titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked, and profile pictures from Gravatar and Plex are off unless you turn them on. Two switches keep the app out of screenshots and the recent-apps view
-
-## Screenshots
-
-Coming soon.
+- **Private by default:** titles and names are hidden in notifications on the lock screen, Approve/Decline from a notification needs the phone unlocked (and with the app lock on, SeerrCtrl unlocked too), and profile pictures from Gravatar and Plex are off unless you turn them on. Two switches keep the app out of screenshots and the recent-apps view
 
 ## Requirements
 
@@ -39,8 +35,8 @@ Coming soon.
 
 ## Install
 
-1. Download the latest `.apk` file from the [Releases page](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest).
-2. Open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
+1. On your phone, open the [Releases page](https://github.com/VoidedKN0X/SeerrCtrl/releases/latest). Scroll down to **Assets** and tap the file that ends in `.apk` (for example `SeerrCtrl-v1.9.4.apk`). The "Source code" zip and tar.gz files are not the app; you don't need them.
+2. Open the downloaded file. Android may ask you to allow installing apps from your browser or file manager.
 3. Updates install over the old version. Your settings and login are kept.
 
 **Automatic updates:** on your phone, tap one of the buttons below.
@@ -51,6 +47,29 @@ Coming soon.
 <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/SeerrCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="80"></a> <a href="https://voidedkn0x.github.io/CtrlF-Droid/"><img src=".github/assets/badge_ctrlf-droid.png" alt="Get it from our F-Droid repo" height="80"></a>
 
 If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X/SeerrCtrl` in Obtainium by hand.
+
+## Is it safe to install?
+
+- **Open source.** All of SeerrCtrl's code is in this repo, under the GPL-3.0 licence. Anyone can read it.
+- **Built by GitHub, not on a personal computer.** Every release on the Releases page is built from this code by [the build workflow](.github/workflows/build.yml) on GitHub Actions.
+- **Always signed with the same key.** Android refuses to install an update that's signed with a different key, so nobody else can replace your SeerrCtrl with their own version. The CtrlF-Droid repo only accepts APKs signed with this key too. Its SHA-256 certificate fingerprint is:
+
+  ```
+  92:08:DF:BB:6B:CD:BF:5B:AA:9C:EA:6C:5D:C6:D2:51:C2:80:46:56:35:01:51:AC:19:E8:CD:66:D6:98:3D:83
+  ```
+
+  Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+
+**Permissions**
+
+| Permission | What SeerrCtrl uses it for |
+| --- | --- |
+| Internet | Talking to your Seerr server, and loading posters (see [Privacy](#privacy)) |
+| View network connections | Waiting for a network connection before the background check runs |
+| Notifications | Showing notifications about requests and issues (Android asks you first) |
+| Ignore battery optimizations | Asking Android, when you tap **Background activity**, to let the background check run on time |
+
+What SeerrCtrl talks to and what it keeps private is explained under [Privacy](#privacy).
 
 ## Getting started
 
@@ -78,7 +97,7 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 - **With the app lock on**, the recent-apps screen always shows a blank card.
 - **Notifications keep working while locked**: while notifications are on, the background check needs your session when the app isn't open, so the session is then encrypted only with the Android Keystore, as without the app lock. Turn notifications off to keep it sealed with your PIN too; the App lock setting says which applies.
 
-**Hide in screenshots** and **Hide in recent apps** are in the same section, work without the app lock too, and are both off by default. The first keeps SeerrCtrl out of screenshots and screen recordings; the second shows a blank card in the recent-apps view instead of the app. Sign-in, the lock screen, the PIN screens and the server settings (with their API keys and passwords) are always kept out of screenshots, whatever the switches say.
+**Hide in screenshots** and **Hide in recent apps** are in the same section, work without the app lock too, and are both off by default. The first keeps SeerrCtrl out of screenshots and screen recordings; the second shows a blank card in the recent-apps view instead of the app. Sign-in, the lock screen, the PIN screens, the server settings (with their API keys and passwords), user settings and the push setup screen are always kept out of screenshots, whatever the switches say.
 
 ## Privacy
 
@@ -93,6 +112,10 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 - **Gravatar and Plex** for other people's profile pictures, only if you turn on **Profile pictures from Gravatar and Plex** (tap your profile picture › **Settings › Privacy and security**). It's off by default, and people's initials show instead.
 - **Your ntfy server**, only if you turn on **Instant notifications**. The ntfy app keeps the connection; SeerrCtrl itself only posts to its push address when you tap **Send a test push**. Pushes carry no titles or names.
 - Trailers and links to sites like IMDb (and F-Droid's ntfy page and ArrCtrl) only open when you tap them.
+
+## How SeerrCtrl is made
+
+SeerrCtrl is a one-person project by VoidedKN0X (VKNXWorks). Much of the code is written with the help of AI (Claude, by Anthropic). I decide what the app does, review the changes and use the app myself. Every change is listed in the [changelog](CHANGELOG.md), and you can read every line of code here.
 
 ## Build from source
 
@@ -114,7 +137,9 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** on the **You** page (tap your profile picture). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
+SeerrCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support SeerrCtrl** under **About** on the **You** page (tap your profile picture). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/SeerrCtrl/issues/new/choose) helps too; **Report a bug** in the same About section opens the issues page. Bug reports and ideas use a short form that asks for what's needed.
+
+Found a security problem? Please don't open a public issue; see [SECURITY.md](SECURITY.md).
 
 ## The Ctrl series
 
@@ -136,8 +161,11 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |
 | [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) | Manage your Proxmox VE server |
+| [RideCtrl](https://github.com/VoidedKN0X/RideCtrl) | Offline maintenance, fuel and mod log for your vehicles |
 | **SeerrCtrl** (this app) | Request movies and shows on Seerr / Jellyseerr |
+| [SynapseCtrl](https://github.com/VoidedKN0X/SynapseCtrl) | Administer your Matrix Synapse server |
 | [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) | Monitor and manage your TrueNAS server |
+| [WrtCtrl](https://github.com/VoidedKN0X/WrtCtrl) | Manage your OpenWrt router |
 
 ## License
 
@@ -145,4 +173,4 @@ SeerrCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © V
 
 Fonts: [Space Grotesk](https://github.com/floriankarsten/space-grotesk) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), both under the SIL Open Font License 1.1 (licence texts in `app/src/main/assets/licenses/`). They're bundled in the app, so nothing is downloaded at runtime.
 
-SeerrCtrl is an unofficial app and is not affiliated with the Seerr, Jellyseerr or Overseerr projects. Movie and series data comes from TMDB through your server.
+SeerrCtrl is an independent app and isn't made by or affiliated with the Seerr, Jellyseerr or Overseerr projects. Movie and series data comes from TMDB through your server.
