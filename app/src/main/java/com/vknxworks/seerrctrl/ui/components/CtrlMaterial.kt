@@ -214,7 +214,10 @@ fun AlertDialog(
 
 private val SheetShape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
 
-/** Bottom sheet: surface fill, 26 dp top corners, 1 dp border. */
+/**
+ * Bottom sheet: surface fill and 26 dp top corners, no outline (the scrim sets it apart). A border modifier
+ * here would be drawn before the sheet's own offset, so it landed partway down the sheet.
+ */
 @Composable
 fun ModalBottomSheet(
     onDismissRequest: () -> Unit,
@@ -225,7 +228,7 @@ fun ModalBottomSheet(
 ) {
     M3ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        modifier = modifier.border(1.dp, CtrlColors.Outline, SheetShape),
+        modifier = modifier,
         sheetState = sheetState,
         shape = SheetShape,
         containerColor = CtrlColors.Surface,

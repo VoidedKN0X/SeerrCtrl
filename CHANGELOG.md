@@ -2,6 +2,16 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.3
+
+### Fixed
+
+- **Bottom sheets no longer show a stray grey box or outline.** The thin border added to bottom sheets in 1.7.0 was drawn in the wrong place: a grey rectangle could sit partway down an open sheet, cutting across its rows, with a stray rounded outline near the top of the screen. Sheets are now just the card colour (white in light mode, dark grey in dark mode) with 26 dp rounded top corners and no outline; the darkened background behind them already sets them apart. Their colours, corners, drag handle and behaviour are unchanged. This affects every bottom sheet in the app:
+  - **Discover filters** (the filter button on Movies, Series and genre/studio lists).
+  - **Manage** on a movie or series page (availability, data and blocklist actions).
+  - **Every choice list in Settings** and elsewhere that opens as a sheet (lock again after, check every, poster size and the others).
+- Dialogs keep their thin border (it was always drawn in the right place there), and popup menus keep the flat look from 1.9.2.
+
 ## 1.9.2
 
 ### Fixed
