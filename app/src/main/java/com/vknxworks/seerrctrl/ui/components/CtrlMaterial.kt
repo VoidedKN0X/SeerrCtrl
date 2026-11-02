@@ -23,7 +23,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.vknxworks.seerrctrl.ui.theme.CtrlColors
 import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
+import androidx.compose.material3.ExposedDropdownMenuBoxScope
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.material3.AlertDialog as M3AlertDialog
+import androidx.compose.material3.DropdownMenu as M3DropdownMenu
+import androidx.compose.material3.DropdownMenuItem as M3DropdownMenuItem
 import androidx.compose.material3.Button as M3Button
 import androidx.compose.material3.Card as M3Card
 import androidx.compose.material3.FilterChip as M3FilterChip
@@ -239,3 +244,79 @@ fun Switch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Mo
 @Composable
 fun LinearProgressIndicator(progress: () -> Float, modifier: Modifier = Modifier) =
     CtrlProgress(progress, modifier)
+
+private val MenuShape = RoundedCornerShape(16.dp)
+
+/**
+ * Popup menu in the Signal look: flat surface, 16 dp corners, 1 dp border, no shadow or tonal tint (a
+ * shadow inside the popup window showed as a grey box around the menu).
+ */
+@Composable
+fun CtrlDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    M3DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        offset = offset,
+        shape = MenuShape,
+        containerColor = CtrlColors.Surface,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, CtrlColors.Outline),
+        content = content,
+    )
+}
+
+/** [CtrlDropdownMenu] for an exposed drop-down (the list under a [ExposedDropdownMenuBox] field). */
+@Composable
+fun ExposedDropdownMenuBoxScope.CtrlExposedDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    ExposedDropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        shape = MenuShape,
+        containerColor = CtrlColors.Surface,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, CtrlColors.Outline),
+        content = content,
+    )
+}
+
+/** Menu row: palette text, muted icons, the inactive grey when disabled; [destructive] uses the error colour. */
+@Composable
+fun CtrlMenuItem(
+    text: @Composable () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    destructive: Boolean = false,
+) {
+    val fg = if (destructive) CtrlColors.Error else CtrlColors.Text
+    val icon = if (destructive) CtrlColors.Error else CtrlColors.Muted
+    M3DropdownMenuItem(
+        text = text, onClick = onClick, modifier = modifier,
+        leadingIcon = leadingIcon, trailingIcon = trailingIcon, enabled = enabled,
+        colors = MenuDefaults.itemColors(
+            textColor = fg,
+            leadingIconColor = icon,
+            trailingIconColor = icon,
+            disabledTextColor = CtrlColors.Inactive,
+            disabledLeadingIconColor = CtrlColors.Inactive,
+            disabledTrailingIconColor = CtrlColors.Inactive,
+        ),
+    )
+}

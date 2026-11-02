@@ -35,8 +35,8 @@ import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.vknxworks.seerrctrl.ui.components.CtrlDropdownMenu
+import com.vknxworks.seerrctrl.ui.components.CtrlMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -280,9 +280,9 @@ fun UsersScreen() {
                 BackBar(stringResource(R.string.users), { nav.back() }, subtitle = if (total >= 0) pluralStringResource(R.plurals.users_count, total, total) else null) {
                     Box {
                         TextButton({ sortMenu = true }) { Text(stringResource(R.string.sort)) }
-                        DropdownMenu(sortMenu, { sortMenu = false }) {
+                        CtrlDropdownMenu(sortMenu, { sortMenu = false }) {
                             listOf("displayname" to App.str(R.string.name), "created" to App.str(R.string.joined_2), "requests" to App.str(R.string.requests), "usertype" to App.str(R.string.type), "role" to App.str(R.string.role)).forEach { (k, l) ->
-                                DropdownMenuItem({ Text(l) }, { sort = k; sortMenu = false })
+                                CtrlMenuItem({ Text(l) }, { sort = k; sortMenu = false })
                             }
                         }
                     }
@@ -292,14 +292,14 @@ fun UsersScreen() {
         floatingActionButton = {
             Box {
                 FloatingActionButton({ menu = true }) { Icon(Icons.Outlined.PersonAdd, stringResource(R.string.add_users)) }
-                DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem({ Text(stringResource(R.string.create_local_user)) }, { menu = false; dialog = "create" }, leadingIcon = { Icon(Icons.Outlined.PersonAdd, null) })
+                CtrlDropdownMenu(menu, { menu = false }) {
+                    CtrlMenuItem({ Text(stringResource(R.string.create_local_user)) }, { menu = false; dialog = "create" }, leadingIcon = { Icon(Icons.Outlined.PersonAdd, null) })
                     val ms = App.session.mediaServer
                     if (ms == MediaServer.Jellyfin || ms == MediaServer.Emby) {
-                        DropdownMenuItem({ Text(stringResource(R.string.import_users, ms.label)) }, { menu = false; dialog = "jellyfin" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
+                        CtrlMenuItem({ Text(stringResource(R.string.import_users, ms.label)) }, { menu = false; dialog = "jellyfin" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
                     }
                     if (ms == MediaServer.Plex) {
-                        DropdownMenuItem({ Text(stringResource(R.string.import_plex_users)) }, { menu = false; dialog = "plex" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
+                        CtrlMenuItem({ Text(stringResource(R.string.import_plex_users)) }, { menu = false; dialog = "plex" }, leadingIcon = { Icon(Icons.Outlined.CloudDownload, null) })
                     }
                 }
             }

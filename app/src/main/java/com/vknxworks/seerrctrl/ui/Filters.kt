@@ -15,7 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import com.vknxworks.seerrctrl.ui.components.Button
-import androidx.compose.material3.DropdownMenuItem
+import com.vknxworks.seerrctrl.ui.components.CtrlExposedDropdownMenu
+import com.vknxworks.seerrctrl.ui.components.CtrlMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -203,8 +204,8 @@ fun Dropdown(label: String, options: List<Pair<String, String>>, selected: Strin
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(open) },
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
         )
-        ExposedDropdownMenu(open, { open = false }) {
-            options.forEach { (v, l) -> DropdownMenuItem(text = { Text(l) }, onClick = { onSelect(v); open = false }) }
+        CtrlExposedDropdownMenu(open, { open = false }) {
+            options.forEach { (v, l) -> CtrlMenuItem(text = { Text(l) }, onClick = { onSelect(v); open = false }) }
         }
     }
 }

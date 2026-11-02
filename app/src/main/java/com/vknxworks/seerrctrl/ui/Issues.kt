@@ -33,8 +33,8 @@ import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import com.vknxworks.seerrctrl.ui.components.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.vknxworks.seerrctrl.ui.components.CtrlDropdownMenu
+import com.vknxworks.seerrctrl.ui.components.CtrlMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import com.vknxworks.seerrctrl.ui.components.FilledTonalButton
@@ -318,9 +318,9 @@ private fun Comment(c: JSONObject, onEdit: () -> Unit, onDelete: () -> Unit) {
                     if (mine || s.can(Perm.MANAGE_ISSUES)) {
                         Box {
                             IconButton({ menu = true }) { Icon(Icons.Outlined.MoreVert, stringResource(R.string.tab_more)) }
-                            DropdownMenu(menu, { menu = false }) {
-                                if (mine) DropdownMenuItem({ Text(stringResource(R.string.edit)) }, { menu = false; onEdit() }, leadingIcon = { Icon(Icons.Outlined.Edit, null) })
-                                DropdownMenuItem({ Text(stringResource(R.string.lock_delete)) }, { menu = false; onDelete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null) })
+                            CtrlDropdownMenu(menu, { menu = false }) {
+                                if (mine) CtrlMenuItem({ Text(stringResource(R.string.edit)) }, { menu = false; onEdit() }, leadingIcon = { Icon(Icons.Outlined.Edit, null) })
+                                CtrlMenuItem({ Text(stringResource(R.string.lock_delete)) }, { menu = false; onDelete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null) }, destructive = true)
                             }
                         }
                     }

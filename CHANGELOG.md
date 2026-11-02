@@ -2,6 +2,15 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.2
+
+### Fixed
+
+- **Popup menus no longer show a grey box.** Menus that open from a button or a drop-down field had a grey, square-ish edge around them (most visible in light mode), from a shadow drawn inside the menu's popup window. They now use the flat Signal look in both light and dark mode: the card colour (white in light mode, dark grey in dark mode), 16 dp rounded corners, a thin 1 dp border and no shadow. Menu text uses the normal text colour, icons are muted grey, disabled items are greyed out, and **Delete** in an issue comment's menu is shown in red. Nothing changed in what the menus do. Menus touched:
+  - **Issues**: the menu on a comment (**Edit**, **Delete**).
+  - **Users**: the **Sort** menu, and the add-users menu (**Create local user**, **Import users** from Jellyfin/Emby, **Import Plex users**).
+  - **Every drop-down field**, which all share one picker: **Sort by** and the other pickers in the Discover filters; server, quality profile, root folder, language profile and requesting-user pickers in the **Request** dialog; the season and episode pickers in **Report an issue**; the choice fields in **Server settings**; and the slider type when adding a Discover slider.
+
 ## 1.9.1
 
 Fixes for crashes around closing the app and from other apps, and a few privacy tightenings.
