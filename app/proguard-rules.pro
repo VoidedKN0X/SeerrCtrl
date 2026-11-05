@@ -10,3 +10,10 @@
 # Optional extension APIs that androidx.window looks for at runtime on some devices.
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.**
+
+# Release builds drop verbose, debug and info logging (SeerrCtrl's own code doesn't log; this also covers libraries).
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}

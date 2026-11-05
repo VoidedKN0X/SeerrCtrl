@@ -2,6 +2,23 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.5
+
+Fewer permissions and stricter backup rules. Nothing changes in how you use the app.
+
+### Security
+
+- **Two permissions removed.** SeerrCtrl no longer asks for **use fingerprint hardware**, the old fingerprint permission that only Android 8 and older use (fingerprint unlock for the app lock uses **use biometric hardware**, as before), or for **run foreground service**, which the background check never needed: it's a short background job and never shows an ongoing notification. Both were added by libraries, not by SeerrCtrl.
+- **One less entry point from other apps.** A receiver that a library adds for app-store and developer tools, which other apps could send to, is removed. SeerrCtrl's launcher screen, its `seerrctrl://` links for ArrCtrl, and the ntfy push receiver (which ignores anything without SeerrCtrl's secret token) are the only parts other apps can reach.
+- **Backups exclude everything, including device-protected storage.** SeerrCtrl was already left out of Android's cloud backup and phone-to-phone transfer; the rules now also name the storage that's readable before you first unlock the phone, so nothing of SeerrCtrl's can end up in a backup on any phone.
+- **No debug, info or verbose logging in release builds.** SeerrCtrl's own code doesn't log, and the release build now also drops this logging from the libraries it uses.
+
+### Project
+
+- **README:** the permissions table lists every permission the app has, with what it's for (including the ones Android's job scheduler adds for the background check); the Privacy section lists every site SeerrCtrl can contact or open and says your session only ever goes to your own server; the Ctrl series list has all 28 apps.
+- **Build:** every build checks the Gradle wrapper hasn't been tampered with, and fails if Google Play services, Firebase or ML Kit ever end up in the app.
+- **Repo:** `.gitignore` also keeps signing files (`*.p12`, `*.jks.b64`, `keystore.properties`) and `google-services.json` out of the repo.
+
 ## Project updates (2026-11-03)
 
 ### Project

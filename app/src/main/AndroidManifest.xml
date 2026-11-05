@@ -5,12 +5,20 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Only asked for when you tap Settings > Notifications > Background activity, so the background check runs on time. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- AndroidX Biometric adds the old fingerprint permission, which is only for Android 8 and older. The app lock
+         uses USE_BIOMETRIC (also added by AndroidX Biometric), so it's removed. -->
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" />
+    <!-- WorkManager adds the foreground-service permission for long jobs shown as a notification. The background check
+         is a short job that never runs as a foreground service, so it's removed (with the service below). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
 
     <application
         android:name=".SeerrApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -62,6 +70,15 @@
                 <action android:name="org.unifiedpush.android.connector.RAISE_TO_FOREGROUND" />
             </intent-filter>
         </service>
+        <!-- WorkManager's foreground service, for long jobs shown as a notification. SeerrCtrl never uses it. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            tools:node="remove" />
+        <!-- AndroidX's profile installer adds an exported receiver for app-store and adb tooling. It isn't needed in
+             the app, so it's removed. -->
+        <receiver
+            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+            tools:node="remove" />
         <!-- WorkManager's diagnostics hook (only for adb dumps) isn't needed in the app. -->
         <receiver
             android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"

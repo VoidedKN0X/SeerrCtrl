@@ -51,6 +51,9 @@ jobs:
         with:
           persist-credentials: false
 
+      # Refuses a tampered Gradle wrapper jar (same gradle/actions release as setup-gradle).
+      - uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
@@ -81,6 +84,13 @@ jobs:
         run: |
           chmod +x gradlew
           set -o pipefail
+          # Google-free check: fail if anything in the app pulls in Play services, Firebase or ML Kit.
+          ./gradlew --no-daemon -q :app:dependencies --configuration releaseRuntimeClasspath > deps.txt
+          if grep -nE 'com\.google\.android\.gms|com\.google\.firebase|com\.google\.mlkit|play-services' deps.txt; then
+            echo "::error title=Google library found::The app's dependencies include Google Play services, Firebase or ML Kit (see above)."
+            exit 1
+          fi
+          echo "Dependency audit: no Google Play services, Firebase or ML Kit."
           if ! ./gradlew --no-daemon assembleRelease 2>&1 | tee build.log; then
             # Surface compiler errors as an annotation so they're visible without opening the logs.
             msg=$(grep -E "^e: |What went wrong|error:|FAILED" build.log | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')

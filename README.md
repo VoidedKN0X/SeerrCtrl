@@ -67,7 +67,13 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Internet | Talking to your Seerr server, and loading posters (see [Privacy](#privacy)) |
 | View network connections | Waiting for a network connection before the background check runs |
 | Notifications | Showing notifications about requests and issues (Android asks you first) |
-| Ignore battery optimizations | Asking Android, when you tap **Background activity**, to let the background check run on time |
+| Ignore battery optimizations | Asking Android, only when you tap **Background activity** (Settings › Notifications), to let the background check run on time. SeerrCtrl never asks on its own |
+| Use biometric hardware | Optional fingerprint unlock for the app lock |
+| Run at startup | Added by Android's job scheduler (WorkManager), so the background check for notifications is set up again after the phone restarts. Only used while notifications are on |
+| Prevent phone from sleeping | Added by WorkManager, so a background check that has started can finish. Only while a check runs |
+| App-internal broadcasts (`com.vknxworks.seerrctrl.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`) | Added by AndroidX so that only SeerrCtrl itself can send to its own internal receivers. It isn't something you grant and gives no access to anything |
+
+SeerrCtrl doesn't use location, contacts, camera, storage or phone permissions, and has no foreground service.
 
 What SeerrCtrl talks to and what it keeps private is explained under [Privacy](#privacy).
 
@@ -101,7 +107,7 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 
 ## Privacy
 
-**Telemetry-free.** SeerrCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add, plus the image and sign-in services Seerr itself relies on, listed below.
+**Telemetry-free.** SeerrCtrl has no analytics, crash reporting, usage stats, update checks or tracking of any kind. It only talks to the servers you add, plus the image and sign-in services Seerr itself relies on, listed below. Your session is only ever sent to your own Seerr server, never across a redirect to another site, and plain http is only used for your server after you confirm the "Not encrypted" warning.
 
 ### Other servers the app talks to
 
@@ -111,7 +117,10 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 - **plex.tv**, only while you sign in with Plex.
 - **Gravatar and Plex** for other people's profile pictures, only if you turn on **Profile pictures from Gravatar and Plex** (tap your profile picture › **Settings › Privacy and security**). It's off by default, and people's initials show instead.
 - **Your ntfy server**, only if you turn on **Instant notifications**. The ntfy app keeps the connection; SeerrCtrl itself only posts to its push address when you tap **Send a test push**. Pushes carry no titles or names.
-- Trailers and links to sites like IMDb (and F-Droid's ntfy page and ArrCtrl) only open when you tap them.
+- **Plex's sign-in page** (`app.plex.tv`) opens in your browser while you sign in with Plex.
+- Trailers and links to sites like IMDb, Seerr's documentation and GitHub page (server settings), F-Droid's ntfy page, ArrCtrl and the Support, Report a bug and Licence links only open when you tap them.
+
+Nothing is backed up: SeerrCtrl is left out of Android's cloud backup and its phone-to-phone transfer.
 
 ## How SeerrCtrl is made
 
@@ -143,28 +152,36 @@ Found a security problem? Please don't open a public issue; see [SECURITY.md](SE
 
 ## The Ctrl series
 
-Native Android apps for self-hosted services and everyday tools, all with the same Material You design.
+Native Android apps for self-hosted services and everyday tools, all with the same design.
 
 | App | What it's for |
 | --- | --- |
 | [AdCtrl](https://github.com/VoidedKN0X/AdCtrl) | Control your AdGuard Home DNS server |
 | [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) | Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app |
 | [BeamCtrl](https://github.com/VoidedKN0X/BeamCtrl) | TV remote for phones with an IR blaster |
+| [CallCtrl](https://github.com/VoidedKN0X/CallCtrl) | Phone app: dialer, call history and in-call screen |
 | [ChatCtrl](https://github.com/VoidedKN0X/ChatCtrl) | Matrix chat client for matrix.org and self-hosted Synapse |
+| [ClockCtrl](https://github.com/VoidedKN0X/ClockCtrl) | Alarms, timers, stopwatch and world clock |
+| [ContactCtrl](https://github.com/VoidedKN0X/ContactCtrl) | Contacts: browse, edit, import and export |
 | [CraftyCtrl](https://github.com/VoidedKN0X/CraftyCtrl) | Manage Minecraft servers on Crafty Controller |
+| [DateCtrl](https://github.com/VoidedKN0X/DateCtrl) | Calendar for the calendars on your phone and your accounts |
 | [FilesCtrl](https://github.com/VoidedKN0X/FilesCtrl) | File manager with NFS, SMB, SFTP, FTP and WebDAV |
 | [FrigateCtrl](https://github.com/VoidedKN0X/FrigateCtrl) | Watch and review your Frigate NVR cameras |
 | [ImmichCtrl](https://github.com/VoidedKN0X/ImmichCtrl) | Photos and backup for your Immich server |
 | [JellyCtrl](https://github.com/VoidedKN0X/JellyCtrl) | Movies, shows, music and Live TV from Jellyfin |
+| [LijnCtrl](https://github.com/VoidedKN0X/LijnCtrl) | Live De Lijn bus and tram departures |
+| [MailCtrl](https://github.com/VoidedKN0X/MailCtrl) | Email for Gmail and Proton Mail |
 | [MemoCtrl](https://github.com/VoidedKN0X/MemoCtrl) | Notes on your Memos server |
 | [NaviCtrl](https://github.com/VoidedKN0X/NaviCtrl) | Music player for Navidrome servers |
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | [PrintCtrl](https://github.com/VoidedKN0X/PrintCtrl) | Bambu Lab printers through Bambuddy, and Spoolman spools |
 | [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) | Manage your Proxmox VE server |
+| [RecorderCtrl](https://github.com/VoidedKN0X/RecorderCtrl) | Private, offline voice recorder |
 | [RideCtrl](https://github.com/VoidedKN0X/RideCtrl) | Offline maintenance, fuel and mod log for your vehicles |
 | **SeerrCtrl** (this app) | Request movies and shows on Seerr / Jellyseerr |
 | [SumCtrl](https://github.com/VoidedKN0X/SumCtrl) | Offline calculator, unit converter and work tools |
 | [SynapseCtrl](https://github.com/VoidedKN0X/SynapseCtrl) | Administer your Matrix Synapse server |
+| [TextCtrl](https://github.com/VoidedKN0X/TextCtrl) | Private SMS and MMS messaging |
 | [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) | Monitor and manage your TrueNAS server |
 | [WrtCtrl](https://github.com/VoidedKN0X/WrtCtrl) | Manage your OpenWrt router |
 
