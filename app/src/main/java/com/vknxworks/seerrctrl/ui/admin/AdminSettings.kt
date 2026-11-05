@@ -540,6 +540,7 @@ private fun ServiceEditor(kind: String, id: Int?) {
     if (confirmDelete && id != null) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            guard = true,
             title = { Text(stringResource(R.string.delete_this_server, label)) },
             confirmButton = {
                 TextButton({

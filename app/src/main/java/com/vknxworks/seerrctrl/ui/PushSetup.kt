@@ -277,6 +277,7 @@ fun PushSetupScreen() {
         val replaces = current.bool("enabled") && oldUrl != null && oldUrl != target
         AlertDialog(
             onDismissRequest = { confirm = null },
+            guard = true,
             title = { Text(stringResource(R.string.push_auto_confirm_title)) },
             text = {
                 Text(

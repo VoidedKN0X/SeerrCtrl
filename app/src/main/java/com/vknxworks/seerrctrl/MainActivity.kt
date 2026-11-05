@@ -1,5 +1,6 @@
 package com.vknxworks.seerrctrl
 
+import com.vknxworks.seerrctrl.ui.lock.GuardWindow
 import android.graphics.Color
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -183,13 +184,19 @@ object SecureScreen {
     var active by mutableIntStateOf(0)
 }
 
-/** Keeps FLAG_SECURE on while the calling screen is showing, whatever the user's setting. */
+/**
+ * Keeps FLAG_SECURE on while the calling screen is showing, whatever the user's setting. The same screens (sign-in,
+ * the lock and PIN screens, and screens with API keys, passwords and tokens) also hide other apps' overlays while
+ * they show ([GuardWindow], counted per window). Only the lock and PIN screens are also marked as sensitive for
+ * accessibility, so password managers that fill through accessibility keep working at sign-in.
+ */
 @Composable
 fun SecureWindow() {
     DisposableEffect(Unit) {
         SecureScreen.active++
         onDispose { SecureScreen.active-- }
     }
+    GuardWindow()
 }
 
 /**

@@ -274,6 +274,7 @@ fun IssueScreen(id: Int) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            guard = true,
             title = { Text(stringResource(R.string.delete_this_issue)) },
             confirmButton = {
                 TextButton({

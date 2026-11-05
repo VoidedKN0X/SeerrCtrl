@@ -477,6 +477,12 @@ fun PinRequestScreen(request: PinRequest) {
     }
 }
 
-/** The lock and PIN screens are always kept out of screenshots, recordings and casting, like sign-in. */
+/**
+ * The lock and PIN screens are always kept out of screenshots, recordings and casting, like sign-in. They also
+ * hide other apps' overlays and are marked as sensitive for accessibility while they show.
+ */
 @Composable
-internal fun KeepOutOfScreenshots() = com.vknxworks.seerrctrl.SecureWindow()
+internal fun KeepOutOfScreenshots() {
+    com.vknxworks.seerrctrl.SecureWindow()
+    GuardWindow(sensitive = true)
+}

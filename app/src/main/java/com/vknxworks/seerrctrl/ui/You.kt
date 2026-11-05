@@ -302,6 +302,7 @@ fun YouScreen(onLogout: () -> Unit) {
     if (confirmLogout) {
         AlertDialog(
             onDismissRequest = { confirmLogout = false },
+            guard = true,
             icon = { Icon(Icons.AutoMirrored.Outlined.Logout, null) },
             title = { Text(stringResource(R.string.log_out_title)) },
             text = { Text(stringResource(R.string.log_out_body)) },

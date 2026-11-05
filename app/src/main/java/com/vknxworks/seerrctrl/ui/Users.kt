@@ -149,6 +149,7 @@ fun ProfileScreen(id: Int) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            guard = true,
             title = { Text(stringResource(R.string.delete_this_user)) },
             text = { Text(stringResource(R.string.their_requests_are_removed_too_this)) },
             confirmButton = {

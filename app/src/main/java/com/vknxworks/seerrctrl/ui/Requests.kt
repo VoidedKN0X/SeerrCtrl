@@ -297,6 +297,7 @@ fun RequestCard(r: JSONObject, onChanged: () -> Unit) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            guard = true,
             title = { Text(stringResource(R.string.delete_this_request)) },
             text = { Text(stringResource(R.string.the_request_is_removed_from_seerr)) },
             confirmButton = {

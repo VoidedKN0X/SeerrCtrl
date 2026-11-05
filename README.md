@@ -60,6 +60,12 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
   Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
 
+**Check a download.** Every release is built and published by GitHub Actions, never on a personal computer:
+
+- The release notes end with the APK's **SHA-256** checksum. Compare it with `sha256sum SeerrCtrl-vX.Y.Z.apk` (or `Get-FileHash` on Windows).
+- Each release APK has a signed **build provenance attestation**. With the [GitHub CLI](https://cli.github.com/), `gh attestation verify SeerrCtrl-vX.Y.Z.apk -R VoidedKN0X/SeerrCtrl` proves it was built by this repo's workflow from the tagged commit.
+- The signing-certificate fingerprint above stays the same for every release.
+
 **Permissions**
 
 | Permission | What SeerrCtrl uses it for |
@@ -72,6 +78,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Run at startup | Added by Android's job scheduler (WorkManager), so the background check for notifications is set up again after the phone restarts. Only used while notifications are on |
 | Prevent phone from sleeping | Added by WorkManager, so a background check that has started can finish. Only while a check runs |
 | App-internal broadcasts (`com.vknxworks.seerrctrl.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`) | Added by AndroidX so that only SeerrCtrl itself can send to its own internal receivers. It isn't something you grant and gives no access to anything |
+| Hide other apps' floating windows over the PIN screen | While sign-in, the lock or PIN screen, a screen with API keys, passwords or tokens, or a delete, log-out or certificate confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden over it, so nothing can cover or imitate it. No prompt; overlays work as usual everywhere else. |
 
 SeerrCtrl doesn't use location, contacts, camera, storage or phone permissions, and has no foreground service.
 
@@ -143,6 +150,8 @@ You need [Android Studio](https://developer.android.com/studio), or JDK 17 and t
 3. The APK is in `app/build/outputs/apk/debug/`. Copy it to your phone and install it.
 
 Or open the folder in Android Studio and press **Run** with your phone connected.
+
+**Dependency verification.** Every library and build plugin download is checked against the sha256 checksums in `gradle/verification-metadata.xml`, and the build fails on any mismatch. When you change a dependency, a plugin or the Gradle version, run the **Dependency verification metadata** workflow (Actions tab, *Run workflow*), check the diff of the file it prints and commit it in the same push.
 
 ## Support the project
 

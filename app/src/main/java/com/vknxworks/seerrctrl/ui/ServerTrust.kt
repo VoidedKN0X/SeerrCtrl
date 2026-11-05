@@ -49,6 +49,7 @@ fun isNoHttps(e: Throwable): Boolean =
 fun CertDialog(host: String, fingerprint: String, changed: Boolean, onTrust: () -> Unit, onCancel: () -> Unit, cancelLabel: String = stringResource(R.string.lock_cancel)) {
     AlertDialog(
         onDismissRequest = onCancel,
+        guard = true,
         icon = { Icon(Icons.Outlined.GppMaybe, null) },
         title = { Text(if (changed) stringResource(R.string.certificate_changed) else stringResource(R.string.trust_this_certificate)) },
         text = {
@@ -72,6 +73,7 @@ fun CertDialog(host: String, fingerprint: String, changed: Boolean, onTrust: () 
 fun HttpWarningDialog(host: String, fallback: Boolean, onContinue: () -> Unit, onCancel: () -> Unit, cancelLabel: String = stringResource(R.string.lock_cancel)) {
     AlertDialog(
         onDismissRequest = onCancel,
+        guard = true,
         icon = { Icon(Icons.Outlined.NoEncryption, null) },
         title = { Text(stringResource(R.string.not_encrypted)) },
         text = {

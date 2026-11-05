@@ -205,6 +205,7 @@ fun ManageMediaSheet(details: JSONObject, type: String, onDismiss: () -> Unit, o
     confirm?.let { (t, body, block) ->
         AlertDialog(
             onDismissRequest = { confirm = null },
+            guard = true,
             icon = { Icon(Icons.Outlined.DeleteForever, null) },
             title = { Text(t) },
             text = { Text(body) },

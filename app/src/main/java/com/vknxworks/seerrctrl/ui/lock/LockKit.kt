@@ -130,6 +130,7 @@ fun LockScreenButtons(onForgot: () -> Unit) {
 fun ForgotPinDialog(body: String, confirm: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        guard = true,
         title = { Text(stringResource(R.string.lock_forgot_title)) },
         text = { Text(body) },
         confirmButton = {

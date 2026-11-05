@@ -1,5 +1,6 @@
 package com.vknxworks.seerrctrl.ui.components
 
+import com.vknxworks.seerrctrl.ui.lock.GuardWindow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.ColumnScope
@@ -194,10 +195,15 @@ fun AlertDialog(
     icon: @Composable (() -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
+    // Protects a destructive or security confirmation from other apps' overlays while it shows.
+    guard: Boolean = false,
 ) {
     M3AlertDialog(
         onDismissRequest = onDismissRequest,
-        confirmButton = confirmButton,
+        confirmButton = {
+            GuardWindow(guard)
+            confirmButton()
+        },
         modifier = modifier.border(1.dp, CtrlColors.Outline, CtrlShapes.Dialog),
         dismissButton = dismissButton,
         icon = icon,

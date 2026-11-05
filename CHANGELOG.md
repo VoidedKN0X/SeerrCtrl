@@ -2,6 +2,23 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.7
+
+### Security
+
+- **No overlays over sensitive screens.** While sign-in, the lock screen, a PIN screen, "Forgot PIN?", a screen that shows API keys, passwords or tokens (server settings, a user's settings, push setup), or a confirmation to delete something, log out, trust a server certificate or use plain HTTP is showing, other apps' floating windows (chat heads, screen overlays) are hidden over it, so no other app can cover it or put a fake screen on top. They come back as soon as that screen closes, and work as usual everywhere else. This uses a new install-time permission, "Hide other apps' floating windows"; there's no prompt.
+- **PIN screens hidden from accessibility misuse.** On Android 14 and newer, the lock and PIN screens are marked as sensitive, so apps that misuse accessibility access can't read them. Real accessibility tools such as TalkBack keep working. Sign-in and other password fields aren't marked, so password managers keep filling them as before.
+- **Stricter intents from other apps.** On Android 16 and newer, other apps can only reach SeerrCtrl with an intent that really matches it. Opening the app, "Open in SeerrCtrl" links from ArrCtrl and push through ntfy work as before.
+
+### Changed
+
+- **Built for Android 16** (target API level 36). Nothing changes in how the app looks or works: Back already uses Android's predictive back gesture, and the app was already edge to edge.
+
+### Project
+
+- **Checked dependencies:** every library and build plugin download is now checked against sha256 checksums in `gradle/verification-metadata.xml`, and the build fails on any mismatch.
+- **Verifiable releases:** this is the first release with a signed build provenance attestation and the APK's SHA-256 in the release notes. The README explains how to check a download with `gh attestation verify`.
+
 ## Project updates (2026-11-05, workflows)
 
 No new app version: these changes are to the repo's build workflows only.
