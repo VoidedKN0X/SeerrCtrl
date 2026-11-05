@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import com.vknxworks.seerrctrl.App
 import com.vknxworks.seerrctrl.R
@@ -20,7 +19,7 @@ import org.json.JSONObject
  * the app check your server early.
  *
  * Exported because ntfy is another app, so every broadcast must carry the secret token of SeerrCtrl's
- * registration or it's ignored: the token is what keeps other apps out. From Android 14 a broadcast from a
+ * registration or it's ignored: the token is what keeps other apps out. A broadcast from a
  * sender that identifies itself as an app other than ntfy is dropped too.
  */
 class PushReceiver : BroadcastReceiver() {
@@ -34,10 +33,8 @@ class PushReceiver : BroadcastReceiver() {
         val token = intent.getStringExtra(UnifiedPush.EXTRA_TOKEN) ?: return
         val ours = UnifiedPush.token(context) ?: return
         if (!java.security.MessageDigest.isEqual(token.toByteArray(), ours.toByteArray())) return
-        if (Build.VERSION.SDK_INT >= 34) {
-            val sender = sentFromPackage
-            if (sender != null && sender != UnifiedPush.NTFY) return
-        }
+        val sender = sentFromPackage
+        if (sender != null && sender != UnifiedPush.NTFY) return
         val app = context.applicationContext
         App.init(app)
         when (intent.action) {

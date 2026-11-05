@@ -10,12 +10,12 @@ android {
 
     defaultConfig {
         applicationId = "com.vknxworks.seerrctrl"
-        minSdk = 33
+        minSdk = 35
         targetSdk = 36
         // CI passes the run number so every build installs over the previous one.
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 47
-        versionName = "1.9.7"
+        versionCode = 48
+        versionName = "1.9.8"
         // 64-bit ARM phones only (arm64-v8a), like every Ctrl app.
         ndk { abiFilters += listOf("arm64-v8a") }
     }

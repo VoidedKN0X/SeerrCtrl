@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.8
+
+### Changed
+
+- **Needs Android 15 or newer.** Android 13 no longer gets security updates and Android 14's updates end in early 2027, so SeerrCtrl now supports Android 15, 16 and 17 only. On older phones the version you have keeps working, but it won't get updates.
+
 ## 1.9.7
 
 ### Security
