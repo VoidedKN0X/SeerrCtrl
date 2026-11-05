@@ -236,6 +236,11 @@ class SeerrApi(private val prefs: Prefs) {
             if (!req0.url.isHttps && !(same && httpOk)) {
                 throw IOException(App.str(R.string.refusing_an_unencrypted_connection, req0.url.host))
             }
+            // Requests on this client always start at the user's server, so another host here is a redirect.
+            // A 307/308 would re-send the body (sign-in passwords, settings with API keys) there: refuse it.
+            if (!same && (req0.body != null || (req0.method != "GET" && req0.method != "HEAD"))) {
+                throw IOException(App.str(R.string.refusing_a_redirect_to_another_server, req0.url.host))
+            }
             val req = if (same && cookie.isNotEmpty()) {
                 req0.newBuilder().header("Cookie", "$COOKIE=$cookie").build()
             } else req0.newBuilder().removeHeader("Cookie").build()

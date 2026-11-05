@@ -26,8 +26,9 @@ class ActionReceiver : BroadcastReceiver() {
             return
         }
         // With the app lock on, a request is only changed while SeerrCtrl is unlocked: the phone's own unlock
-        // isn't enough. Buttons posted before the lock was turned on end up here too.
-        if (App.lock.pinSet && !App.lock.vault.isOpen) {
+        // isn't enough. Buttons posted before the lock was turned on end up here too. Once the lock-again time has
+        // passed the app counts as locked, even if its screen hasn't come back to lock itself yet.
+        if (App.lock.pinSet && (!App.lock.vault.isOpen || com.vknxworks.seerrctrl.ui.lock.LockClock.expired())) {
             Notifier.replace(context, nid, Notifier.CH_PENDING, title, App.str(R.string.notify_unlock_first))
             return
         }

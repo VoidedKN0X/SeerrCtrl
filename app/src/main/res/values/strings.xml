@@ -190,6 +190,7 @@
     <string name="untitled">Untitled</string>
     <string name="plex_answered_http">Plex answered HTTP %1$s</string>
     <string name="refusing_an_unencrypted_connection">Refusing an unencrypted connection to %1$s</string>
+    <string name="refusing_a_redirect_to_another_server">Your server redirected this request to %1$s. SeerrCtrl won\'t send it to another server.</string>
     <string name="wrong_username_or_password">Wrong username or password</string>
     <string name="the_sign_in_token_was_rejected">The sign-in token was rejected</string>
     <string name="that_email_address_isn_t_valid">That email address isn\'t valid</string>
@@ -223,6 +224,7 @@
     <string name="issue_update">Issue update</string>
     <string name="request_update">Request update</string>
     <string name="unlock_to_see_details">Unlock to see details</string>
+    <string name="notify_locked_text">Unlock SeerrCtrl to see details</string>
     <string name="poster_size">Poster size</string>
     <string name="small">Small</string>
     <string name="medium">Medium</string>

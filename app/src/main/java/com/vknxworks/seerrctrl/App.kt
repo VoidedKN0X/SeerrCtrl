@@ -61,6 +61,8 @@ object App {
     fun enableLock(pin: String) {
         lock.setUp(pin)
         prefs.resealCookie()
+        // Notifications posted before the lock still show details and Approve/Decline buttons: post them again without.
+        runCatching { com.vknxworks.seerrctrl.notify.Notifier.hideDetails(appContext) }
     }
 
     /** Turns the app lock off (after the PIN was confirmed): the sign-in goes back to Keystore-only encryption. */

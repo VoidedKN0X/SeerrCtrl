@@ -2,6 +2,21 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## 1.9.6
+
+Tighter app lock for notifications, and sign-ins can't be forwarded to another server by a redirect.
+
+### Security
+
+- **Passwords and API keys never follow a redirect to another server.** If your Seerr server (or something in front of it) answered with a redirect to a different address, SeerrCtrl could send the same request there again, including your password when signing in or API keys when saving settings. It now refuses such a redirect and shows an error instead. Redirects that stay on your own server work as before.
+- **No details in notifications while the app lock is on.** With a PIN set, notifications now only say what kind of news it is ("Request update", "New request", "Issue update") with "Unlock SeerrCtrl to see details", and no title, requester name, comment or poster, so nothing shows in the notification shade either. Tapping one still opens that movie, series or issue, behind the lock.
+- **Turning the app lock on also hides notifications already in the shade.** Ones posted before you set the PIN are replaced right away by the same generic text, without their Approve/Decline buttons.
+- **Approve/Decline respects the lock-again time.** An older notification button could still approve or decline a request after you'd been away longer than your "Lock again" setting, as long as SeerrCtrl hadn't been reopened yet. The app now counts as locked as soon as that time has passed, so the button asks you to open and unlock SeerrCtrl first.
+
+### Changed
+
+- **README:** the App lock line now says exactly when your sign-in is sealed with your PIN (only while notifications are off; otherwise it's encrypted with the Android Keystore, as the Security section already explained).
+
 ## 1.9.5
 
 Fewer permissions and stricter backup rules. Nothing changes in how you use the app.

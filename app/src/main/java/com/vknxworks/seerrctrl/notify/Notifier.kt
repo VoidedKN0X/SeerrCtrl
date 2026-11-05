@@ -188,20 +188,53 @@ object Notifier {
         publicTitle: String = publicTitleFor(channel),
     ) {
         if (!canPost(ctx)) return
+        // With the app lock on, the shade shows no titles, names, comments or posters either, and there are no
+        // buttons: tapping still opens the item, behind the lock.
+        val locked = App.lock.pinSet
+        val shownTitle = if (locked) publicTitle else title
+        val shownText = if (locked) App.str(R.string.notify_locked_text) else text
         val b = NotificationCompat.Builder(ctx, channel)
             .setSmallIcon(R.drawable.ic_stat_seerr)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentTitle(shownTitle)
+            .setContentText(shownText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(shownText))
             .setContentIntent(openIntent(ctx, route, id))
             .setAutoCancel(true)
             .setGroup(channel)
             // Titles, usernames and comments stay off the lock screen; it only says what kind of news this is.
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setPublicVersion(publicVersion(ctx, channel, publicTitle))
-        poster?.let { b.setLargeIcon(it) }
-        actions.forEach { b.addAction(it) }
+        if (!locked) {
+            poster?.let { b.setLargeIcon(it) }
+            actions.forEach { b.addAction(it) }
+        }
         NotificationManagerCompat.from(ctx).notify(id, b.build())
+    }
+
+    /**
+     * The app lock was just turned on: notifications already in the shade are posted again without their details,
+     * posters or Approve/Decline buttons. Tapping one still opens the same item, behind the lock.
+     */
+    @Suppress("MissingPermission")
+    fun hideDetails(ctx: Context) {
+        val nm = ctx.getSystemService(NotificationManager::class.java) ?: return
+        val active = runCatching { nm.activeNotifications }.getOrNull() ?: return
+        for (sbn in active) {
+            if (sbn.packageName != ctx.packageName) continue
+            val n = sbn.notification
+            val channel = n.channelId ?: CH_MINE
+            if (!canPost(ctx)) { nm.cancel(sbn.tag, sbn.id); continue }
+            val b = NotificationCompat.Builder(ctx, channel)
+                .setSmallIcon(R.drawable.ic_stat_seerr)
+                .setContentTitle(publicTitleFor(channel))
+                .setContentText(App.str(R.string.notify_locked_text))
+                .setAutoCancel(true)
+                .setGroup(channel)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setPublicVersion(publicVersion(ctx, channel, publicTitleFor(channel)))
+            n.contentIntent?.let { b.setContentIntent(it) }
+            NotificationManagerCompat.from(ctx).notify(sbn.tag, sbn.id, b.build())
+        }
     }
 
     @Suppress("MissingPermission")
@@ -209,7 +242,7 @@ object Notifier {
         if (!canPost(ctx)) return
         val b = NotificationCompat.Builder(ctx, channel)
             .setSmallIcon(R.drawable.ic_stat_seerr)
-            .setContentTitle(title)
+            .setContentTitle(if (App.lock.pinSet) publicTitleFor(channel) else title)
             .setContentText(text)
             .setAutoCancel(true)
             .setTimeoutAfter(8000)

@@ -96,6 +96,29 @@ object LockTrips {
 fun expectReturn() { LockTrips.expectReturnAt = SystemClock.elapsedRealtime() }
 
 /**
+ * When the app was last sent to the background, for the whole process (not one screen), so parts of the app that
+ * run without a screen, such as the Approve/Decline buttons, can tell the lock-again time has passed.
+ */
+object LockClock {
+    /** 0 while the app is on screen. */
+    @Volatile var backgroundedAt = 0L
+    /** The current trip away was started by the app itself (a link, trailer, settings). */
+    @Volatile var exemptTrip = false
+
+    /** The app lock is on and you've been away longer than the lock-again time, so the app counts as locked. */
+    fun expired(): Boolean {
+        val s = App.lock
+        val since = backgroundedAt
+        if (!s.pinSet || since == 0L) return false
+        val after = s.lockAgain.millis
+        if (after < 0) return false
+        // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
+        val limit = if (exemptTrip) maxOf(after, 5 * 60_000L) else after
+        return SystemClock.elapsedRealtime() - since >= limit
+    }
+}
+
+/**
  * The fingerprint prompt that is open right now, if any. Some phones drop a prompt without ever answering
  * (for example one asked for while the app was still coming back on screen). Asking again always replaces
  * it and late answers from a replaced prompt are ignored, so such a prompt can never block fingerprint
@@ -206,40 +229,33 @@ class AppLockViewModel : ViewModel() {
     var returns by mutableIntStateOf(0)
         private set
 
-    private var backgroundedAt = 0L
     private var ticker: Job? = null
 
     init { refreshLockout() }
 
-    /** The current trip away was started by the app itself (a link, trailer, settings). */
-    private var exemptTrip = false
-
     fun onBackground() {
         val trip = LockTrips.expectReturnAt
         LockTrips.expectReturnAt = 0L
-        backgroundedAt = SystemClock.elapsedRealtime()
+        val now = SystemClock.elapsedRealtime()
         // Only right after the app opened something itself; leaving later still counts.
-        exemptTrip = trip > 0 && backgroundedAt - trip < 5_000
-        if (exemptTrip) return
+        LockClock.exemptTrip = trip > 0 && now - trip < 5_000
+        LockClock.backgroundedAt = now
+        if (LockClock.exemptTrip) return
         // "As soon as you leave" locks before the app is hidden, so the key is gone while it's in the background.
         if (settings.pinSet && settings.lockAgain == LockAgain.IMMEDIATELY) lockNow()
     }
 
     fun onForeground() {
-        val since = backgroundedAt
-        val exempt = exemptTrip
-        backgroundedAt = 0L
-        exemptTrip = false
+        val since = LockClock.backgroundedAt
+        val expired = LockClock.expired()
+        LockClock.backgroundedAt = 0L
+        LockClock.exemptTrip = false
         LockTrips.expectReturnAt = 0L
         if (since != 0L) {
             returns++
             biometricShown = false
         }
-        val after = settings.lockAgain.millis
-        if (!settings.pinSet || locked || since == 0L || after < 0) return
-        // A trip the app started still locks if you stay away long: after 5 minutes, or the chosen time if longer.
-        val limit = if (exempt) maxOf(after, 5 * 60_000L) else after
-        if (SystemClock.elapsedRealtime() - since >= limit) lockNow()
+        if (!locked && expired) lockNow()
     }
 
     fun lockNow() {
