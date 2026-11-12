@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -132,10 +134,10 @@ object CtrlColors {
 /** Bundled fonts (SIL OFL 1.1, licences in assets/licenses). */
 object CtrlFonts {
     val Grotesk = FontFamily(
-        Font(R.font.space_grotesk_regular, FontWeight.Normal),
-        Font(R.font.space_grotesk_medium, FontWeight.Medium),
-        Font(R.font.space_grotesk_semibold, FontWeight.SemiBold),
-        Font(R.font.space_grotesk_bold, FontWeight.Bold),
+        groteskFont(400),
+        groteskFont(500),
+        groteskFont(600),
+        groteskFont(700),
     )
     val Mono = FontFamily(
         Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
@@ -253,3 +255,14 @@ internal val CtrlTypography: Typography = Typography().let { t ->
         labelSmall = t.labelSmall.sg(11.sp, FontWeight.Medium),
     )
 }
+
+/**
+ * Space Grotesk at [weight], from the one variable font file (300 to 700): one file covers every weight the
+ * app uses, instead of a separate file for each.
+ */
+@OptIn(ExperimentalTextApi::class)
+private fun groteskFont(weight: Int) = Font(
+    R.font.space_grotesk,
+    FontWeight(weight),
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
+)
