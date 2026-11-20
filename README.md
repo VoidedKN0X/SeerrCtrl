@@ -51,7 +51,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 ## Is it safe to install?
 
 - **Open source.** All of SeerrCtrl's code is in this repo, under the GPL-3.0 licence. Anyone can read it.
-- **Built by GitHub, not on a personal computer.** Every release on the Releases page is built from this code by [the build workflow](.github/workflows/build.yml) on GitHub Actions.
+- **Built by GitHub, not on a personal computer.** Every release on the Releases page is built from this code by [the build workflow](.github/workflows/build.yml) on GitHub Actions. The signing key is kept away from the build: one job builds the APK without any secrets, and a separate job that runs no code from this repo signs it and checks the signature against the fingerprint below.
 - **Always signed with the same key.** Android refuses to install an update that's signed with a different key, so nobody else can replace your SeerrCtrl with their own version. The CtrlF-Droid repo only accepts APKs signed with this key too. Its SHA-256 certificate fingerprint is:
 
   ```
