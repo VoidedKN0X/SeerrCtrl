@@ -34,6 +34,9 @@ object App {
         if (::prefs.isInitialized) return
         appContext = ctx.applicationContext
         prefs = Prefs(ctx.applicationContext)
+        // The Keystore decrypt of the saved session starts now, off the main thread, while the rest of the
+        // app starts. The first screen still waits for its result before deciding signed in or not.
+        prefs.warmSession()
         settings = Settings(ctx.applicationContext)
         lock = LockSettings(ctx.applicationContext)
         // Background checks need the session while the app is locked, so it's only sealed with notifications off.

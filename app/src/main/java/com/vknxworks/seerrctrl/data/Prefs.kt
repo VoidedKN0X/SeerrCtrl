@@ -131,8 +131,25 @@ class Prefs(context: Context) {
      */
     @Volatile private var decrypted: Pair<String, String>? = null
 
+    /**
+     * Starts decrypting the saved session on a background thread, so the Keystore's answer is (mostly) there
+     * by the time the first screen asks whether you're signed in. Nothing else changes: whoever reads the
+     * session first waits in [decrypt] for this to finish and then gets the kept result, so a screen can
+     * never be drawn from a session that "isn't loaded yet". If this fails, the reader simply decrypts itself.
+     */
+    fun warmSession() {
+        Thread({ runCatching { decrypt(sp.getString("session", null)) } }, "session-warm").start()
+    }
+
     private fun decrypt(stored: String?): String {
         if (stored.isNullOrEmpty()) return ""
+        decrypted?.let { if (it.first == stored) return it.second }
+        return decryptLocked(stored)
+    }
+
+    /** One decrypt at a time: a second reader waits for the first and then finds its result kept. */
+    @Synchronized
+    private fun decryptLocked(stored: String): String {
         decrypted?.let { if (it.first == stored) return it.second }
         return try {
             val raw = Base64.decode(stored, Base64.NO_WRAP)

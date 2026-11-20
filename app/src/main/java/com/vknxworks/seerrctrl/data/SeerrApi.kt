@@ -32,7 +32,30 @@ class SeerrApi(private val prefs: Prefs) {
 
     @Volatile var baseUrl: String = prefs.baseUrl.trimEnd('/')
         private set
-    @Volatile private var cookie: String = prefs.sessionCookie
+    /**
+     * The session cookie, read from [prefs] (a Keystore decrypt) the first time something needs it instead
+     * of when the app starts: that's the first request, on a background thread. Every place that sets it
+     * ([reload], [lockDown], setup, a new cookie from the server) still sets it directly.
+     */
+    private var cookie: String
+        get() {
+            if (!cookieLoaded) synchronized(cookieLock) {
+                if (!cookieLoaded) {
+                    cookieValue = prefs.sessionCookie
+                    cookieLoaded = true
+                }
+            }
+            return cookieValue
+        }
+        set(v) {
+            synchronized(cookieLock) {
+                cookieValue = v
+                cookieLoaded = true
+            }
+        }
+    private val cookieLock = Any()
+    @Volatile private var cookieValue: String = ""
+    @Volatile private var cookieLoaded: Boolean = false
     /** SHA-256 of the self-signed certificate the user trusted for this server ("" = normal validation only). */
     @Volatile private var pin: String = prefs.pinnedCert
     /** Plain http to the server is only used after the user confirmed it's unencrypted. */

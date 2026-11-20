@@ -2,6 +2,14 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here has been run on a phone yet.
+
+### Changed
+
+- **The saved sign-in is unlocked in the background while the app starts.** Opening SeerrCtrl used to stop at the very start to ask the phone's Keystore (on some phones a separate, slow secure chip) for your saved session, before anything else could be set up. That request now starts on a background thread the moment the app starts and runs alongside the rest of the start-up, and the app no longer reads the session for its own use until the first request to your server needs it. The first screen still waits for the answer before it decides whether you're signed in, so it can never briefly show the sign-in screen (or skip the app lock) for an account that is signed in; it just usually finds the answer already there. With the app lock sealing your session nothing changes: it stays unreadable until you unlock.
+
 ## v1.9.11 (2026-11-20)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.
