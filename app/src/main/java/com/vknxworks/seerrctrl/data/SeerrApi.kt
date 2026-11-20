@@ -186,12 +186,9 @@ class SeerrApi(private val prefs: Prefs) {
 
     /** Third-party hosts: default certificate checks, no session cookie, and no plain http. */
     private val otherClient by lazy {
-        OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
-            .addNetworkInterceptor { chain ->
-                if (!chain.request().url.isHttps) throw IOException(App.str(R.string.refusing_an_unencrypted_connection, chain.request().url.host))
-                chain.proceed(chain.request())
-            }
-            .build()
+        // The same settings as [plainClient] (https only, no cookie) with a longer read timeout. Built from it,
+        // so both share one set of connections and threads instead of each keeping its own.
+        plainClient.newBuilder().readTimeout(30, TimeUnit.SECONDS).build()
     }
 
     private fun parse(text: String): Any? {

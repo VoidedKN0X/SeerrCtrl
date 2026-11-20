@@ -2,6 +2,18 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not released yet: these changes are built by CI but have no version number. They ship with the next version.
+
+### Changed
+
+- **Quicker start and less work in the background.** Your saved sign-in is unlocked with the phone's Keystore (on some phones a separate secure chip, which is slow). SeerrCtrl asked for that several times while starting, again every time the main screen redrew, and again for every background notification check. It now asks once and remembers the answer for as long as the saved sign-in stays the same; it is forgotten when the sign-in is saved again, when you log out and when the app's data is cleared. With the app lock sealing your sign-in, what is remembered is still the sealed form, so nothing more is readable while the app is locked than before.
+- **Rows of posters redraw with less work.** Removing doubled titles from a row (TMDB sometimes lists one twice) is done once per list instead of on every redraw of the row. The rows look the same.
+- **Artwork and the Plex sign-in share their connections.** The two connection handlers for outside services (TMDB, Plex, Gravatar) had identical rules but each kept its own connections and threads; one is now built from the other. The rules are unchanged: https only, normal certificate checks and never your Seerr session cookie.
+
+SeerrCtrl has no home screen widgets or quick settings tiles, so there was nothing to remove there.
+
 ## v1.9.10 (2026-11-13)
 
 ### Security

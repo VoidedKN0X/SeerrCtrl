@@ -33,6 +33,8 @@ class Prefs(context: Context) {
             return if (LockVault.isSealed(plain)) vault?.open(plain) ?: "" else plain
         }
         set(v) {
+            // What was read before no longer matches what's saved from here on.
+            decrypted = null
             if (v.isEmpty()) { sp.edit().remove("session").apply(); return }
             // Locked and it must be sealed: keep what's saved rather than store it unprotected.
             val inner = if (sealWanted()) vault?.seal(v) ?: return else v
@@ -72,8 +74,15 @@ class Prefs(context: Context) {
     /** True once a sign-in has worked; cleared on log out. */
     val isConfigured: Boolean get() = baseUrl.isNotBlank() && (cookieSealed || sessionCookie.isNotBlank())
 
-    fun clearSession() = sp.edit().remove("session").apply()
-    fun clear() = sp.edit().clear().apply()
+    fun clearSession() {
+        decrypted = null
+        sp.edit().remove("session").apply()
+    }
+
+    fun clear() {
+        decrypted = null
+        sp.edit().clear().apply()
+    }
 
     // --- Keystore AES-GCM ---
     private val alias = "seerrctrl_key"
@@ -114,13 +123,22 @@ class Prefs(context: Context) {
         } catch (_: Exception) { null }
     }
 
+    /**
+     * The last saved value that was decrypted, and what it decrypted to. The same saved value always gives
+     * the same result, so it's asked from the Keystore (slow, more so in a secure chip) once instead of on
+     * every read. What's kept is what the Keystore layer gives back: with the app lock sealing the session
+     * that is still the sealed form, not the cookie. A failed decrypt isn't kept, so it's tried again.
+     */
+    @Volatile private var decrypted: Pair<String, String>? = null
+
     private fun decrypt(stored: String?): String {
         if (stored.isNullOrEmpty()) return ""
+        decrypted?.let { if (it.first == stored) return it.second }
         return try {
             val raw = Base64.decode(stored, Base64.NO_WRAP)
             val c = Cipher.getInstance("AES/GCM/NoPadding")
             c.init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, raw, 0, 12))
-            String(c.doFinal(raw, 12, raw.size - 12))
+            String(c.doFinal(raw, 12, raw.size - 12)).also { decrypted = stored to it }
         } catch (_: Exception) { "" }
     }
 }
