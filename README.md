@@ -25,6 +25,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Issues**: report, comment and resolve
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
 - **App lock** with its own PIN and optional fingerprint unlock. Your sign-in is always encrypted with the Android Keystore; with notifications off it's also sealed with your PIN while the app is locked (the background check needs it when notifications are on). With the lock on, notifications only say what kind of news it is, with no titles, names, posters or buttons
+- **Back up and restore settings** to a file: poster size, browsing and notification choices, never your server, sign-in, PIN or certificate
 - **Tablet and foldable layout**
 - **Private by default:** titles and names are hidden in notifications on the lock screen (and in the notification shade too while the app lock is on), Approve/Decline from a notification needs the phone unlocked (and with the app lock on, SeerrCtrl unlocked too), and profile pictures from Gravatar and Plex are off unless you turn them on. Two switches keep the app out of screenshots and the recent-apps view
 

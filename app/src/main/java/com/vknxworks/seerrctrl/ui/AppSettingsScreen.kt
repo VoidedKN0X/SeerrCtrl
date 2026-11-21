@@ -157,6 +157,8 @@ fun AppSettingsScreen() {
                     s.useCustomTabs = it
                 }
             }
+
+            BackupSection()
         }
     }
 }
