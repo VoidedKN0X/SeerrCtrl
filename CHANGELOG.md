@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### New
+
+- **SeerrCtrl in French and German, following the phone's language.** The whole app is now also translated into French (polite "vous" form) and German (informal "du" form), so it covers English, Dutch, French and German. Android picks the language from your phone's settings and falls back to English for any other language. SeerrCtrl now also tells Android which languages it has, so Android 13 and later offer English, Dutch, French and German under Settings › Apps › SeerrCtrl › Language. Names of products and services (Seerr, Jellyfin, Plex, Radarr, Sonarr, TMDB, ntfy, Discord, Telegram…), technical fields such as SMTP, TTL and cron, and the menu path inside Seerr's own web page stay as they are, and so do texts that come from your server.
+
 ## v1.11.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.
