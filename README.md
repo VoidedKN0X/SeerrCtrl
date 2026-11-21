@@ -16,6 +16,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Discover** with the same sliders and filters as the web UI, and search for titles, people, keywords and studios. The page is kept on your phone, so it shows the moment you open the app and the fresh one follows
 - **Share a TMDB or IMDb link to SeerrCtrl** from your browser or another app (Share › **Find in SeerrCtrl**) and the title opens, ready to request
 - **Title pages** with ratings, cast and crew, collections, recommendations and similar titles, and a Play button for your media server
+- **Collections**: a collection's page requests every movie of it you don't have yet in one go (in 4K too)
 - **Request** movies and series, in 4K too, with season picking and advanced options
 - **Requests list**: swipe right to approve, left to decline, or **Select several** and approve or decline them together
 - **Notifications** when your requests are approved, declined, failed or available and when issues get replies; managers also get new requests with Approve/Decline buttons, and new issues
@@ -23,6 +24,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Open in ArrCtrl** from movie and series pages, when ArrCtrl is installed
 - **Upcoming calendar** for your requests and watchlist, plus your **Watchlist** and **Profile** (your requests, quota and stats)
 - **Issues**: report, comment and resolve
+- **Notification preferences per user** (your own under Account settings, anyone's for admins): which events reach each person by e-mail, Discord, Pushbullet, Pushover, Telegram and web push, with their own tokens, chat IDs and Discord user IDs
 - **Full admin**: users, permissions, quotas, the blocklist, Radarr/Sonarr, notification agents, jobs, logs and every server setting
 - **App lock** with its own PIN and optional fingerprint unlock. Your sign-in is always encrypted with the Android Keystore; with notifications off it's also sealed with your PIN while the app is locked (the background check needs it when notifications are on). With the lock on, notifications only say what kind of news it is, with no titles, names, posters or buttons
 - **Back up and restore settings** to a file: poster size, browsing and notification choices, never your server, sign-in, PIN or certificate

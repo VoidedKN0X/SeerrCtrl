@@ -504,9 +504,9 @@ fun UserSettingsScreen(id: Int) {
 }
 
 @Composable
-private fun SaveBar(state: FormState, busy: Boolean, onSave: () -> Unit) {
+private fun SaveBar(state: FormState, busy: Boolean, valid: Boolean = true, onSave: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-        com.vknxworks.seerrctrl.ui.components.Button(onSave, enabled = state.dirty && !busy) {
+        com.vknxworks.seerrctrl.ui.components.Button(onSave, enabled = state.dirty && !busy && valid) {
             if (busy) CircularProgressIndicator(Modifier.width(18.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.save_changes))
         }
     }
@@ -611,6 +611,9 @@ val NotificationTypeList = listOf(
     1024L to App.str(R.string.issue_resolved), 2048L to App.str(R.string.issue_reopened),
 )
 
+/** A Discord user ID ("snowflake"), as Seerr checks it (server/constants/discord.ts). */
+private val DiscordSnowflake = Regex("^\\d{17,20}$")
+
 @Composable
 private fun NotificationSettings(id: Int) {
     val act = rememberActions()
@@ -641,6 +644,35 @@ private fun NotificationSettings(id: Int) {
                         "pushoverSound" to "string", "telegramChatId" to "string", "telegramMessageThreadId" to "string", "telegramSendSilently" to "bool"),
                 ),
             )
+            // Seerr keeps a list of Discord user IDs per user (discordIds) for @-mentions; the generic list field can't
+            // take a second entry while typing, so it has its own field. Same rule as Seerr's web UI: 17-20 digits each.
+            val showDiscordIds = n.bool("discordEnabled") && n.has("discordIds")
+            var discordText by remember(n) {
+                mutableStateOf(n.optJSONArray("discordIds")?.let { a -> (0 until a.length()).map { a.optString(it).trim() }.filter { it.isNotEmpty() } }.orEmpty().joinToString(", "))
+            }
+            val discordIds = discordText.split(',', ' ', '\n').map { it.trim() }.filter { it.isNotEmpty() }
+            val discordBad = showDiscordIds && discordIds.any { !DiscordSnowflake.matches(it) }
+            if (showDiscordIds) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    OutlinedTextField(
+                        discordText,
+                        { t ->
+                            discordText = t
+                            state.set("discordIds", JSONArray(t.split(',', ' ', '\n').map { it.trim() }.filter { it.isNotEmpty() }))
+                        },
+                        label = { Text(stringResource(R.string.discord_user_ids)) },
+                        isError = discordBad, singleLine = true,
+                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        stringResource(if (discordBad) R.string.discord_user_ids_invalid else R.string.discord_user_ids_help),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (discordBad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+                    )
+                }
+            }
             n.str("telegramBotUsername")?.let {
                 Text(stringResource(R.string.start_a_chat_with_on_telegram_then, it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp))
             }
@@ -652,7 +684,13 @@ private fun NotificationSettings(id: Int) {
                 state.version
                 val key = agents[agent.coerceIn(0, agents.lastIndex)].first
                 val current = (state.get("notificationTypes.$key") as? Number)?.toLong() ?: 0L
-                NotificationTypeList.forEach { (bit, label) ->
+                // Discord only sends the events the server's Discord agent has switched on (discordEnabledTypes);
+                // Seerr's web UI offers just those, so SeerrCtrl does too. Bits for other events are left as they are.
+                val offered = if (key == "discord") NotificationTypeList.filter { (bit, _) -> n.long("discordEnabledTypes") and bit != 0L } else NotificationTypeList
+                if (offered.isEmpty()) {
+                    Text(stringResource(R.string.discord_no_events), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp))
+                }
+                offered.forEach { (bit, label) ->
                     Row(
                         Modifier.fillMaxWidth().clickable { state.set("notificationTypes.$key", current xor bit) }.padding(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -662,7 +700,7 @@ private fun NotificationSettings(id: Int) {
                     }
                 }
             }
-            SaveBar(state, act.busy) {
+            SaveBar(state, act.busy, valid = !discordBad) {
                 act.run(App.str(R.string.saved), onOk = { state.saved() }) { App.api.post("/user/$id/settings/notifications", state.obj) }
             }
             Spacer(Modifier.padding(40.dp))

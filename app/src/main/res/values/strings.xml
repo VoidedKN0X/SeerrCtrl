@@ -650,6 +650,10 @@
     <string name="pushover_sound">Pushover sound</string>
     <string name="start_a_chat_with_on_telegram_then">Start a chat with @%1$s on Telegram, then send /my_id to get your chat ID.</string>
     <string name="notify_me_about">Notify me about</string>
+    <string name="discord_user_ids">Discord user IDs</string>
+    <string name="discord_user_ids_help">Your Discord user ID, so Seerr can mention you. Separate several with commas.</string>
+    <string name="discord_user_ids_invalid">Each ID must be a Discord user ID: 17 to 20 digits.</string>
+    <string name="discord_no_events">Your server\'s Discord agent sends no events that can mention you.</string>
     <string name="only_another_admin_can_change_your">Only another admin can change your permissions.</string>
     <string name="permissions_saved">Permissions saved</string>
     <string name="save_permissions">Save permissions</string>

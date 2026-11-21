@@ -625,6 +625,10 @@
     <string name="pushover_sound">Geluid van Pushover</string>
     <string name="start_a_chat_with_on_telegram_then">Start een chat met @%1$s op Telegram en stuur dan /my_id om je chat-ID te krijgen.</string>
     <string name="notify_me_about">Meldingen over</string>
+    <string name="discord_user_ids">Discord-gebruikers-ID\'s</string>
+    <string name="discord_user_ids_help">Je Discord-gebruikers-ID, zodat Seerr je kan vermelden. Meerdere scheid je met komma\'s.</string>
+    <string name="discord_user_ids_invalid">Elke ID moet een Discord-gebruikers-ID zijn: 17 tot 20 cijfers.</string>
+    <string name="discord_no_events">De Discord-agent van je server stuurt geen gebeurtenissen waarin je vermeld kunt worden.</string>
     <string name="only_another_admin_can_change_your">Alleen een andere beheerder kan jouw rechten wijzigen.</string>
     <string name="permissions_saved">Rechten opgeslagen</string>
     <string name="save_permissions">Rechten opslaan</string>

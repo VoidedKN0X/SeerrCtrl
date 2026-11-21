@@ -2,6 +2,12 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Changed
+
+- **Discord user IDs in a user's notification settings.** Account settings › **Notifications** (your own, or any user's for admins) now has a **Discord user IDs** field when your server's Discord agent can mention people. Current Seerr keeps a list of Discord IDs per user there, and SeerrCtrl had no way to fill it in. Type one ID, or several separated by commas; each must be 17 to 20 digits (the same check as Seerr's web page) and **Save changes** stays off until they are. The **Discord** tab under **Notify me about** now only lists the events your server's Discord agent sends, as the web page does; if it sends none, the tab says so. Built by CI only; not yet run on a phone.
+
 ## v1.10.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.
