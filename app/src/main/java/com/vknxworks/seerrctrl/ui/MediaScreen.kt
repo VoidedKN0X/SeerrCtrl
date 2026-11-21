@@ -494,7 +494,7 @@ private fun DownloadRow(dl: JSONObject) {
             listOfNotNull(
                 "${(progress * 100).toInt()}%",
                 if (size > 0) App.str(R.string.of, humanBytes(size - left), humanBytes(size)) else null,
-                dl.str("status")?.replaceFirstChar { it.uppercase() },
+                dl.str("status")?.let { downloadStatus(it) },
                 dl.str("estimatedCompletionTime")?.let { App.str(R.string.eta, com.vknxworks.seerrctrl.data.prettyDateTime(it) ?: "") },
             ).joinToString(App.str(R.string.list_separator)),
             style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -642,4 +642,16 @@ private fun IssueMini(iss: JSONObject) {
         trailing = { CtrlStatus(if (open) stringResource(R.string.open) else stringResource(R.string.resolved), if (open) CtrlColors.AccentText else CtrlColors.Inactive) },
         onClick = { nav.go("issue/${iss.int("id")}") },
     )
+}
+
+/** The *arr queue status Seerr passes on, in the phone's language; an unknown one as the server names it. */
+private fun downloadStatus(status: String): String = when (status.lowercase()) {
+    "downloading" -> App.str(R.string.downloading)
+    "completed" -> App.str(R.string.completed)
+    "failed" -> App.str(R.string.failed)
+    "paused" -> App.str(R.string.download_status_paused)
+    "queued" -> App.str(R.string.download_status_queued)
+    "delay" -> App.str(R.string.download_status_delay)
+    "warning" -> App.str(R.string.download_status_warning)
+    else -> status.replaceFirstChar { it.uppercase() }
 }

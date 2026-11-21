@@ -386,6 +386,10 @@
     <string name="removed_from_watchlist">Van kijklijst verwijderd</string>
     <string name="no_overview_available">Geen beschrijving beschikbaar.</string>
     <string name="downloading">Wordt gedownload</string>
+    <string name="download_status_paused">Gepauzeerd</string>
+    <string name="download_status_queued">In wachtrij</string>
+    <string name="download_status_delay">Uitgesteld</string>
+    <string name="download_status_warning">Waarschuwing</string>
     <string name="streaming_in">Te streamen in %1$s</string>
     <string name="seasons">Seizoenen</string>
     <string name="cast">Cast</string>

@@ -386,6 +386,10 @@
     <string name="removed_from_watchlist">Von der Watchlist entfernt</string>
     <string name="no_overview_available">Keine Beschreibung verfügbar.</string>
     <string name="downloading">Wird heruntergeladen</string>
+    <string name="download_status_paused">Pausiert</string>
+    <string name="download_status_queued">In der Warteschlange</string>
+    <string name="download_status_delay">Verzögert</string>
+    <string name="download_status_warning">Warnung</string>
     <string name="streaming_in">Streaming in %1$s</string>
     <string name="seasons">Staffeln</string>
     <string name="cast">Besetzung</string>

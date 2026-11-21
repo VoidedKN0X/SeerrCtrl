@@ -1,14 +1,18 @@
 package com.vknxworks.seerrctrl.data
 
-import org.json.JSONArray
-import org.json.JSONObject
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
+import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.R
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import com.vknxworks.seerrctrl.App
-import com.vknxworks.seerrctrl.R
+import java.util.Locale
+import org.json.JSONArray
+import org.json.JSONObject
 
 // Small null-safe helpers over org.json, so screens read like `movie.str("title")`.
 
@@ -103,10 +107,12 @@ fun humanBytes(bytes: Long): String {
     return String.format("%.1f %s", v, units[i])
 }
 
-fun runtime(minutes: Int): String? = when {
-    minutes <= 0 -> null
-    minutes < 60 -> "${minutes}m"
-    else -> "${minutes / 60}h ${minutes % 60}m"
+/** A film's running time with the phone's own short units (ICU's narrow format): "1h 45m", "50m" in English. */
+fun runtime(minutes: Int): String? {
+    if (minutes <= 0) return null
+    val measures = if (minutes < 60) arrayOf(Measure(minutes, MeasureUnit.MINUTE))
+    else arrayOf(Measure(minutes / 60, MeasureUnit.HOUR), Measure(minutes % 60, MeasureUnit.MINUTE))
+    return MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.NARROW).formatMeasures(*measures)
 }
 
 /** "applicationTitle" → "Application title". */

@@ -2,6 +2,13 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Fixed
+
+- **Running times use your language's short units.** A film's or episode's running time on its page was always written with English letters (like "1h 45m"). It now uses the phone's own short units, so it reads naturally in Dutch, French and German; English stays as it was.
+- **Download status in your language.** Under an active download on a title's page, the status Radarr or Sonarr reports (downloading, paused, queued, completed, delayed, warning, failed) showed as the server's English word. It now uses the phone's language; any other status still shows as the server names it.
+
 ## v1.12.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

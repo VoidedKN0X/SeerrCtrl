@@ -386,6 +386,10 @@
     <string name="removed_from_watchlist">Retiré de la liste de suivi</string>
     <string name="no_overview_available">Aucun résumé disponible.</string>
     <string name="downloading">Téléchargement</string>
+    <string name="download_status_paused">En pause</string>
+    <string name="download_status_queued">En file d’attente</string>
+    <string name="download_status_delay">Différé</string>
+    <string name="download_status_warning">Avertissement</string>
     <string name="streaming_in">En streaming en %1$s</string>
     <string name="seasons">Saisons</string>
     <string name="cast">Distribution</string>
