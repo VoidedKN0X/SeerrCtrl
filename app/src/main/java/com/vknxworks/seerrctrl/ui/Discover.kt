@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.vknxworks.seerrctrl.App
+import com.vknxworks.seerrctrl.data.DiscoverCache
 import com.vknxworks.seerrctrl.data.MediaStatus
 import com.vknxworks.seerrctrl.data.Perm
 import androidx.compose.foundation.border
@@ -143,7 +144,8 @@ private val networks = listOf(
 /** One slider from the server's discover layout, already resolved to what it shows. */
 private sealed interface SliderRow {
     val key: String
-    data class Tiles(override val key: String, val title: String, val tiles: List<Tile>, val more: BrowseSpec?) : SliderRow
+    /** [keep]: false for rows about the account or the library (watchlist, recently added), which are never saved on the phone. */
+    data class Tiles(override val key: String, val title: String, val tiles: List<Tile>, val more: BrowseSpec?, val keep: Boolean = true) : SliderRow
     data class Genres(override val key: String, val title: String, val tv: Boolean, val genres: List<JSONObject>) : SliderRow
     data class Logos(override val key: String, val title: String, val tv: Boolean, val items: List<Studio>) : SliderRow
     data class Requests(override val key: String, val requests: List<JSONObject>) : SliderRow
@@ -182,10 +184,10 @@ private suspend fun buildRow(slider: JSONObject): SliderRow? {
         1 -> { // recently added
             if (!App.session.can(Perm.MANAGE_REQUESTS, Perm.RECENT_VIEW, any = true)) return null
             val media = App.api.obj("/media", mapOf("filter" to "allavailable", "take" to 20, "sort" to "mediaAdded")).objs("results")
-            SliderRow.Tiles("s$id", App.str(R.string.recently_added), tilesFor(media.map { (it.str("mediaType") ?: "movie") to it.int("tmdbId") }), null)
+            SliderRow.Tiles("s$id", App.str(R.string.recently_added), tilesFor(media.map { (it.str("mediaType") ?: "movie") to it.int("tmdbId") }), null, keep = false)
         }
         2 -> SliderRow.Requests("s$id", App.api.obj("/request", mapOf("filter" to "all", "take" to 10, "sort" to "added")).objs("results"))
-        3 -> tiles(App.str(R.string.your_watchlist), "/discover/watchlist")
+        3 -> (tiles(App.str(R.string.your_watchlist), "/discover/watchlist") as SliderRow.Tiles).copy(keep = false)
         4 -> tiles(App.str(R.string.trending), "/discover/trending")
         5 -> tiles(App.str(R.string.popular_movies), "/discover/movies")
         6 -> SliderRow.Genres("s$id", App.str(R.string.movie_genres), false, App.api.arr("/discover/genreslider/movie").objects())
@@ -208,11 +210,47 @@ private suspend fun buildRow(slider: JSONObject): SliderRow? {
     }
 }
 
+/** The public rows of the page, in the shape [DiscoverCache] saves. */
+private fun toSaved(rows: List<SliderRow>): List<DiscoverCache.Row> = rows.mapNotNull { row ->
+    when (row) {
+        is SliderRow.Tiles -> if (!row.keep) null else DiscoverCache.Row(
+            key = row.key, kind = "tiles", title = row.title,
+            tiles = row.tiles,
+            morePath = row.more?.path,
+            moreParams = row.more?.params.orEmpty().mapNotNull { (k, v) -> v?.let { k to it.toString() } }.toMap(),
+        )
+        is SliderRow.Genres -> DiscoverCache.Row(key = row.key, kind = "genres", title = row.title, tv = row.tv, genres = row.genres)
+        is SliderRow.Logos -> DiscoverCache.Row(key = row.key, kind = "logos", title = row.title, tv = row.tv)
+        is SliderRow.Requests -> null
+    }
+}
+
+private fun fromSaved(saved: List<DiscoverCache.Row>): List<SliderRow> = saved.mapNotNull { r ->
+    when (r.kind) {
+        "tiles" -> SliderRow.Tiles(r.key, r.title, r.tiles, r.morePath?.let { BrowseSpec(r.title, it, r.moreParams) })
+        "genres" -> SliderRow.Genres(r.key, r.title, r.tv, r.genres)
+        "logos" -> SliderRow.Logos(r.key, r.title, r.tv, if (r.tv) networks else studios)
+        else -> null
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscoverTab() {
     val nav = LocalNav.current
+    val context = androidx.compose.ui.platform.LocalContext.current.applicationContext
     val rows = remember { mutableStateListOf<SliderRow>() }
+    // True while [rows] still shows the page saved on the phone (the fresh one hasn't arrived).
+    var saved by remember { mutableStateOf(false) }
+    // The saved page first: it's there before the server has answered anything.
+    LaunchedEffect(Unit) {
+        if (rows.isNotEmpty()) return@LaunchedEffect
+        val kept = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { DiscoverCache.read(context, App.api.baseUrl) }
+        if (kept.isNotEmpty() && rows.isEmpty()) {
+            rows.addAll(fromSaved(kept))
+            saved = true
+        }
+    }
     val load = rememberLoad("discover") {
         val sliders = App.api.arr("/settings/discover").objects().filter { it.bool("enabled", true) }
             .sortedBy { it.int("order") }
@@ -220,6 +258,10 @@ fun DiscoverTab() {
             sliders.map { s -> async { try { buildRow(s) } catch (_: Exception) { null } } }.awaitAll()
         }.filterNotNull()
         rows.clear(); rows.addAll(built)
+        saved = false
+        val keep = toSaved(built)
+        val server = App.api.baseUrl
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { DiscoverCache.write(context, server, keep) }
         built
     }
 
@@ -233,9 +275,24 @@ fun DiscoverTab() {
     }
 
     PullToRefreshBox(isRefreshing = load.refreshing, onRefresh = { load.reload(silent = true); hero.reload(silent = true) }, modifier = Modifier.fillMaxSize()) {
-        Loaded(load) {
+        // With a saved page there's something to show straight away: no spinner, and no error page when the
+        // server can't be reached (a line at the top says so instead).
+        val showSaved = saved && rows.isNotEmpty() && load.value == null
+        if (showSaved || load.value != null) {
             LazyColumn(contentPadding = ListBottom, modifier = Modifier.fillMaxSize()) {
                 item { TabTitle(stringResource(R.string.discover)) }
+                if (showSaved && !load.loading && load.error != null) {
+                    item(key = "saved-note") {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                stringResource(R.string.discover_saved_note),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                            )
+                            androidx.compose.material3.TextButton({ load.reload(silent = true) }) { Text(stringResource(R.string.try_again)) }
+                        }
+                    }
+                }
                 hero.value?.let { n ->
                     item(key = "hero") {
                         CtrlHeroCard(
@@ -261,6 +318,10 @@ fun DiscoverTab() {
                     }
                 }
             }
+        } else if (load.loading) {
+            LoadingBox()
+        } else {
+            ErrorBox(load.error ?: stringResource(R.string.couldn_t_load)) { load.reload() }
         }
     }
 }

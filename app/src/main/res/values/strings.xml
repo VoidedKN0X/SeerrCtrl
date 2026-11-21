@@ -999,4 +999,37 @@
 
     <!-- Open in ArrCtrl -->
     <string name="open_in_arrctrl">Open in ArrCtrl</string>
+
+    <!-- Shared links, Discover kept on the phone, several requests at once -->
+    <string name="share_target_label">Find in SeerrCtrl</string>
+    <string name="shared_no_link">No TMDB or IMDb link in what was shared</string>
+    <string name="shared_imdb_not_found">Seerr found nothing for IMDb %1$s</string>
+    <string name="discover_saved_note">Couldn\'t reach your server. This is the Discover page saved on your phone.</string>
+    <string name="select_several">Select several</string>
+    <string name="select_all_loaded">Select all</string>
+    <string name="select_none">Select none</string>
+    <plurals name="requests_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="approve_requests_title">
+        <item quantity="one">Approve %d request?</item>
+        <item quantity="other">Approve %d requests?</item>
+    </plurals>
+    <plurals name="decline_requests_title">
+        <item quantity="one">Decline %d request?</item>
+        <item quantity="other">Decline %d requests?</item>
+    </plurals>
+    <string name="approve_requests_body">Each one is approved as it was requested and sent to Radarr or Sonarr.</string>
+    <string name="decline_requests_body">The people who asked are told their request was declined. This can\'t be undone from here; they would have to request again.</string>
+    <plurals name="requests_approved">
+        <item quantity="one">%d request approved</item>
+        <item quantity="other">%d requests approved</item>
+    </plurals>
+    <plurals name="requests_declined">
+        <item quantity="one">%d request declined</item>
+        <item quantity="other">%d requests declined</item>
+    </plurals>
+    <string name="requests_approved_some">%1$d approved, %2$d failed</string>
+    <string name="requests_declined_some">%1$d declined, %2$d failed</string>
 </resources>

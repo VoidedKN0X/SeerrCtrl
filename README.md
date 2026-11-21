@@ -13,10 +13,11 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 ## Features
 
 - **Sign in** with Jellyfin/Emby (including Quick Connect), Plex, or a Seerr account
-- **Discover** with the same sliders and filters as the web UI, and search for titles, people, keywords and studios
+- **Discover** with the same sliders and filters as the web UI, and search for titles, people, keywords and studios. The page is kept on your phone, so it shows the moment you open the app and the fresh one follows
+- **Share a TMDB or IMDb link to SeerrCtrl** from your browser or another app (Share › **Find in SeerrCtrl**) and the title opens, ready to request
 - **Title pages** with ratings, cast and crew, collections, recommendations and similar titles, and a Play button for your media server
 - **Request** movies and series, in 4K too, with season picking and advanced options
-- **Requests list**: swipe right to approve, left to decline
+- **Requests list**: swipe right to approve, left to decline, or **Select several** and approve or decline them together
 - **Notifications** when your requests are approved, declined, failed or available and when issues get replies; managers also get new requests with Approve/Decline buttons, and new issues
 - **Instant notifications with ntfy** (UnifiedPush): Seerr's webhook wakes the app straight away, set up for you or by hand from the app, with background checks as the fallback
 - **Open in ArrCtrl** from movie and series pages, when ArrCtrl is installed
@@ -126,6 +127,10 @@ Apart from your own Seerr server, SeerrCtrl only contacts:
 - **Your ntfy server**, only if you turn on **Instant notifications**. The ntfy app keeps the connection; SeerrCtrl itself only posts to its push address when you tap **Send a test push**. Pushes carry no titles or names.
 - **Plex's sign-in page** (`app.plex.tv`) opens in your browser while you sign in with Plex.
 - Trailers and links to sites like IMDb, Seerr's documentation and GitHub page (server settings), F-Droid's ntfy page, ArrCtrl and the Support, Report a bug and Licence links only open when you tap them.
+
+**Discover kept on the phone:** the last Discover page is saved in the app's private storage so it opens at once. Only its public part is saved: rows of titles from TMDB with their posters' addresses. Your requests, your watchlist, "recently added" and which titles are available or requested are never written to it, and it is deleted when you sign out.
+
+**Shared links:** when you share something to SeerrCtrl, it only looks for a themoviedb.org or imdb.com link in the shared text and opens that title. An IMDb link is looked up through your own Seerr server. Nothing is requested until you tap Request.
 
 Nothing is backed up: SeerrCtrl is left out of Android's cloud backup and its phone-to-phone transfer.
 

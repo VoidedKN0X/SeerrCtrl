@@ -2,6 +2,16 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here had been run on a phone when it was written.
+
+### New
+
+- **Share a TMDB or IMDb link to SeerrCtrl.** SeerrCtrl is now in Android's share sheet for text, as **Find in SeerrCtrl**. Share a themoviedb.org page (movie, series, person or collection) or an imdb.com page (title or person) from your browser, the IMDb app or a chat, and SeerrCtrl opens that page, where you request it as usual. TMDB links open directly; an IMDb link is looked up through your own Seerr server first (Seerr's search understands `imdb:tt…`). Only the link is read from what was shared, nothing is requested without your tap, and with the app lock on the page opens after you unlock. If the shared text has no such link, or Seerr finds nothing for it, a line at the bottom says so.
+- **Approve or decline several requests at once.** Managers get a **Select several** chip on the Requests tab when there are pending requests. Pending cards then get a checkbox (swiping is off while you pick), with **Select all**, **Approve** and **Decline** above the list. You confirm once, SeerrCtrl sends the decisions to Seerr one after the other (Seerr has no call for several at once), and tells you how many worked and how many failed. Select all covers the requests loaded in the list so far.
+- **Discover opens instantly.** The Discover page is kept on your phone after every load. The next time you open the app the saved rows show at once and are replaced by the fresh page as soon as your server answers; if the server can't be reached, the saved page stays with a line saying so and a **Try again** button. Only the public rows are saved (trending, popular, upcoming, genres, studios, networks and your server's custom sliders, as titles and poster addresses). Recent requests, your watchlist, recently added and the availability badges are never saved: they appear when the fresh page arrives. The saved page is deleted when you sign out or your session ends.
+
 ## v1.9.12 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published. It is the first release built with the new build tools (Android Gradle Plugin 9, stricter code shrinking), so update over your installed version and check that your data and settings are still there.

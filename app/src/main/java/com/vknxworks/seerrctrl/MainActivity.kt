@@ -72,6 +72,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vknxworks.seerrctrl.data.objs
 import com.vknxworks.seerrctrl.ui.AppSettingsScreen
 import com.vknxworks.seerrctrl.ui.BlocklistScreen
 import com.vknxworks.seerrctrl.ui.BrowseScreen
@@ -129,6 +130,19 @@ class MainActivity : FragmentActivity() {
             val id = link.pathSegments.singleOrNull()?.toLongOrNull()
             intent.data = null
             if ((kind == "movie" || kind == "tv") && id != null && id > 0) DeepLink.route = "$kind/$id"
+            return
+        }
+        // A link shared to SeerrCtrl from a browser or another app (share sheet): a themoviedb.org or imdb.com
+        // page opens that title here, ready to request. Only the link is read; nothing else in the text is used,
+        // and nothing is requested without a tap.
+        if (intent != null && intent.action == android.content.Intent.ACTION_SEND && intent.type == "text/plain") {
+            val text = intent.getStringExtra(android.content.Intent.EXTRA_TEXT)
+            intent.removeExtra(android.content.Intent.EXTRA_TEXT)
+            when (val shared = com.vknxworks.seerrctrl.data.SharedLink.parse(text)) {
+                is com.vknxworks.seerrctrl.data.SharedLink.Tmdb -> DeepLink.route = shared.route
+                is com.vknxworks.seerrctrl.data.SharedLink.Imdb -> DeepLink.imdb = shared.id
+                null -> DeepLink.note = getString(R.string.shared_no_link)
+            }
             return
         }
         val r = intent?.getStringExtra(EXTRA_ROUTE) ?: return
@@ -206,6 +220,7 @@ fun SecureWindow() {
 private fun forgetAccountData(ctx: android.content.Context) {
     Notifier.signOut(ctx)
     com.vknxworks.seerrctrl.ui.MediaCache.clear()
+    com.vknxworks.seerrctrl.data.DiscoverCache.clear(ctx)
     val images = coil3.SingletonImageLoader.get(ctx)
     images.memoryCache?.clear()
     Thread { runCatching { images.diskCache?.clear() } }.start()
@@ -214,6 +229,12 @@ private fun forgetAccountData(ctx: android.content.Context) {
 /** Where a notification asked to go; picked up by whichever layout is showing. */
 object DeepLink {
     var route by mutableStateOf<String?>(null)
+
+    /** An IMDb id from a shared link, waiting to be looked up on the server (signed in and unlocked). */
+    var imdb by mutableStateOf<String?>(null)
+
+    /** A line to show once, about a shared link that couldn't be used. */
+    var note by mutableStateOf<String?>(null)
 }
 
 @Composable
@@ -287,6 +308,27 @@ private fun Root(activity: FragmentActivity, lockVm: AppLockViewModel = viewMode
             try { App.session.refresh() } catch (_: Exception) {}
         }
         if (signedIn) Notifier.schedule(activity) else Notifier.cancel(activity)
+    }
+
+    // A shared IMDb link: ask Seerr which title it is (GET /search?query=imdb:tt…), then open that page.
+    LaunchedEffect(DeepLink.imdb, signedIn, lockVm.locked) {
+        val id = DeepLink.imdb ?: return@LaunchedEffect
+        if (!signedIn) { DeepLink.imdb = null; return@LaunchedEffect }
+        if (lockVm.locked) return@LaunchedEffect
+        DeepLink.imdb = null
+        try {
+            val results = App.api.obj("/search", mapOf("query" to "imdb:$id", "page" to 1)).objs("results")
+            val route = com.vknxworks.seerrctrl.data.SharedLink.routeFromSearch(results)
+            if (route != null) DeepLink.route = route else DeepLink.note = App.str(R.string.shared_imdb_not_found, id)
+        } catch (e: Exception) {
+            DeepLink.note = e.message ?: App.str(R.string.something_went_wrong)
+        }
+    }
+    LaunchedEffect(DeepLink.note, lockVm.locked) {
+        val note = DeepLink.note ?: return@LaunchedEffect
+        if (lockVm.locked) return@LaunchedEffect
+        DeepLink.note = null
+        snack.showSnackbar(note)
     }
 
     val showLock = lockVm.locked && App.prefs.isConfigured

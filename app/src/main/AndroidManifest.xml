@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
 
     <!-- intentMatchingFlags (Android 16+): other apps can only reach SeerrCtrl's exported components with an intent
-         that matches their filters (the launcher, seerrctrl:// links, and ntfy's UnifiedPush broadcasts and bind). -->
+         that matches their filters (the launcher, seerrctrl:// links, shared text, and ntfy's UnifiedPush broadcasts and bind). -->
     <application
         android:name=".SeerrApplication"
         android:allowBackup="false"
@@ -48,6 +48,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="seerrctrl" android:host="movie" />
                 <data android:scheme="seerrctrl" android:host="tv" />
+            </intent-filter>
+            <!-- "Share" from a browser or another app: a themoviedb.org or imdb.com link opens that title in SeerrCtrl.
+                 Only the link in the shared text is read. -->
+            <intent-filter android:label="@string/share_target_label">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 

@@ -32,6 +32,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Theaters
 import com.vknxworks.seerrctrl.ui.components.AlertDialog
 import com.vknxworks.seerrctrl.ui.components.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -96,7 +98,7 @@ private val requestFilters = listOf(
 )
 
 /** The request list (everyone's for managers, your own otherwise), with filters and approve/decline. */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     var filter by rememberSaveable { mutableStateOf(if (App.session.can(Perm.MANAGE_REQUESTS) && userId == null) "pending" else "all") }
@@ -111,6 +113,15 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
     val list = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val swipeActs = rememberActions()
+    // Picking several pending requests to approve or decline together (managers only).
+    val manager = App.session.can(Perm.MANAGE_REQUESTS)
+    var selecting by remember { mutableStateOf(false) }
+    val picked = remember { mutableStateListOf<Int>() }
+    var confirmBulk by remember { mutableStateOf<Boolean?>(null) } // approve?
+    val bulkActs = rememberActions()
+    fun stopSelecting() { selecting = false; picked.clear() }
+    // A different list (filter, type, sort or refresh): start picking again.
+    LaunchedEffect(filter, sort, mediaType, reloadKey) { picked.clear() }
 
     suspend fun more() {
         if (loading || (total >= 0 && items.size >= total)) return
@@ -144,10 +155,39 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
                 FilterChip(mediaType == k, { mediaType = k }, label = { Text(l, maxLines = 1) })
             }
             FilterChip(sort == "modified", { sort = if (sort == "added") "modified" else "added" }, label = { Text(stringResource(R.string.recently_changed), maxLines = 1) })
+            if (manager && (selecting || items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending })) {
+                FilterChip(selecting, { if (selecting) stopSelecting() else selecting = true }, label = { Text(stringResource(R.string.select_several), maxLines = 1) })
+            }
+        }
+        if (selecting) {
+            val pendingIds = items.filter { RequestStatus.of(it.int("status")) == RequestStatus.Pending }.map { it.int("id") }
+            val chosen = picked.filter { it in pendingIds }
+            FlowRow(
+                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    pluralStringResource(R.plurals.requests_selected, chosen.size, chosen.size),
+                    style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                )
+                TextButton({
+                    if (chosen.size == pendingIds.size) picked.clear() else { picked.clear(); picked.addAll(pendingIds) }
+                }, enabled = pendingIds.isNotEmpty() && !bulkActs.busy) {
+                    Text(stringResource(if (chosen.size == pendingIds.size && pendingIds.isNotEmpty()) R.string.select_none else R.string.select_all_loaded))
+                }
+                FilledTonalButton(enabled = chosen.isNotEmpty() && !bulkActs.busy, onClick = { confirmBulk = true }) {
+                    Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.approve))
+                }
+                OutlinedButton(enabled = chosen.isNotEmpty() && !bulkActs.busy, onClick = { confirmBulk = false }) {
+                    Icon(Icons.Outlined.Close, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.decline))
+                }
+            }
         }
         PullToRefreshBox(refreshing, { refreshing = true; scope.launch { changed() } }, Modifier.fillMaxSize()) {
             LazyColumn(state = list, contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 10.dp, bottom = CtrlBottomBarClearance), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
+                if (!selecting && App.session.can(Perm.MANAGE_REQUESTS) && items.any { RequestStatus.of(it.int("status")) == RequestStatus.Pending }) {
                     item(key = "hint") {
                         Text(
                             stringResource(R.string.swipe_a_pending_request_right_to),
@@ -156,15 +196,27 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
                     }
                 }
                 items(items, key = { it.int("id") }) { r ->
-                    SwipeToDecide(
-                        r, swipeActs,
-                        onDecided = { approved ->
-                            // Drop it straight away from the pending list; elsewhere refresh to show the new status.
-                            if (filter == "pending") { items.remove(r); total = (total - 1).coerceAtLeast(0); onChanged() }
-                            else changed()
-                        },
-                        onFailed = ::changed,
-                    ) { RequestCard(r, onChanged = ::changed) }
+                    if (selecting) {
+                        // While picking, cards don't swipe; a pending one gets a checkbox and is picked by tapping it.
+                        val id = r.int("id")
+                        val pending = RequestStatus.of(r.int("status")) == RequestStatus.Pending
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (pending) {
+                                Checkbox(id in picked, { if (it) { if (id !in picked) picked.add(id) } else picked.remove(id) }, enabled = !bulkActs.busy)
+                            }
+                            Box(Modifier.weight(1f)) { RequestCard(r, onChanged = ::changed) }
+                        }
+                    } else {
+                        SwipeToDecide(
+                            r, swipeActs,
+                            onDecided = { approved ->
+                                // Drop it straight away from the pending list; elsewhere refresh to show the new status.
+                                if (filter == "pending") { items.remove(r); total = (total - 1).coerceAtLeast(0); onChanged() }
+                                else changed()
+                            },
+                            onFailed = ::changed,
+                        ) { RequestCard(r, onChanged = ::changed) }
+                    }
                 }
                 if (loading) item { Box(Modifier.fillMaxWidth().padding(24.dp), Alignment.Center) { CircularProgressIndicator() } }
                 if (!loading && items.isEmpty()) {
@@ -176,6 +228,48 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
             }
         }
     }
+
+    confirmBulk?.let { approve ->
+        val pendingIds = items.filter { RequestStatus.of(it.int("status")) == RequestStatus.Pending }.map { it.int("id") }
+        val ids = picked.filter { it in pendingIds }
+        AlertDialog(
+            onDismissRequest = { confirmBulk = null },
+            guard = !approve,
+            title = { Text(pluralStringResource(if (approve) R.plurals.approve_requests_title else R.plurals.decline_requests_title, ids.size, ids.size)) },
+            text = { Text(stringResource(if (approve) R.string.approve_requests_body else R.string.decline_requests_body)) },
+            confirmButton = {
+                TextButton({
+                    confirmBulk = null
+                    bulkActs.run(onOk = { stopSelecting(); changed() }) {
+                        val ok = decideRequests(ids, approve)
+                        val failed = ids.size - ok
+                        bulkActs.say(
+                            if (failed == 0) App.plural(if (approve) R.plurals.requests_approved else R.plurals.requests_declined, ok, ok)
+                            else App.str(if (approve) R.string.requests_approved_some else R.string.requests_declined_some, ok, failed)
+                        )
+                    }
+                }, enabled = ids.isNotEmpty()) {
+                    Text(stringResource(if (approve) R.string.approve else R.string.decline), color = if (approve) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton({ confirmBulk = null }) { Text(stringResource(R.string.lock_cancel)) } },
+        )
+    }
+}
+
+/**
+ * Approves or declines the requests [ids], one after the other with POST /request/{id}/approve or /decline
+ * (Seerr has no call for several at once). Returns how many worked; one that fails doesn't stop the rest.
+ */
+suspend fun decideRequests(ids: List<Int>, approve: Boolean): Int {
+    var ok = 0
+    for (id in ids) {
+        try {
+            App.api.post("/request/$id/${if (approve) "approve" else "decline"}")
+            ok++
+        } catch (_: Exception) {}
+    }
+    return ok
 }
 
 /** Movie/series details for a request's media, from the shared cache. */
