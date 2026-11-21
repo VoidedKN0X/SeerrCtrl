@@ -6,6 +6,10 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 
 Built and checked by CI only: nothing here has been run on a phone yet.
 
+### Fixed
+
+- **Fixed before release: the app would have crashed at start with the new build tools.** SeerrCtrl uses WorkManager for its background work, and WorkManager stores its jobs in a small Room database that is created by name when the app starts. The shrinker (R8) in Android Gradle Plugin 9 is stricter than the old one and removed the constructor that needs, which makes the app stop right at launch (a known problem with Room 2.6.1 under Android Gradle Plugin 9). A keep rule for that constructor, the same one newer Room versions ship themselves, is now in `app/proguard-rules.pro`. No released version was affected: the new build tools have not been in any release. Built by CI only; not yet run on a phone.
+
 ### Changed
 
 - **The saved sign-in is unlocked in the background while the app starts.** Opening SeerrCtrl used to stop at the very start to ask the phone's Keystore (on some phones a separate, slow secure chip) for your saved session, before anything else could be set up. That request now starts on a background thread the moment the app starts and runs alongside the rest of the start-up, and the app no longer reads the session for its own use until the first request to your server needs it. The first screen still waits for the answer before it decides whether you're signed in, so it can never briefly show the sign-in screen (or skip the app lock) for an account that is signed in; it just usually finds the answer already there. With the app lock sealing your session nothing changes: it stays unreadable until you unlock.
