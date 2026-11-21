@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SeerrCtrl</string>
+    <string name="app_name" translatable="false">SeerrCtrl</string>
     <!-- Ctrl / Signal look: the wordmark reads SEERR/CTRL; the brand lines aren't translated. -->
     <string name="wordmark_name" translatable="false">Seerr</string>
     <string name="ctrl_footer" translatable="false">GOOGLE-FREE · TELEMETRY-FREE · ARM64</string>
@@ -13,10 +13,10 @@
     <string name="bugs_title">Report a bug</string>
     <string name="bugs_subtitle">Found a problem or have an idea? Open an issue on GitHub</string>
     <string name="source_title">Source code</string>
-    <string name="source_subtitle">github.com/VoidedKN0X/SeerrCtrl</string>
+    <string name="source_subtitle" translatable="false">github.com/VoidedKN0X/SeerrCtrl</string>
     <string name="licence_title">Licence</string>
-    <string name="licence_subtitle">GNU General Public License v3.0</string>
-    <string name="about_footer">SeerrCtrl %1$s · VKNXWorks</string>
+    <string name="licence_subtitle" translatable="false">GNU General Public License v3.0</string>
+    <string name="about_footer" translatable="false">SeerrCtrl %1$s · VKNXWorks</string>
     <!-- App lock and Privacy and security, shared by every Ctrl app -->
     <string name="lock_enter_pin">Enter your PIN</string>
     <string name="lock_pin_due">Enter your PIN. It\'s needed after a restart and every 72 hours.</string>
@@ -183,9 +183,9 @@
     <string name="jellyfin_user">Jellyfin user</string>
     <string name="emby_user">Emby user</string>
     <string name="user">User</string>
-    <string name="plex">Plex</string>
-    <string name="jellyfin">Jellyfin</string>
-    <string name="emby">Emby</string>
+    <string name="plex" translatable="false">Plex</string>
+    <string name="jellyfin" translatable="false">Jellyfin</string>
+    <string name="emby" translatable="false">Emby</string>
     <string name="not_configured">Not configured</string>
     <string name="untitled">Untitled</string>
     <string name="plex_answered_http">Plex answered HTTP %1$s</string>
@@ -204,7 +204,7 @@
     <string name="you_don_t_have_permission_to_do_that">You don\'t have permission to do that</string>
     <string name="not_found">Not found</string>
     <string name="server_answered_http">Server answered HTTP %1$s</string>
-    <string name="seerr">Seerr</string>
+    <string name="seerr" translatable="false">Seerr</string>
     <string name="not_a_server">Not a server</string>
     <string name="the_server_didn_t_present_a">The server didn\'t present a certificate</string>
     <string name="the_server_s_certificate_changed">The server\'s certificate changed since you trusted it</string>
@@ -421,17 +421,17 @@
     <string name="download">Download</string>
     <string name="of">%1$s of %2$s</string>
     <string name="eta">ETA %1$s</string>
-    <string name="tmdb">TMDB</string>
+    <string name="tmdb" translatable="false">TMDB</string>
     <string name="critics">🍅 Critics</string>
     <string name="audience">🍿 Audience</string>
     <string name="status">Status</string>
     <string name="first_aired">First aired</string>
     <string name="last_aired">Last aired</string>
     <string name="next_episode">Next episode</string>
-    <string name="s_e">S%1$sE%2$s · %3$s</string>
+    <string name="s_e" translatable="false">S%1$sE%2$s · %3$s</string>
     <string name="episodes">Episodes</string>
     <string name="episode_runtime">Episode runtime</string>
-    <string name="min">%1$s min</string>
+    <string name="min" translatable="false">%1$s min</string>
     <string name="release_date">Release date</string>
     <string name="budget">Budget</string>
     <string name="revenue">Revenue</string>
@@ -536,7 +536,7 @@
     <string name="forgot_password">Forgot password?</string>
     <string name="no_code">No code</string>
     <string name="the_quick_connect_code_expired_try">The Quick Connect code expired. Try again.</string>
-    <string name="quick_connect">Quick Connect</string>
+    <string name="quick_connect" translatable="false">Quick Connect</string>
     <string name="in_jellyfin_on_a_signed_in_device">In Jellyfin on a signed-in device, open your profile → Quick Connect and enter this code:</string>
     <string name="waiting_for_approval">Waiting for approval…</string>
     <string name="username">%1$s username</string>
@@ -559,7 +559,7 @@
     <string name="user_deleted">User deleted</string>
     <string name="owner">Owner</string>
     <string name="search_blocklist">Search blocklist</string>
-    <string name="tmdb_2">TMDB %1$s</string>
+    <string name="tmdb_2" translatable="false">TMDB %1$s</string>
     <string name="by_2">by %1$s</string>
     <string name="tags_2">tags %1$s</string>
     <string name="removed_from_blocklist">Removed from blocklist</string>
@@ -637,10 +637,10 @@
     <string name="issue_comment">Issue comment</string>
     <string name="issue_resolved">Issue resolved</string>
     <string name="issue_reopened">Issue reopened</string>
-    <string name="discord">Discord</string>
-    <string name="pushbullet">Pushbullet</string>
-    <string name="pushover">Pushover</string>
-    <string name="telegram">Telegram</string>
+    <string name="discord" translatable="false">Discord</string>
+    <string name="pushbullet" translatable="false">Pushbullet</string>
+    <string name="pushover" translatable="false">Pushover</string>
+    <string name="telegram" translatable="false">Telegram</string>
     <string name="web_push">Web push</string>
     <string name="agents_your_server_has_turned_on_and">Agents your server has turned on, and which events reach you through each.</string>
     <string name="pgp_public_key_email">PGP public key (email)</string>
@@ -663,7 +663,7 @@
     <string name="radarr_and_sonarr_servers">Radarr and Sonarr servers</string>
     <string name="metadata">Metadata</string>
     <string name="metadata_providers_for_movies_series">Metadata providers for movies, series and anime</string>
-    <string name="tautulli">Tautulli</string>
+    <string name="tautulli" translatable="false">Tautulli</string>
     <string name="watch_history_from_tautulli">Watch history from Tautulli</string>
     <string name="override_rules">Override rules</string>
     <string name="route_requests_to_specific_servers">Route requests to specific servers and profiles</string>
@@ -733,8 +733,8 @@
     <string name="scan_started">Scan started</string>
     <string name="start_full_scan">Start full scan</string>
     <string name="refresh">Refresh</string>
-    <string name="radarr">Radarr</string>
-    <string name="sonarr">Sonarr</string>
+    <string name="radarr" translatable="false">Radarr</string>
+    <string name="sonarr" translatable="false">Sonarr</string>
     <string name="default_2">Default</string>
     <string name="add_server">Add %1$s server</string>
     <string name="server_not_found">Server not found</string>
@@ -762,8 +762,8 @@
     <string name="connected_to">Connected to %1$s</string>
     <string name="test">Test</string>
     <string name="delete_this_server">Delete this %1$s server?</string>
-    <string name="slack">Slack</string>
-    <string name="gotify">Gotify</string>
+    <string name="slack" translatable="false">Slack</string>
+    <string name="gotify" translatable="false">Gotify</string>
     <string name="webhook">Webhook</string>
     <string name="on">On</string>
     <string name="off">Off</string>
@@ -875,15 +875,15 @@
     <string name="data_folder">Data folder</string>
     <string name="links">Links</string>
     <string name="documentation">Documentation</string>
-    <string name="github">GitHub</string>
+    <string name="github" translatable="false">GitHub</string>
     <string name="rules_send_matching_requests_to_a">Rules send matching requests to a specific server, profile, folder or tags. Create new rules in the web UI; you can edit and delete them here.</string>
     <string name="users_3">users %1$s</string>
     <string name="genres_2">genres %1$s</string>
     <string name="language">language %1$s</string>
     <string name="keywords_2">keywords %1$s</string>
     <string name="rule_title">%1$s · rule %2$s</string>
-    <string name="radarr_2">Radarr #%1$s</string>
-    <string name="sonarr_2">Sonarr #%1$s</string>
+    <string name="radarr_2" translatable="false">Radarr #%1$s</string>
+    <string name="sonarr_2" translatable="false">Sonarr #%1$s</string>
     <string name="rule_2">Rule</string>
     <string name="no_conditions">No conditions</string>
     <string name="rule_deleted">Rule deleted</string>
@@ -926,18 +926,18 @@
     <string name="calendar_from_app">From SeerrCtrl</string>
 
     <!-- Whole sentences instead of joined pieces -->
-    <string name="list_separator">" · "</string>
-    <string name="list_separator_wide">"  ·  "</string>
-    <string name="notify_issue_body">%1$s: %2$s</string>
+    <string name="list_separator" translatable="false">" · "</string>
+    <string name="list_separator_wide" translatable="false">"  ·  "</string>
+    <string name="notify_issue_body" translatable="false">%1$s: %2$s</string>
     <string name="notify_issue_no_message">reported a problem</string>
-    <string name="episode_code">S%1$dE%2$d</string>
-    <string name="episode_code_name">S%1$dE%2$d · %3$s</string>
-    <string name="with_note">%1$s · %2$s</string>
-    <string name="requested_by_time">%1$s · %2$s</string>
+    <string name="episode_code" translatable="false">S%1$dE%2$d</string>
+    <string name="episode_code_name" translatable="false">S%1$dE%2$d · %3$s</string>
+    <string name="with_note" translatable="false">%1$s · %2$s</string>
+    <string name="requested_by_time" translatable="false">%1$s · %2$s</string>
 
     <!-- Whole sentences instead of joined pieces -->
-    <string name="server_with_version">%1$s · v%2$s</string>
-    <string name="two_lines">%1$s\n%2$s</string>
+    <string name="server_with_version" translatable="false">%1$s · v%2$s</string>
+    <string name="two_lines" translatable="false">%1$s\n%2$s</string>
     <plurals name="hero_pending_line">
         <item quantity="one">%d request to approve or decline</item>
         <item quantity="other">%d requests to approve or decline</item>
@@ -950,7 +950,7 @@
     <!-- Instant notifications through ntfy (UnifiedPush) -->
     <string name="push_distributor">Instant notifications</string>
     <string name="push_distributor_off">Off (background checks only)</string>
-    <string name="push_distributor_ntfy">ntfy</string>
+    <string name="push_distributor_ntfy" translatable="false">ntfy</string>
     <string name="push_distributor_footer">With ntfy, Seerr\'s webhook wakes SeerrCtrl the moment something happens. ntfy is the only push app SeerrCtrl uses, and background checks keep running as a fallback.</string>
     <string name="push_status">Push status</string>
     <string name="push_status_off">Off. Background checks only</string>
