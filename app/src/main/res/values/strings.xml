@@ -72,7 +72,7 @@
     <string name="theme_black">Pure black</string>
     <string name="lock_fingerprint_title">Unlock SeerrCtrl</string>
     <string name="lock_fingerprint_subtitle">Confirm it\'s you to see your requests</string>
-    <string name="lock_forgot_body">The PIN can\'t be recovered, because it encrypts your sign-in. SeerrCtrl will log out, delete what it keeps on this phone and turn the app lock off. Your Seerr server and requests aren\'t touched.</string>
+    <string name="lock_forgot_body">The PIN can\'t be recovered, because it encrypts your sign-in. SeerrCtrl will log out, delete what it keeps on this phone and turn the app lock off. Your Seerr server and requests aren\'t touched. If your phone has a screen lock, you\'ll confirm with it first.</string>
     <string name="lock_forgot_confirm">Log out and reset</string>
     <string name="lock_choose_intro">At least %1$d digits, different from your phone\'s PIN. If you forget it, the only way back in is to log out and sign in again.</string>
     <string name="lock_migrate_intro">PINs now need at least %1$d digits, different from your phone\'s PIN. Your sign-in is encrypted with it while the app is locked.</string>
@@ -1062,4 +1062,7 @@
     <string name="backup_line_notify">Notify: %1$s</string>
     <string name="backup_line_interval">Check every %1$d minutes</string>
     <string name="backup_line_nothing">Nothing: the file has no settings this version knows.</string>
+    <string name="lock_reset_prompt_title">Reset SeerrCtrl\'s app lock</string>
+    <string name="lock_reset_prompt_subtitle">Use your phone\'s screen lock to confirm it\'s you</string>
+    <string name="lock_reset_prompt_failed">Couldn\'t show the screen lock prompt</string>
 </resources>

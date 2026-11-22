@@ -47,14 +47,15 @@ import com.vknxworks.seerrctrl.data.str
 import androidx.compose.ui.res.stringResource
 import com.vknxworks.seerrctrl.R
 
-private val movieSorts = listOf(
+// A getter, not a stored value: the labels follow a language change while the app is open.
+private val movieSorts: List<Pair<String, String>> get() = listOf(
     "popularity.desc" to App.str(R.string.most_popular), "popularity.asc" to App.str(R.string.least_popular),
     "primary_release_date.desc" to App.str(R.string.newest), "primary_release_date.asc" to App.str(R.string.oldest),
     "vote_average.desc" to App.str(R.string.highest_rated), "vote_average.asc" to App.str(R.string.lowest_rated),
     "vote_count.desc" to App.str(R.string.most_votes), "revenue.desc" to App.str(R.string.highest_revenue),
     "original_title.asc" to App.str(R.string.title_a_z), "original_title.desc" to App.str(R.string.title_z_a),
 )
-private val tvSorts = listOf(
+private val tvSorts: List<Pair<String, String>> get() = listOf(
     "popularity.desc" to App.str(R.string.most_popular), "popularity.asc" to App.str(R.string.least_popular),
     "first_air_date.desc" to App.str(R.string.newest), "first_air_date.asc" to App.str(R.string.oldest),
     "vote_average.desc" to App.str(R.string.highest_rated), "vote_average.asc" to App.str(R.string.lowest_rated),

@@ -196,7 +196,8 @@ fun AdminSectionScreen(section: String) {
 
 private val usersKeys = setOf("localLogin", "mediaServerLogin", "newPlexLogin")
 
-private val generalSpec = FormSpec(
+// A getter, not a stored value: the labels follow a language change while the app is open.
+private val generalSpec: FormSpec get() = FormSpec(
     labels = mapOf(
         "applicationTitle" to App.str(R.string.application_title), "applicationUrl" to App.str(R.string.application_url), "cacheImages" to App.str(R.string.cache_images_locally),
         "hideAvailable" to App.str(R.string.hide_available_media), "hideBlocklisted" to App.str(R.string.hide_blocklisted_items), "hideRequested" to App.str(R.string.hide_requested_media),
@@ -215,7 +216,7 @@ private val generalSpec = FormSpec(
     order = listOf("applicationTitle", "applicationUrl", "apiKey"),
 )
 
-private val networkSpec = FormSpec(
+private val networkSpec: FormSpec get() = FormSpec(
     labels = mapOf(
         "csrfProtection" to App.str(R.string.csrf_protection), "forceIpv4First" to App.str(R.string.force_ipv4_resolution_first), "trustProxy" to App.str(R.string.trust_proxy_behind_a_reverse_proxy),
         "apiRequestTimeout" to App.str(R.string.api_request_timeout_ms), "bypassFilter" to App.str(R.string.bypass_proxy_for_addresses), "bypassLocalAddresses" to App.str(R.string.bypass_proxy_for_local_addresses),
@@ -555,7 +556,8 @@ private fun ServiceEditor(kind: String, id: Int?) {
 
 // ---------------- notifications ----------------
 
-private val agents = listOf(
+// A getter, not a stored value: the labels follow a language change while the app is open.
+private val agents: List<Pair<String, String>> get() = listOf(
     "email" to App.str(R.string.email), "discord" to App.str(R.string.discord), "slack" to App.str(R.string.slack), "telegram" to App.str(R.string.telegram), "pushbullet" to App.str(R.string.pushbullet),
     "pushover" to App.str(R.string.pushover), "gotify" to App.str(R.string.gotify), "ntfy" to "ntfy", "webhook" to App.str(R.string.webhook), "webpush" to App.str(R.string.web_push),
 )
@@ -633,7 +635,8 @@ private fun NotificationAgentScreen(agent: String) {
 
 // ---------------- discover sliders ----------------
 
-private val sliderNames = mapOf(
+// A getter, not a stored value: the labels follow a language change while the app is open.
+private val sliderNames: Map<Int, String> get() = mapOf(
     1 to App.str(R.string.recently_added), 2 to App.str(R.string.recent_requests), 3 to App.str(R.string.watchlist), 4 to App.str(R.string.trending), 5 to App.str(R.string.popular_movies), 6 to App.str(R.string.movie_genres),
     7 to App.str(R.string.upcoming_movies), 8 to App.str(R.string.studios), 9 to App.str(R.string.popular_series), 10 to App.str(R.string.series_genres), 11 to App.str(R.string.upcoming_series), 12 to App.str(R.string.networks),
     13 to App.str(R.string.movie_keywords), 14 to App.str(R.string.movie_genre), 15 to App.str(R.string.series_keywords), 16 to App.str(R.string.series_genre), 17 to App.str(R.string.tab_search), 18 to App.str(R.string.studio),

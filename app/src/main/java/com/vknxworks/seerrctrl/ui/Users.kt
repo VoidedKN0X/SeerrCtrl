@@ -604,7 +604,8 @@ private fun PasswordSettings(id: Int, self: Boolean) {
 /** Password keyboard: no suggestions or learning of what's typed. */
 private val PasswordKeyboard = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false)
 
-val NotificationTypeList = listOf(
+// A getter, not a stored list: the labels follow a language change while the app is open.
+val NotificationTypeList: List<Pair<Long, String>> get() = listOf(
     2L to App.str(R.string.request_pending_approval), 128L to App.str(R.string.request_automatically_approved), 4L to App.str(R.string.request_approved),
     64L to App.str(R.string.request_declined), 8L to App.str(R.string.request_available), 16L to App.str(R.string.request_processing_failed),
     4096L to App.str(R.string.request_automatically_submitted), 256L to App.str(R.string.issue_reported), 512L to App.str(R.string.issue_comment),

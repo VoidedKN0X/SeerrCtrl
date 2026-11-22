@@ -63,7 +63,7 @@
     <string name="theme_black">Noir pur</string>
     <string name="lock_fingerprint_title">Déverrouiller SeerrCtrl</string>
     <string name="lock_fingerprint_subtitle">Confirmez votre identité pour voir vos demandes</string>
-    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré, car il chiffre votre connexion. SeerrCtrl va se déconnecter, supprimer ce qu\'il garde sur ce téléphone et désactiver le verrouillage. Votre serveur Seerr et vos demandes ne sont pas touchés.</string>
+    <string name="lock_forgot_body">Le code PIN ne peut pas être récupéré, car il chiffre votre connexion. SeerrCtrl va se déconnecter, supprimer ce qu\'il garde sur ce téléphone et désactiver le verrouillage. Votre serveur Seerr et vos demandes ne sont pas touchés. Si votre téléphone a un verrouillage d\'écran, vous le confirmerez d\'abord avec celui-ci.</string>
     <string name="lock_forgot_confirm">Se déconnecter et réinitialiser</string>
     <string name="lock_choose_intro">Au moins %1$d chiffres, différent du code PIN de votre téléphone. Si vous l\'oubliez, la seule solution est de vous déconnecter et de vous reconnecter.</string>
     <string name="lock_migrate_intro">Les codes PIN doivent maintenant avoir au moins %1$d chiffres, différents du code PIN de votre téléphone. Votre connexion est chiffrée avec lui quand l\'app est verrouillée.</string>
@@ -1005,4 +1005,7 @@
     <string name="backup_line_notify">Notifier : %1$s</string>
     <string name="backup_line_interval">Vérifier toutes les %1$d minutes</string>
     <string name="backup_line_nothing">Rien : le fichier ne contient aucun réglage connu de cette version.</string>
+    <string name="lock_reset_prompt_title">Réinitialiser le verrouillage de SeerrCtrl</string>
+    <string name="lock_reset_prompt_subtitle">Utilisez le verrouillage d\'écran de votre téléphone pour confirmer votre identité</string>
+    <string name="lock_reset_prompt_failed">Impossible d\'afficher le verrouillage d\'écran</string>
 </resources>

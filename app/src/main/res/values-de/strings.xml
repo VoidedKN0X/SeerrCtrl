@@ -63,7 +63,7 @@
     <string name="theme_black">Reines Schwarz</string>
     <string name="lock_fingerprint_title">SeerrCtrl entsperren</string>
     <string name="lock_fingerprint_subtitle">Bestätige, dass du es bist, um deine Anfragen zu sehen</string>
-    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deine Anmeldung verschlüsselt. SeerrCtrl meldet dich ab, löscht, was es auf diesem Smartphone speichert, und schaltet die App-Sperre aus. Dein Seerr-Server und deine Anfragen bleiben unberührt.</string>
+    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deine Anmeldung verschlüsselt. SeerrCtrl meldet dich ab, löscht, was es auf diesem Smartphone speichert, und schaltet die App-Sperre aus. Dein Seerr-Server und deine Anfragen bleiben unberührt. Wenn dein Handy eine Displaysperre hat, bestätigst du zuerst damit.</string>
     <string name="lock_forgot_confirm">Abmelden und zurücksetzen</string>
     <string name="lock_choose_intro">Mindestens %1$d Ziffern, anders als die PIN deines Smartphones. Wenn du sie vergisst, musst du dich abmelden und erneut anmelden.</string>
     <string name="lock_migrate_intro">PINs brauchen jetzt mindestens %1$d Ziffern, anders als die PIN deines Smartphones. Deine Anmeldung wird damit verschlüsselt, solange die App gesperrt ist.</string>
@@ -1005,4 +1005,7 @@
     <string name="backup_line_notify">Benachrichtigen: %1$s</string>
     <string name="backup_line_interval">Prüfen alle %1$d Minuten</string>
     <string name="backup_line_nothing">Nichts: Die Datei enthält keine Einstellungen, die diese Version kennt.</string>
+    <string name="lock_reset_prompt_title">App-Sperre von SeerrCtrl zurücksetzen</string>
+    <string name="lock_reset_prompt_subtitle">Bestätige mit der Displaysperre deines Handys, dass du es bist</string>
+    <string name="lock_reset_prompt_failed">Displaysperre konnte nicht angezeigt werden</string>
 </resources>

@@ -93,7 +93,23 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
     private fun getMap(key: String): JSONObject = try { JSONObject(store.getString(key, "{}")!!) } catch (_: Exception) { JSONObject() }
     private fun putMap(key: String, m: JSONObject) = store.edit().putString(key, m.toString()).apply()
     private fun getSet(key: String): MutableSet<String> = store.getStringSet(key, emptySet())!!.toMutableSet()
-    private fun putSet(key: String, s: Set<String>) = store.edit().putStringSet(key, s.toList().takeLast(400).toSet()).apply()
+    /** Saves the ids already notified, trimmed without dropping any of [current] (the ids in this check's list). */
+    private fun putSet(key: String, s: Set<String>, current: Set<String>) =
+        store.edit().putStringSet(key, SeenIds.trim(s, current)).apply()
+
+    /** [now] plus the entries of [old] it doesn't have, trimmed to the newest ids (all of [now] kept). */
+    private fun mergeCapped(now: JSONObject, old: JSONObject): JSONObject {
+        val current = now.keys().asSequence().toSet()
+        val keep = SeenIds.keysToKeep(old.keys().asSequence().toSet(), current)
+        val out = JSONObject()
+        for (k in keep) {
+            when {
+                now.has(k) -> out.put(k, now.get(k))
+                old.has(k) -> out.put(k, old.get(k))
+            }
+        }
+        return out
+    }
 
     private suspend fun titleAndPoster(type: String, tmdbId: Int): Pair<String, Bitmap?> {
         val d = try { MediaCache.get(type, tmdbId) } catch (_: Exception) { null }
@@ -146,9 +162,8 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             } ?: continue
             Notifier.post(applicationContext, 10_000 + r.int("id"), Notifier.CH_MINE, title, text, mediaRoute(type, tmdbId), poster)
         }
-        // Keep entries for requests that dropped off the first page, so they don't look new later.
-        old.keys().forEach { k -> if (!now.has(k)) now.put(k, old.get(k)) }
-        putMap("mine", now)
+        // Keep entries for requests that dropped off the first page, so they don't look new later (the newest 400).
+        putMap("mine", mergeCapped(now, old))
     }
 
     // ---------- requests waiting for approval ----------
@@ -183,7 +198,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 ),
             )
         }
-        putSet("pending", seen)
+        putSet("pending", seen, list.map { it.int("id").toString() }.toSet())
     }
 
     private fun action(nid: Int, requestId: Int, verb: String, label: String, title: String): NotificationCompat.Action {
@@ -223,7 +238,7 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                     "issue/$id", poster,
                 )
             }
-            putSet("issues", seen)
+            putSet("issues", seen, open.map { it.int("id").toString() }.toSet())
         }
 
         // Issues you reported: replies and status changes.
@@ -253,7 +268,6 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             } ?: continue
             Notifier.post(applicationContext, 40_000 + id, Notifier.CH_ISSUES, title, text, "issue/$id", poster)
         }
-        old.keys().forEach { k -> if (!now.has(k)) now.put(k, old.get(k)) }
-        putMap("myissues", now)
+        putMap("myissues", mergeCapped(now, old))
     }
 }

@@ -92,7 +92,8 @@ import com.vknxworks.seerrctrl.ui.theme.CtrlColors
 import com.vknxworks.seerrctrl.ui.theme.CtrlShapes
 import com.vknxworks.seerrctrl.ui.theme.CtrlType
 
-private val requestFilters = listOf(
+// A getter, not a stored list: the labels follow a language change while the app is open.
+private val requestFilters: List<Pair<String, String>> get() = listOf(
     "all" to App.str(R.string.all), "pending" to App.str(R.string.pending), "approved" to App.str(R.string.approved), "processing" to App.str(R.string.processing),
     "available" to App.str(R.string.available), "unavailable" to App.str(R.string.unavailable), "failed" to App.str(R.string.failed), "deleted" to App.str(R.string.deleted), "completed" to App.str(R.string.completed),
 )
@@ -261,16 +262,21 @@ fun RequestsTab(onChanged: () -> Unit = {}, userId: Int? = null) {
  * Approves or declines the requests [ids], one after the other with POST /request/{id}/approve or /decline
  * (Seerr has no call for several at once). Returns how many worked; one that fails doesn't stop the rest.
  */
-suspend fun decideRequests(ids: List<Int>, approve: Boolean): Int {
-    var ok = 0
-    for (id in ids) {
-        try {
-            App.api.post("/request/$id/${if (approve) "approve" else "decline"}")
-            ok++
-        } catch (_: Exception) {}
+suspend fun decideRequests(ids: List<Int>, approve: Boolean): Int =
+    // The whole batch is sent even if you leave the Requests tab meanwhile, so it is never half applied
+    // without a result; the answer only shows if the screen is still there.
+    kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+        var ok = 0
+        for (id in ids) {
+            try {
+                App.api.post("/request/$id/${if (approve) "approve" else "decline"}")
+                ok++
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (_: Exception) {}
+        }
+        ok
     }
-    return ok
-}
 
 /** Movie/series details for a request's media, from the shared cache. */
 @Composable

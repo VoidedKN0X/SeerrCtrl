@@ -2,6 +2,22 @@
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Fixed
+
+- **No more repeated "new request" and "new issue" notifications on busy servers.** SeerrCtrl remembers which pending requests and open issues it already told you about, keeping at most 400. Which 400 it kept was effectively random, so once a server had had more than 400 in total, requests and issues that were still pending or open were forgotten and notified again as new (with Approve and Decline buttons), possibly every 15 minutes. It now always keeps everything that is still pending or open, and the newest of the rest. The lists of your own requests and issues it watches for changes are now also kept to the newest 400 instead of growing forever.
+- **Approving or declining several requests finishes even if you leave the tab.** Leaving the Requests tab in the middle of a bulk approve or decline used to make every remaining request fail at once, so only part of the batch was done. The whole batch is now always sent; the result message shows if you're still on the screen.
+- **Labels follow a language change straight away.** The request filters (All, Pending, Approved…), the notification types in user and admin settings, the discover sort options, the notification agents and discover slider names in admin settings, some admin form labels, the issue types and the media server names stayed in the previous language after changing the phone's or SeerrCtrl's language until the app was closed. They now switch right away.
+
+### Changed
+
+- **Smaller app.** The release build no longer keeps file names and line numbers for crash reports (nothing in the app reads them) and no longer keeps the whole notifications part of the app unshrunk; only what Android needs to start the background check is kept. Push, notification buttons and the periodic check should work exactly as before; this needs a check on a phone.
+
+### Security
+
+- **"Forgot PIN?" now asks for the phone's own screen lock first.** Resetting the app lock logs you out, so it shouldn't be open to anyone who picks up your unlocked phone. After you confirm, SeerrCtrl asks for the phone's PIN, pattern, password or a fingerprint; only then is the lock reset. Cancelling leaves everything as it was. A phone without a screen lock keeps the old confirmation alone.
+
 ## v1.12.1 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

@@ -113,7 +113,8 @@ enum class RequestStatus(val code: Int, val label: String) {
 }
 
 object IssueTypes {
-    val all = listOf(1 to App.str(R.string.video), 2 to App.str(R.string.audio), 3 to App.str(R.string.subtitles), 4 to App.str(R.string.other))
+    // A getter: the names follow a language change while the app is open.
+    val all: List<Pair<Int, String>> get() = listOf(1 to App.str(R.string.video), 2 to App.str(R.string.audio), 3 to App.str(R.string.subtitles), 4 to App.str(R.string.other))
     fun name(t: Int) = all.firstOrNull { it.first == t }?.second ?: App.str(R.string.other)
 }
 
@@ -121,8 +122,11 @@ object UserTypes {
     fun name(t: Int) = when (t) { 1 -> App.str(R.string.plex_user); 2 -> App.str(R.string.local_user); 3 -> App.str(R.string.jellyfin_user); 4 -> App.str(R.string.emby_user); else -> App.str(R.string.user) }
 }
 
-enum class MediaServer(val code: Int, val label: String) {
-    Plex(1, App.str(R.string.plex)), Jellyfin(2, App.str(R.string.jellyfin)), Emby(3, App.str(R.string.emby)), None(4, App.str(R.string.not_configured));
+enum class MediaServer(val code: Int, private val labelRes: Int) {
+    Plex(1, R.string.plex), Jellyfin(2, R.string.jellyfin), Emby(3, R.string.emby), None(4, R.string.not_configured);
+
+    /** Looked up each time, so it follows a language change while the app is open. */
+    val label: String get() = App.str(labelRes)
 
     companion object {
         fun of(code: Int?): MediaServer = entries.firstOrNull { it.code == code } ?: None

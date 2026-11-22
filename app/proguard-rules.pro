@@ -1,11 +1,10 @@
 # SeerrCtrl R8 rules. Libraries (OkHttp, Coil, coroutines, WorkManager, Compose) bring their own.
 
-# Keep file and line numbers so crash reports point at real code (decode names with mapping.txt from the CI run).
--keepattributes SourceFile,LineNumberTable
--renamesourcefileattribute SourceFile
-
-# Background check and notification buttons are created by the system from their class names.
--keep class com.vknxworks.seerrctrl.notify.** { *; }
+# The background check is created by WorkManager from its class name with this constructor. The receivers and
+# the service in the notify package are kept through the manifest; nothing else there needs to keep its name.
+-keep class com.vknxworks.seerrctrl.notify.CheckWorker {
+    <init>(android.content.Context, androidx.work.WorkerParameters);
+}
 
 # Optional extension APIs that androidx.window looks for at runtime on some devices.
 -dontwarn androidx.window.extensions.**
